@@ -23,6 +23,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
 		<retrofit.version>2.4.0</retrofit.version>
+		<logging-interceptor.version>3.9.0</logging-interceptor.version>
 	</properties>
 
 	<dependencies>
@@ -74,7 +75,11 @@
 		    <version>${retrofit.version}</version>
 		</dependency>
 		
-		
+		<dependency>
+    		<groupId>com.squareup.okhttp3</groupId>
+   		 	<artifactId>logging-interceptor</artifactId>
+    		<version>${logging-interceptor.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
