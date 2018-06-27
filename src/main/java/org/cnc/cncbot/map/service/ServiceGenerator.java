@@ -1,5 +1,7 @@
 package org.cnc.cncbot.map.service;
 
+import org.cnc.cncbot.map.utils.StringConverterFactory;
+
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
@@ -22,7 +24,9 @@ public final class ServiceGenerator {
        Retrofit retrofit = new Retrofit.Builder()
 		   .client(httpClient.followRedirects(false).build())
 	       .baseUrl(baseUrl)
-	       .addConverterFactory(GsonConverterFactory.create()).build();
+	       .addConverterFactory(new  StringConverterFactory())
+	       .addConverterFactory(GsonConverterFactory.create())
+	       .build();
        
        return retrofit.create(serviceClass);
    }
