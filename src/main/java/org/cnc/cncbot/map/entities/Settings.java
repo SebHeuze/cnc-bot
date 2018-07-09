@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Settings entity
+ * Poi entity
  * @author heuze
  *
  */
@@ -15,9 +15,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Settings {
-	private Integer y;
-	private Integer x;
-	private String  t;
-	private Integer l;
-	private Integer a;
+	@Id
+	private String name;
+	private String value;
 }
