@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 public class MapService {
-	public final void mapDataJob(Account currentAccount) throws BatchException {
+	public final void mapDataJob(int batchNumber) throws BatchException {
 		
 	}
 }

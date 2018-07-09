@@ -1,4 +1,4 @@
-package org.cnc.cncbot.map.service;
+package org.cnc.cncbot.map.service.retrofit;
 
 import org.springframework.stereotype.Service;
 

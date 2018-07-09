@@ -15,6 +15,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Joueur {
+	@Id
 	private Integer i;
 	private Long p;
 	private Integer a;
