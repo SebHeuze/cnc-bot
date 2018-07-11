@@ -6,10 +6,10 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.stream.Collectors;
 
-import org.cnc.cncbot.map.service.AccountsEAService;
-import org.cnc.cncbot.map.service.ServiceGenerator;
-import org.cnc.cncbot.map.service.SigninEAService;
-import org.cnc.cncbot.map.service.TiberiumAlliancesService;
+import org.cnc.cncbot.map.service.retrofit.AccountsEAService;
+import org.cnc.cncbot.map.service.retrofit.ServiceGenerator;
+import org.cnc.cncbot.map.service.retrofit.SigninEAService;
+import org.cnc.cncbot.map.service.retrofit.TiberiumAlliancesService;
 import org.cnc.cncbot.map.utils.HttpUtils;
 import org.junit.Test;
 
