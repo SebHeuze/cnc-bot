@@ -1,7 +1,7 @@
 package org.cnc.cncbot.exception;
 
 /**
- * Login Exception.
+ * Batch Exception.
  * @author SEB
  *
  */
