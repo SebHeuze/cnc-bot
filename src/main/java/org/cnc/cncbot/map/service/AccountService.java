@@ -90,19 +90,19 @@ public class AccountService {
 		Call<Void> initialAuthCall = this.tiberiumAlliancesService.loginAuth();
 		Response<Void> initialAuthResponse = initialAuthCall.execute();
 		
-		log.info("Set-Cookie Header Initial Call " + initialAuthResponse.headers().values(HEADER_SET_COOKIE));
+		log.info("Set-Cookie Header call 1/6 " + initialAuthResponse.headers().values(HEADER_SET_COOKIE));
 		
 		String JessionIDTiberium = initialAuthResponse.headers().values("Set-Cookie").stream().filter(it -> it.contains("JSESSIONID")).collect(Collectors.toList()).get(0);
 		
 		if (StringUtils.isEmpty(JessionIDTiberium)) {
-			throw new AuthException("Can't retrieve JSESSIONID on initial auth call");
+			throw new AuthException("Can't retrieve JSESSIONID on call 1");
 		}
 		
 		URL redirectUri = new URL(initialAuthResponse.headers().get(HEADER_LOCATION));
 		
 		String state = HttpUtils.queryToMap(redirectUri.getQuery()).get(STATE_PARAM);
 		if (state == null) {
-			throw new AuthException("Can't retrieve state param on initial auth call");
+			throw new AuthException("Can't retrieve state param on call 1");
 		}
 		
 		
@@ -123,7 +123,7 @@ public class AccountService {
 		
 		String fid = HttpUtils.queryToMap(redirectUri.getQuery()).get(FID_PARAM);
 		if (fid == null) {
-			throw new AuthException("Can't retrieve fid param on first auth call");
+			throw new AuthException("Can't retrieve fid param on call 2");
 		}
 		
 		
@@ -141,17 +141,17 @@ public class AccountService {
 		
 		String eaCookies = firstLoginResponse.headers().get(HEADER_SET_COOKIE);
 		if (StringUtils.isEmpty(eaCookies)) {
-			throw new AuthException("Can't retrieve Set-Cookie on first EA Login call");
+			throw new AuthException("Can't retrieve Set-Cookie on call 3");
 		}
 		
 		String execution = HttpUtils.queryToMap(redirectUri.getQuery()).get(EXECUTION_PARAM);
 		if (execution == null) {
-			throw new AuthException("Can't retrieve execution param on first login call");
+			throw new AuthException("Can't retrieve execution param on call 3");
 		}
 		
 		String initrefEncoded = HttpUtils.queryToMap(redirectUri.getQuery()).get(INITREF_PARAM);
 		if (initrefEncoded == null) {
-			throw new AuthException("Can't retrieve initref param on first login call");
+			throw new AuthException("Can't retrieve initref param on call 3");
 		}
 		
 		String initref = URLDecoder.decode(initrefEncoded, "UTF-8");
@@ -172,7 +172,7 @@ public class AccountService {
 	
 		execution = HttpUtils.queryToMap(redirectUri.getQuery()).get(EXECUTION_PARAM);
 		if (execution == null) {
-			throw new AuthException("Can't retrieve execution param on second login call");
+			throw new AuthException("Can't retrieve execution param on call 4");
 		}
 		
 		
@@ -210,7 +210,7 @@ public class AccountService {
 		
 		String code = HttpUtils.queryToMap(redirectUri.getQuery()).get(CODE_PARAM);
 		if (code == null) {
-			throw new AuthException("Can't retrieve code param on second auth call");
+			throw new AuthException("Can't retrieve code param on call 6");
 		}
 		
 		/*
