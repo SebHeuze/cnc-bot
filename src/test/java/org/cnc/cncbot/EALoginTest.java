@@ -1,12 +1,20 @@
 package org.cnc.cncbot;
 
 
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.cnc.cncbot.dto.ResponseType;
+import org.cnc.cncbot.dto.generated.OriginAccountInfo;
+import org.cnc.cncbot.dto.generated.TiberiumAllianceAjaxRequest;
 import org.cnc.cncbot.map.service.retrofit.AccountsEAService;
+import org.cnc.cncbot.map.service.retrofit.GameCDNOriginService;
 import org.cnc.cncbot.map.service.retrofit.ServiceGenerator;
 import org.cnc.cncbot.map.service.retrofit.SigninEAService;
 import org.cnc.cncbot.map.service.retrofit.TiberiumAlliancesService;
@@ -22,9 +30,10 @@ public class EALoginTest {
 
 	@Test
 	public void connectAuthTest() throws IOException {
-		AccountsEAService accountsEaService = ServiceGenerator.createService(AccountsEAService.class, AccountsEAService.BASE_URL);
-		SigninEAService signinEaService = ServiceGenerator.createService(SigninEAService.class, SigninEAService.BASE_URL);
-		TiberiumAlliancesService tiberiumAlliancesService = ServiceGenerator.createService(TiberiumAlliancesService.class, TiberiumAlliancesService.BASE_URL);
+		AccountsEAService accountsEaService = ServiceGenerator.createService(AccountsEAService.class, AccountsEAService.BASE_URL, ResponseType.PLAIN_TEXT);
+		SigninEAService signinEaService = ServiceGenerator.createService(SigninEAService.class, SigninEAService.BASE_URL, ResponseType.PLAIN_TEXT);
+		TiberiumAlliancesService tiberiumAlliancesService = ServiceGenerator.createService(TiberiumAlliancesService.class, TiberiumAlliancesService.BASE_URL, ResponseType.PLAIN_TEXT);
+		GameCDNOriginService gameCDNService = ServiceGenerator.createService(GameCDNOriginService.class, GameCDNOriginService.BASE_URL, ResponseType.JSON);
 
 		
 		Call<Void> call0 = tiberiumAlliancesService.loginAuth();
@@ -68,7 +77,7 @@ public class EALoginTest {
 				response2.headers().get("Set-Cookie"),
 				HttpUtils.queryToMap(uri2.getQuery()).get("execution"),
 				URLDecoder.decode(HttpUtils.queryToMap(uri2.getQuery()).get("initref"), "UTF-8"),
-				"leseqzdqzqzd","qzdqzdqzd","FR",null,null,"on","submit",null,"false",null);
+				"user","password","FR",null,null,"on","submit",null,"false",null);
 		Response<Void> response4 = call4.execute();
 		log.info("Code retour 4 {}", response4.code());
 		log.info(response4.headers().get("Location"));
@@ -114,6 +123,19 @@ public class EALoginTest {
 		Response<String> response9 = call9.execute();
 		log.info(response9.headers().get("Location"));
 		log.info("Body {}", response9.body());
+		
+		Pattern pattern = Pattern.compile("name=\"sessionId\" value=\"([^\"]*)\"", Pattern.MULTILINE);
+	    Matcher matcher = pattern.matcher(response9.body());
+	    if (!matcher.find()) {
+	    	fail("sessionId non trouvée");
+	    }
+	    log.info(matcher.group(1));
+		
+	    TiberiumAllianceAjaxRequest request = new TiberiumAllianceAjaxRequest(matcher.group(1));
+	    Call<OriginAccountInfo> originAccountCall  = gameCDNService.getOriginAccountInfo(request);
+		Response<OriginAccountInfo> originAccountResponse = originAccountCall.execute();
+
+		log.info("Code retour 9{}", originAccountResponse.code());
 	}
 
 }

@@ -8,7 +8,7 @@ import retrofit2.http.Header;
 import retrofit2.http.Query;
 
 /**
- * EA services class
+ * Tiberium Alliances services class
  * @author sheuze
  *
  */

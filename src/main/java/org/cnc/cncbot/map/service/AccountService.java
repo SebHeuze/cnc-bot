@@ -1,11 +1,16 @@
 package org.cnc.cncbot.map.service;
 
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.cnc.cncbot.dto.ResponseType;
 import org.cnc.cncbot.exception.AuthException;
 import org.cnc.cncbot.map.dao.AccountDAO;
 import org.cnc.cncbot.map.entities.Account;
@@ -24,7 +29,8 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 /**
- * Map service
+ * Account service
+ * Used to manage TiberiumAlliance/EA sessions
  * @author sheuze
  *
  */
@@ -33,14 +39,21 @@ import retrofit2.Response;
 @Slf4j
 public class AccountService {
 	
+	/**
+	 * Account DAO
+	 */
 	public final AccountDAO accountDAO;
 	
+	/**
+	 * Retrofit services class
+	 */
 	public final AccountsEAService accountsEaService;
-	
 	public final SigninEAService signinEaService;
-	
 	public final TiberiumAlliancesService tiberiumAlliancesService;
 		
+	/**
+	 * Call Params names
+	 */
 	public final static String STATE_PARAM = "state";
 	public final static String FID_PARAM = "fid";
 	public final static String INITREF_PARAM = "initref";
@@ -61,15 +74,22 @@ public class AccountService {
 	public final static String OAUTH_LOCALE = "fr_FR";
 	public final static String OAUTH_RESPONSE_TYPE = "code";
 	
+	public final static String SESSION_ID_REGEX = "name=\"sessionId\" value=\"([^\"]*)\"";
 	
 	@Autowired
 	public AccountService(AccountDAO accountDAO) {
 		this.accountDAO = accountDAO;
 		
-		this.accountsEaService = ServiceGenerator.createService(AccountsEAService.class, AccountsEAService.BASE_URL);
-		this.signinEaService = ServiceGenerator.createService(SigninEAService.class, SigninEAService.BASE_URL);
-		this.tiberiumAlliancesService = ServiceGenerator.createService(TiberiumAlliancesService.class, TiberiumAlliancesService.BASE_URL);
+		this.accountsEaService = ServiceGenerator.createService(AccountsEAService.class, AccountsEAService.BASE_URL, ResponseType.PLAIN_TEXT);
+		this.signinEaService = ServiceGenerator.createService(SigninEAService.class, SigninEAService.BASE_URL, ResponseType.PLAIN_TEXT);
+		this.tiberiumAlliancesService = ServiceGenerator.createService(TiberiumAlliancesService.class, TiberiumAlliancesService.BASE_URL, ResponseType.PLAIN_TEXT);
 	}
+	
+	/**
+	 * Get account with batchNumber, batch number is currently the periodicity of the batch (batch 5 is called every 5 min)
+	 * @param batchNumber
+	 * @return
+	 */
 	public List<Account> getAccountsForBatch(int batchNumber) {
 		
 		List<Account> accountList = this.accountDAO.findByNumbatch(batchNumber);
@@ -78,156 +98,168 @@ public class AccountService {
 		return accountList;
 	}
 	
-	public void connect(Account account) {
+	/**
+	 * Connect account with EA oauth system
+	 * @param account
+	 */
+	public void connect(Account account) throws AuthException {
 		
 		log.info("Connect to account {} on world {}", account.getUser(), account.getMonde());
 		
 		
 		try {
-		/*
-		 * Initial Call to get Tiberium Alliance Cookies and state param
-		 */
-		Call<Void> initialAuthCall = this.tiberiumAlliancesService.loginAuth();
-		Response<Void> initialAuthResponse = initialAuthCall.execute();
-		
-		log.info("Set-Cookie Header call 1/6 " + initialAuthResponse.headers().values(HEADER_SET_COOKIE));
-		
-		String JessionIDTiberium = initialAuthResponse.headers().values("Set-Cookie").stream().filter(it -> it.contains("JSESSIONID")).collect(Collectors.toList()).get(0);
-		
-		if (StringUtils.isEmpty(JessionIDTiberium)) {
-			throw new AuthException("Can't retrieve JSESSIONID on call 1");
-		}
-		
-		URL redirectUri = new URL(initialAuthResponse.headers().get(HEADER_LOCATION));
-		
-		String state = HttpUtils.queryToMap(redirectUri.getQuery()).get(STATE_PARAM);
-		if (state == null) {
-			throw new AuthException("Can't retrieve state param on call 1");
-		}
-		
-		
-		
-		/*
-		 * First Auth Call
-		 */
-		Call<String> firstAuthCall = this.accountsEaService.connectAuth(
-				OAUTH_CLIENT_ID,
-				OAUTH_REDIRECT_URI,
-				OAUTH_LOCALE,
-				OAUTH_RESPONSE_TYPE,
-				state);
-		Response<String> firstAuthResponse = firstAuthCall.execute();
-		log.info("First auth call done, redirecting to {}",firstAuthResponse.headers().get(HEADER_LOCATION));
-		
-		redirectUri = new URL(firstAuthResponse.headers().get(HEADER_LOCATION));
-		
-		String fid = HttpUtils.queryToMap(redirectUri.getQuery()).get(FID_PARAM);
-		if (fid == null) {
-			throw new AuthException("Can't retrieve fid param on call 2");
-		}
-		
-		
-		/*
-		 * First Login Call
-		 */
-		Call<String> firstLoginCall = this.signinEaService.login(fid);
-		Response<String> firstLoginResponse = firstLoginCall.execute();
-		log.info(firstLoginResponse.headers().get(HEADER_LOCATION));
-		log.info(firstLoginResponse.headers().get(HEADER_SET_COOKIE));
-		
-
-		redirectUri = new URL(SigninEAService.BASE_URL + firstLoginResponse.headers().get(HEADER_LOCATION));
-		
-		
-		String eaCookies = firstLoginResponse.headers().get(HEADER_SET_COOKIE);
-		if (StringUtils.isEmpty(eaCookies)) {
-			throw new AuthException("Can't retrieve Set-Cookie on call 3");
-		}
-		
-		String execution = HttpUtils.queryToMap(redirectUri.getQuery()).get(EXECUTION_PARAM);
-		if (execution == null) {
-			throw new AuthException("Can't retrieve execution param on call 3");
-		}
-		
-		String initrefEncoded = HttpUtils.queryToMap(redirectUri.getQuery()).get(INITREF_PARAM);
-		if (initrefEncoded == null) {
-			throw new AuthException("Can't retrieve initref param on call 3");
-		}
-		
-		String initref = URLDecoder.decode(initrefEncoded, "UTF-8");
-		
-		/*
-		 * Second Login Call
-		 */
-		Call<Void> secondLoginCall = this.signinEaService.login(
-				eaCookies,
-				execution,
-				initref,
-				account.getUser(),account.getPass(),"FR",null,null,"on","submit",null,"false",null);
-		Response<Void> secondLoginResponse = secondLoginCall.execute();
-		log.info(secondLoginResponse.headers().get(HEADER_LOCATION));
-		
-
-		redirectUri = new URL(SigninEAService.BASE_URL + secondLoginResponse.headers().get(HEADER_LOCATION));
+			/*
+			 * Initial Call to get Tiberium Alliance Cookies and state param
+			 */
+			Call<Void> initialAuthCall = this.tiberiumAlliancesService.loginAuth();
+			Response<Void> initialAuthResponse = initialAuthCall.execute();
+			
+			log.info("Set-Cookie Header call 1/6 " + initialAuthResponse.headers().values(HEADER_SET_COOKIE));
+			
+			String JessionIDTiberium = initialAuthResponse.headers().values("Set-Cookie").stream().filter(it -> it.contains("JSESSIONID")).collect(Collectors.toList()).get(0);
+			
+			if (StringUtils.isEmpty(JessionIDTiberium)) {
+				throw new AuthException("Can't retrieve JSESSIONID on auth call 1");
+			}
+			
+			URL redirectUri = new URL(initialAuthResponse.headers().get(HEADER_LOCATION));
+			
+			String state = HttpUtils.queryToMap(redirectUri.getQuery()).get(STATE_PARAM);
+			if (state == null) {
+				throw new AuthException("Can't retrieve state param on auth call 1");
+			}
+			
+			
+			
+			/*
+			 * First Auth Call
+			 */
+			Call<String> firstAuthCall = this.accountsEaService.connectAuth(
+					OAUTH_CLIENT_ID,
+					OAUTH_REDIRECT_URI,
+					OAUTH_LOCALE,
+					OAUTH_RESPONSE_TYPE,
+					state);
+			Response<String> firstAuthResponse = firstAuthCall.execute();
+			log.info("First auth call done, redirecting to {}",firstAuthResponse.headers().get(HEADER_LOCATION));
+			
+			redirectUri = new URL(firstAuthResponse.headers().get(HEADER_LOCATION));
+			
+			String fid = HttpUtils.queryToMap(redirectUri.getQuery()).get(FID_PARAM);
+			if (fid == null) {
+				throw new AuthException("Can't retrieve fid param on auth call 2");
+			}
+			
+			
+			/*
+			 * First Login Call
+			 */
+			Call<String> firstLoginCall = this.signinEaService.login(fid);
+			Response<String> firstLoginResponse = firstLoginCall.execute();
+			log.info(firstLoginResponse.headers().get(HEADER_LOCATION));
+			log.info(firstLoginResponse.headers().get(HEADER_SET_COOKIE));
+			
 	
-		execution = HttpUtils.queryToMap(redirectUri.getQuery()).get(EXECUTION_PARAM);
-		if (execution == null) {
-			throw new AuthException("Can't retrieve execution param on call 4");
-		}
+			redirectUri = new URL(SigninEAService.BASE_URL + firstLoginResponse.headers().get(HEADER_LOCATION));
+			
+			
+			String eaCookies = firstLoginResponse.headers().get(HEADER_SET_COOKIE);
+			if (StringUtils.isEmpty(eaCookies)) {
+				throw new AuthException("Can't retrieve Set-Cookie on auth call 3");
+			}
+			
+			String execution = HttpUtils.queryToMap(redirectUri.getQuery()).get(EXECUTION_PARAM);
+			if (execution == null) {
+				throw new AuthException("Can't retrieve execution param on auth call 3");
+			}
+			
+			String initrefEncoded = HttpUtils.queryToMap(redirectUri.getQuery()).get(INITREF_PARAM);
+			if (initrefEncoded == null) {
+				throw new AuthException("Can't retrieve initref param on auth call 3");
+			}
+			
+			String initref = URLDecoder.decode(initrefEncoded, "UTF-8");
+			
+			/*
+			 * Second Login Call
+			 */
+			Call<Void> secondLoginCall = this.signinEaService.login(
+					eaCookies,
+					execution,
+					initref,
+					account.getUser(),account.getPass(),"FR",null,null,"on","submit",null,"false",null);
+			Response<Void> secondLoginResponse = secondLoginCall.execute();
+			log.info(secondLoginResponse.headers().get(HEADER_LOCATION));
+			
+	
+			redirectUri = new URL(SigninEAService.BASE_URL + secondLoginResponse.headers().get(HEADER_LOCATION));
 		
-		
-		/*
-		 * Third Login Call
-		 */
-		Call<Void> thirdLoginCall = this.signinEaService.login(
-				eaCookies,
-				execution,
-				initref,
-				"end");
-		Response<Void> thirdLoginResponse = thirdLoginCall.execute();
-		log.info(thirdLoginResponse.headers().get(HEADER_LOCATION));
-	        
-
-		redirectUri = new URL(thirdLoginResponse.headers().get(HEADER_LOCATION));
-		
-		
-		/*
-		 * Second Auth Call
-		 */
-		Call<String> secondAuthCall = this.accountsEaService.connectAuth(
-				OAUTH_CLIENT_ID,
-				OAUTH_REDIRECT_URI,
-				OAUTH_LOCALE,
-				OAUTH_RESPONSE_TYPE,
-				state,
-				fid);
-		Response<String> secondAuthResponse = secondAuthCall.execute();
-		log.info(secondAuthResponse.headers().get(HEADER_LOCATION));
-		
-		
-
-		redirectUri = new URL(secondAuthResponse.headers().get(HEADER_LOCATION));
-		
-		String code = HttpUtils.queryToMap(redirectUri.getQuery()).get(CODE_PARAM);
-		if (code == null) {
-			throw new AuthException("Can't retrieve code param on call 6");
-		}
-		
-		/*
-		 * Login check
-		 */
-		Call<String> loginCheckCall = this.tiberiumAlliancesService.loginCheck(
-				JessionIDTiberium ,code,state);
-		Response<String> loginCheckResponse = loginCheckCall.execute();
-		
-		Call<String> call9 = this.tiberiumAlliancesService.gameLaunch(
-				loginCheckResponse.headers().get(HEADER_SET_COOKIE));
-		Response<String> response9 = call9.execute();
-		log.info("Body {}", response9.body());
-
-		
+			execution = HttpUtils.queryToMap(redirectUri.getQuery()).get(EXECUTION_PARAM);
+			if (execution == null) {
+				throw new AuthException("Can't retrieve execution param on auth call 4");
+			}
+			
+			
+			/*
+			 * Third Login Call
+			 */
+			Call<Void> thirdLoginCall = this.signinEaService.login(
+					eaCookies,
+					execution,
+					initref,
+					"end");
+			Response<Void> thirdLoginResponse = thirdLoginCall.execute();
+			log.info(thirdLoginResponse.headers().get(HEADER_LOCATION));
+		        
+	
+			redirectUri = new URL(thirdLoginResponse.headers().get(HEADER_LOCATION));
+			
+			
+			/*
+			 * Second Auth Call
+			 */
+			Call<String> secondAuthCall = this.accountsEaService.connectAuth(
+					OAUTH_CLIENT_ID,
+					OAUTH_REDIRECT_URI,
+					OAUTH_LOCALE,
+					OAUTH_RESPONSE_TYPE,
+					state,
+					fid);
+			Response<String> secondAuthResponse = secondAuthCall.execute();
+			log.info(secondAuthResponse.headers().get(HEADER_LOCATION));
+			
+			
+	
+			redirectUri = new URL(secondAuthResponse.headers().get(HEADER_LOCATION));
+			
+			String code = HttpUtils.queryToMap(redirectUri.getQuery()).get(CODE_PARAM);
+			if (code == null) {
+				throw new AuthException("Can't retrieve code param on auth call 6");
+			}
+			
+			/*
+			 * Login check
+			 */
+			Call<String> loginCheckCall = this.tiberiumAlliancesService.loginCheck(
+					JessionIDTiberium ,code,state);
+			Response<String> loginCheckResponse = loginCheckCall.execute();
+			
+			Call<String> call9 = this.tiberiumAlliancesService.gameLaunch(
+					loginCheckResponse.headers().get(HEADER_SET_COOKIE));
+			Response<String> response9 = call9.execute();
+			
+			Pattern pattern = Pattern.compile(SESSION_ID_REGEX, Pattern.MULTILINE);
+		    Matcher matcher = pattern.matcher(response9.body());
+		    
+		    if (!matcher.find()) {
+		    	throw new AuthException("Can't get sessionId with regex");
+		    }
+		    
+		    matcher.group(1);
+	    
 		} catch (IOException ioe) {
-			log.error("Erreur lors du login du compte {}", account.getUser(), ioe);
+			log.error("Error during authentification of account {}", account.getUser(), ioe);
+			throw new AuthException("Error during authentification");
 		}
 	}
 	
