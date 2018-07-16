@@ -1,20 +1,22 @@
 package org.cnc.cncbot.map.service;
 
-import static org.junit.Assert.fail;
-
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.cnc.cncbot.dto.ResponseType;
+import org.cnc.cncbot.dto.generated.OriginAccountInfo;
 import org.cnc.cncbot.exception.AuthException;
 import org.cnc.cncbot.map.dao.AccountDAO;
 import org.cnc.cncbot.map.entities.Account;
 import org.cnc.cncbot.map.service.retrofit.AccountsEAService;
+import org.cnc.cncbot.map.service.retrofit.GameCDNOriginService;
 import org.cnc.cncbot.map.service.retrofit.ServiceGenerator;
 import org.cnc.cncbot.map.service.retrofit.SigninEAService;
 import org.cnc.cncbot.map.service.retrofit.TiberiumAlliancesService;
@@ -50,7 +52,14 @@ public class AccountService {
 	public final AccountsEAService accountsEaService;
 	public final SigninEAService signinEaService;
 	public final TiberiumAlliancesService tiberiumAlliancesService;
-		
+	public final GameCDNOriginService gameCDNService;
+	
+	/**
+	 * Account EA sessionsId storage
+	 */
+	public Map<String, OriginAccountInfo> loggedAccounts = new HashMap<>();
+	
+	
 	/**
 	 * Call Params names
 	 */
@@ -83,6 +92,8 @@ public class AccountService {
 		this.accountsEaService = ServiceGenerator.createService(AccountsEAService.class, AccountsEAService.BASE_URL, ResponseType.PLAIN_TEXT);
 		this.signinEaService = ServiceGenerator.createService(SigninEAService.class, SigninEAService.BASE_URL, ResponseType.PLAIN_TEXT);
 		this.tiberiumAlliancesService = ServiceGenerator.createService(TiberiumAlliancesService.class, TiberiumAlliancesService.BASE_URL, ResponseType.PLAIN_TEXT);
+		this.gameCDNService = ServiceGenerator.createService(GameCDNOriginService.class, GameCDNOriginService.BASE_URL, ResponseType.JSON);
+
 	}
 	
 	/**
@@ -96,6 +107,24 @@ public class AccountService {
 		log.info("accounts retrieved : {}", accountList.size());
 		
 		return accountList;
+	}
+	
+	/**
+	 * Return if an account is currently logged
+	 * @param account
+	 * @return boolean true if logged in
+	 */
+	public boolean isLogged(Account account) {
+		return this.loggedAccounts.containsKey(account.getUser());
+	}
+	
+	/**
+	 * Return Origin Info of account
+	 * @param account
+	 * @return OriginAccountInfo accountInfos
+	 */
+	public OriginAccountInfo getServerInfos(Account account) {
+		return this.loggedAccounts.get(account.getUser());
 	}
 	
 	/**
@@ -244,19 +273,25 @@ public class AccountService {
 					JessionIDTiberium ,code,state);
 			Response<String> loginCheckResponse = loginCheckCall.execute();
 			
-			Call<String> call9 = this.tiberiumAlliancesService.gameLaunch(
+			Call<String> gameLaunchCall = this.tiberiumAlliancesService.gameLaunch(
 					loginCheckResponse.headers().get(HEADER_SET_COOKIE));
-			Response<String> response9 = call9.execute();
+			Response<String> gameLaunchCallResponse = gameLaunchCall.execute();
 			
 			Pattern pattern = Pattern.compile(SESSION_ID_REGEX, Pattern.MULTILINE);
-		    Matcher matcher = pattern.matcher(response9.body());
+		    Matcher matcher = pattern.matcher(gameLaunchCallResponse.body());
 		    
 		    if (!matcher.find()) {
 		    	throw new AuthException("Can't get sessionId with regex");
 		    }
+
+
+		    Map<String,Object> params = new HashMap<>();
+		    params.put("session", matcher.group(1));
+		    Call<OriginAccountInfo> originAccountCall  = this.gameCDNService.getOriginAccountInfo(params);
+			Response<OriginAccountInfo> originAccountResponse = originAccountCall.execute();
+			
+		    this.loggedAccounts.put(account.getUser(), originAccountResponse.body());
 		    
-		    matcher.group(1);
-	    
 		} catch (IOException ioe) {
 			log.error("Error during authentification of account {}", account.getUser(), ioe);
 			throw new AuthException("Error during authentification");

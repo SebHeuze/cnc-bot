@@ -6,13 +6,14 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.cnc.cncbot.dto.ResponseType;
 import org.cnc.cncbot.dto.generated.OriginAccountInfo;
-import org.cnc.cncbot.dto.generated.TiberiumAllianceAjaxRequest;
 import org.cnc.cncbot.map.service.retrofit.AccountsEAService;
 import org.cnc.cncbot.map.service.retrofit.GameCDNOriginService;
 import org.cnc.cncbot.map.service.retrofit.ServiceGenerator;
@@ -131,11 +132,12 @@ public class EALoginTest {
 	    }
 	    log.info(matcher.group(1));
 		
-	    TiberiumAllianceAjaxRequest request = new TiberiumAllianceAjaxRequest(matcher.group(1));
-	    Call<OriginAccountInfo> originAccountCall  = gameCDNService.getOriginAccountInfo(request);
+	    Map<String,Object> params = new HashMap<>();
+	    params.put("session", matcher.group(1));
+	    Call<OriginAccountInfo> originAccountCall  = gameCDNService.getOriginAccountInfo(params);
 		Response<OriginAccountInfo> originAccountResponse = originAccountCall.execute();
 
-		log.info("Code retour 9{}", originAccountResponse.code());
+		log.info("Code retour 9 {}", originAccountResponse.code());
 	}
 
 }

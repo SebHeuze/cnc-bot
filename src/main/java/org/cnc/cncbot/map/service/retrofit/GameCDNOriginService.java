@@ -1,7 +1,8 @@
 package org.cnc.cncbot.map.service.retrofit;
 
+import java.util.Map;
+
 import org.cnc.cncbot.dto.generated.OriginAccountInfo;
-import org.cnc.cncbot.dto.generated.TiberiumAllianceAjaxRequest;
 import org.springframework.stereotype.Service;
 
 import retrofit2.Call;
@@ -19,6 +20,6 @@ public interface GameCDNOriginService {
 	 
 
 	@POST("GetOriginAccountInfo")
-	Call<OriginAccountInfo> getOriginAccountInfo(@Body TiberiumAllianceAjaxRequest session);
+	Call<OriginAccountInfo> getOriginAccountInfo(@Body Map<String,Object> body);
 	
 }
