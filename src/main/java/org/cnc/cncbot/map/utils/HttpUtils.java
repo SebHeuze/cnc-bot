@@ -4,6 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 
+/**
+ * Class of utils for HTTP calls
+ * @author sheuze
+ *
+ */
 public class HttpUtils {
 	/**
 	 * Get parameters list of URL
