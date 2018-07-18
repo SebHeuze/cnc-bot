@@ -2,6 +2,7 @@ package org.cnc.cncbot.map.entities;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -14,7 +15,8 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-public class Joueur {
+@Table(name = "player")
+public class Player {
 	@Id
 	private Integer i;
 	private Long p;

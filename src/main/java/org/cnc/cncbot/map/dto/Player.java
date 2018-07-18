@@ -16,16 +16,16 @@ import lombok.ToString;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Joueur {
+public class Player {
     /**
      * Id.
      */
     private int id;
     
     /**
-     * Points.
+     * Score.
      */
-    private int points;
+    private int score;
     
     /**
      * Alliance.
@@ -35,7 +35,7 @@ public class Joueur {
     /**
      * Pseudo.
      */
-    private String pseudo;
+    private String username;
     
     /**
      * Faction.
@@ -59,7 +59,7 @@ public class Joueur {
     
     @Override
     public boolean equals(Object obj) {
-      Joueur other = (Joueur) obj;
+      Player other = (Player) obj;
       return this.id == other.id;
     }
 
