@@ -34,8 +34,6 @@ import retrofit2.Call;
 public class GameService {
 
 	public CNCGameService cncGameService;
-	
-	public Map<Integer, String> gameSessionsIds = new HashMap<>();
 
 	public final static String URL_PATH_API = "/Presentation/Service.svc/ajaxEndpoint/";
 
@@ -84,12 +82,13 @@ public class GameService {
 	 * @param account
 	 * @param sessionId
 	 */
-	public void openGameSession(Account account, String sessionId) {
+	public String openGameSession(Account account, String sessionId) {
 
 		try {
 			Call<OpenSessionResponse> openGameSessionCall  = this.cncGameService.openSession(
 					OpenSessionRequest.builder().session(sessionId).build());
-			gameSessionsIds.put(account.getMonde(), openGameSessionCall.execute().body().getI());
+			
+			return openGameSessionCall.execute().body().getI();
 		} catch (IOException e) {
 			log.error("Error opening game session of account {}", account.getUser(), e);
 			throw new GameException("Error opening game session of account " + account.getUser());

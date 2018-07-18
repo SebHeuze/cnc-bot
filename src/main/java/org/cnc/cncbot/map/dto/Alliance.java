@@ -7,7 +7,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Objet Alliance
+ * Alliance Object
  * @author SEB
  *
  */
@@ -23,19 +23,19 @@ public class Alliance {
     private int id;
     
     /**
-     * Nom.
+     * Name.
      */
-    private String nom;
+    private String name;
     
     /**
      * Points.
      */
-    private int points;
+    private int score;
     
     /**
-     * Nombre joueurs.
+     * Number of players.
      */
-    private int nombreJoueurs;
+    private int nbPlayer;
     
     @Override
     public boolean equals(Object obj) {

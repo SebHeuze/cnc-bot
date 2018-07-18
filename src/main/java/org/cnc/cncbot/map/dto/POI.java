@@ -1,7 +1,6 @@
 package org.cnc.cncbot.map.dto;
 
-import java.util.List;
-import java.util.Set;
+import org.cnc.cncbot.dto.POIType;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,7 +9,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Object MapData
+ * Objet POI.
  * @author SEB
  *
  */
@@ -19,20 +18,21 @@ import lombok.ToString;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class MapData {
+public class POI extends MapObject {
     /**
-     * Liste Object
+     * Type du POI.
      */
-    List<MapObject> objectsList;
+    private POIType type;
     
     /**
-     * Alliance List
+     * Level du POI.
      */
-    Set<Alliance> alliancesList;
+    private int level;
     
     /**
-     * Players List
+     * Id de l'alliance.
      */
-    Set<Player> playersList;
-
+    private int idAlliance;
+    
+    
 }

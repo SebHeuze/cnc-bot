@@ -1,7 +1,6 @@
 package org.cnc.cncbot.map.dto;
 
-import java.util.List;
-import java.util.Set;
+import org.cnc.cncbot.dto.EndGameType;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,7 +9,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Object MapData
+ * Objet EndGame.
  * @author SEB
  *
  */
@@ -19,20 +18,16 @@ import lombok.ToString;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class MapData {
+public class EndGame extends MapObject {
     /**
-     * Liste Object
+     * Type Endgame.
      */
-    List<MapObject> objectsList;
+    private EndGameType type;
     
     /**
-     * Alliance List
+     * Step Endgame.
      */
-    Set<Alliance> alliancesList;
+    private int step;
     
-    /**
-     * Players List
-     */
-    Set<Player> playersList;
-
+    
 }
