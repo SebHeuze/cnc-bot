@@ -24,6 +24,7 @@ import org.cnc.cncbot.map.dto.Alliance;
 import org.cnc.cncbot.map.dto.Base;
 import org.cnc.cncbot.map.dto.DecryptResult;
 import org.cnc.cncbot.map.dto.Player;
+import org.cnc.cncbot.map.dto.UserSession;
 import org.cnc.cncbot.map.dto.MapData;
 import org.cnc.cncbot.map.dto.MapObject;
 import org.cnc.cncbot.map.dto.POI;
@@ -91,7 +92,9 @@ public class MapService {
 		for (Account account : accountList) {
 			try {
 				String gameSessionId = this.launchWorld(account);
-				ServerInfoResponse serverInfos = this.gameService.getServerInfos(gameSessionId);
+				UserSession userSession = new UserSession(0, 0, gameSessionId, this.accountService.getServerInfos(account).getSessionGUID());
+				
+				ServerInfoResponse serverInfos = this.gameService.getServerInfos(userSession.getGameSessionId());
 				Set<Alliance> alliancesListTotal = new HashSet<Alliance>();
 				alliancesListTotal.add(new Alliance(0, "No Alliance", 0, 0));
 				Set<Player> playersListTotal = new HashSet<Player>();
@@ -99,11 +102,10 @@ public class MapService {
 
 				//Server Size (ex 1100) / Bloc Size (32) = 34.25
 				//Need 35 request to get the full World info
-
 				try {
 					List<CompletableFuture<MapData>> futures = new ArrayList<CompletableFuture<MapData>>();
 					for (int x = 1; x < (int) (serverInfos.getWw() / SIZE_TILE) + 1; x++) {
-						CompletableFuture<MapData> future = this.getMapDataTile(x, serverInfos, gameSessionId);          
+						CompletableFuture<MapData> future = this.getMapDataTile(x, serverInfos, userSession);          
 						futures.add(future);
 					}
 	
@@ -163,7 +165,7 @@ public class MapService {
 	 * @throws InterruptedException
 	 */
 	@Async
-	public CompletableFuture<MapData> getMapDataTile(int x , ServerInfoResponse serverInfos, String gameSessionId) throws InterruptedException {
+	public CompletableFuture<MapData> getMapDataTile(int x , ServerInfoResponse serverInfos, UserSession userSession) throws InterruptedException {
 		//Objets Data
 		List<MapObject> mapObjectList = new ArrayList<MapObject>();
 		Map<Integer, Alliance> alliancesList = new HashMap<Integer, Alliance>();
@@ -171,12 +173,9 @@ public class MapService {
 		Set<Alliance> alliancesListTotal = new HashSet<Alliance>();
 		Set<Player> playersListTotal = new HashSet<Player>();
 
-		//Parser
-		JsonParser parser = new JsonParser();
 
-		String jsonResult = this.gameService.poll(x, (int) (serverInfos.getWw() / SIZE_TILE) + 1, gameSessionId);
+		JsonArray jsonArray = this.gameService.poll(x, (int) (serverInfos.getWw() / SIZE_TILE) + 1, userSession);
 
-		JsonArray jsonArray = parser.parse(jsonResult).getAsJsonArray();
 
 		Gson gson = new Gson();
 		PollWorld pollRequest = null;
@@ -186,14 +185,13 @@ public class MapService {
 			JsonObject jsonObject = element.getAsJsonObject();
 			String tagInfo = jsonObject.get("t").getAsString();
 
-			log.debug("TAG {}", tagInfo);
+			log.info("TAG {}", tagInfo);
 			if (TAG_WORLD.equals(tagInfo)) {
 				pollRequest = gson.fromJson(jsonObject.get("d"), PollWorld.class);
 				log.debug(pollRequest.toString());
 			}
 			if (TAG_ENDGAME.equals(tagInfo) && pollRequestEndGame == null) {
 				pollRequestEndGame = gson.fromJson(jsonObject.get("d"), PollWorld.class);
-				mapObjectList.addAll(this.processPollEndGame(pollRequestEndGame.getCH()));
 				log.debug(pollRequestEndGame.toString());
 			}
 		}
@@ -215,8 +213,10 @@ public class MapService {
 
 			}
 
-		} else {
-			throw new BatchException("Error while gathering poll data");
+		} 
+		
+		if(pollRequestEndGame != null) {
+			mapObjectList.addAll(this.processPollEndGame(pollRequestEndGame.getCH()));
 		}
 
 		return CompletableFuture.completedFuture(new MapData(mapObjectList, alliancesListTotal, playersListTotal));

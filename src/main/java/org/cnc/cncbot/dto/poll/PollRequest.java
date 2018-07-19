@@ -9,7 +9,7 @@ import lombok.Setter;
 @Builder
 public class PollRequest {
 	private String session;
-	private String request;
+	private String requests;
 	private int sequenceid;
 	private int requestid;
 }
