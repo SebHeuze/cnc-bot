@@ -9,6 +9,12 @@ import okhttp3.ResponseBody;
 import retrofit2.Converter;
 import retrofit2.Retrofit;
 
+
+/**
+ * String converter used by Retrofit
+ * @author sheuze
+ *
+ */
 public final class StringConverterFactory extends Converter.Factory {
   @Override
   public Converter<ResponseBody, ?> responseBodyConverter(Type type, Annotation[] annotations,

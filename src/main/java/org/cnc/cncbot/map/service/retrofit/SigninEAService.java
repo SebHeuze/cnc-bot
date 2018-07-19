@@ -23,10 +23,6 @@ public interface SigninEAService {
 	@GET("p/web2/login")
 	Call<String> login(@Query("fid") String fid);
 	
-	@GET("p/web2/login")
-	Call<Void> login( @Header("Cookie") String cookie,
-						@Query("execution") String execution,
-						@Query("initref") String initRef);
 	
 
 	@GET("p/web2/login")

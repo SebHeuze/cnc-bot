@@ -3,6 +3,7 @@ package org.cnc.cncbot.dto.generated;
 import javax.annotation.Generated;
 
 import com.google.gson.annotations.Expose;
+//TODO Remove generated + lombok
 
 @Generated("org.jsonschema2pojo")
 public class Opoi {
