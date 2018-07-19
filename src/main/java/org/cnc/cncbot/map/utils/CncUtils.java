@@ -21,7 +21,7 @@ public class CncUtils {
             requestString.append(CryptoUtils.base91Encode((y << 8) | mapX) + "A-");
         }
         log.debug("Requête générée :{}", requestString);
-        String finalRequest = "UA\\fWC:A\\fTIME:" + System.currentTimeMillis() + "\\fCHAT:\\fWORLD:" + requestString.toString() + "\\fGIFT:\\fACS:0\\fASS:0\\fCAT:0\\f";
+        String finalRequest = "UA\fWC:A\fTIME:" + System.currentTimeMillis() + "\fCHAT:\fWORLD:" + requestString.toString() + "\fGIFT:\fACS:0\fASS:0\fCAT:0\f";
         log.debug("Requête finale :{}", finalRequest);
         return finalRequest;
     }
