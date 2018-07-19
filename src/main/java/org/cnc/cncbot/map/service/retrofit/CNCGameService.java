@@ -7,6 +7,8 @@ import org.cnc.cncbot.dto.serverinfos.ServerInfoRequest;
 import org.cnc.cncbot.dto.serverinfos.ServerInfoResponse;
 import org.springframework.stereotype.Service;
 
+import com.google.gson.JsonArray;
+
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.POST;
@@ -23,7 +25,7 @@ public interface CNCGameService {
 	Call<OpenSessionResponse> openSession(@Body OpenSessionRequest openSessionRequest);
 	
 	@POST("Poll")
-	Call<String> poll(@Body PollRequest pollRequest);	
+	Call<JsonArray> poll(@Body PollRequest pollRequest);	
 	
 	@POST("GetServerInfo")
 	Call<ServerInfoResponse> getServerInfo(@Body ServerInfoRequest getServerInfoRequest);

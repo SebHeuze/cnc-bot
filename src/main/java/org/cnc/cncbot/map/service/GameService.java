@@ -12,11 +12,14 @@ import org.cnc.cncbot.dto.poll.PollRequest;
 import org.cnc.cncbot.dto.serverinfos.ServerInfoRequest;
 import org.cnc.cncbot.dto.serverinfos.ServerInfoResponse;
 import org.cnc.cncbot.exception.GameException;
+import org.cnc.cncbot.map.dto.UserSession;
 import org.cnc.cncbot.map.entities.Account;
 import org.cnc.cncbot.map.service.retrofit.CNCGameService;
 import org.cnc.cncbot.map.service.retrofit.ServiceGenerator;
 import org.cnc.cncbot.map.utils.CncUtils;
 import org.springframework.stereotype.Service;
+
+import com.google.gson.JsonArray;
 
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -64,11 +67,15 @@ public class GameService {
 	 * @param sessionId
 	 * @return
 	 */
-	public String poll(int mapX, int maxY, String gameSessionId) {
+	public JsonArray poll(int mapX, int maxY, UserSession userSession) {
 
 		try {
-			Call<String> pollCall  = this.cncGameService.poll(
-					PollRequest.builder().session(gameSessionId).request(CncUtils.buildPollRequest(mapX,maxY)).build());
+			Call<JsonArray> pollCall  = this.cncGameService.poll(
+					PollRequest.builder()
+					.session(userSession.getGameSessionId())
+					.requests(CncUtils.buildPollRequest(mapX,maxY))
+					.sequenceid(userSession.useSequenceId())
+					.requestid(userSession.useRequestId()).build());
 			return pollCall.execute().body();
 		} catch (IOException e) {
 			log.error("Error with request getServerInfos", e);

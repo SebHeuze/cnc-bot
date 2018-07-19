@@ -128,7 +128,7 @@ public class ServerInfoResponse {
 
 	private Integer npcufrp;
 
-	private Integer npcurp;
+	private Double npcurp;
 
 	private Double npcurpb;
 
