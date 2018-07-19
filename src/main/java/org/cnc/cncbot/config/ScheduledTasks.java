@@ -9,6 +9,11 @@ import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Class for Scheduled batchs
+ * @author sheuze
+ *
+ */
 @Component
 @Slf4j
 public class ScheduledTasks {
