@@ -11,6 +11,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import org.cnc.cncbot.config.DBContext;
 import org.cnc.cncbot.dto.EndGameType;
 import org.cnc.cncbot.dto.POIType;
 import org.cnc.cncbot.dto.generated.OriginAccountInfo;
@@ -20,17 +21,20 @@ import org.cnc.cncbot.dto.generated.Server;
 import org.cnc.cncbot.dto.serverinfos.ServerInfoResponse;
 import org.cnc.cncbot.exception.AuthException;
 import org.cnc.cncbot.exception.BatchException;
+import org.cnc.cncbot.map.dao.PoiDAO;
 import org.cnc.cncbot.map.dto.Alliance;
 import org.cnc.cncbot.map.dto.Base;
 import org.cnc.cncbot.map.dto.DecryptResult;
-import org.cnc.cncbot.map.dto.Player;
-import org.cnc.cncbot.map.dto.UserSession;
+import org.cnc.cncbot.map.dto.EndGame;
 import org.cnc.cncbot.map.dto.MapData;
 import org.cnc.cncbot.map.dto.MapObject;
 import org.cnc.cncbot.map.dto.POI;
+import org.cnc.cncbot.map.dto.Player;
+import org.cnc.cncbot.map.dto.UserSession;
 import org.cnc.cncbot.map.entities.Account;
+import org.cnc.cncbot.map.entities.Poi;
+import org.cnc.cncbot.map.entities.PoiId;
 import org.cnc.cncbot.map.utils.CryptoUtils;
-import org.cnc.cncbot.map.dto.EndGame;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -40,7 +44,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -55,29 +58,45 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MapService {
 
-	public final AccountService accountService;
-
-	public final GameService gameService;
-
 	/**
 	 * Tag for WORLD data.
 	 */
 	public static final String TAG_WORLD = "WORLD";
 
 	/**
+	 * Expired game session id
+	 */
+	public static final String EXPIRED_GAME_SESSIONID = "00000000-0000-0000-0000-000000000000";
+	
+	/**
 	 * Size X map.
 	 */
 	public static final int SIZE_TILE = 32;
 
 	/**
+	 * Max RETRY for Auth
+	 */
+	public static final int MAX_RETRY = 3;
+	
+	/**
 	 * Tag for ENDGAME data.
 	 */
 	public static final String TAG_ENDGAME = "ENDGAME";
+	
+	
+
+
+	public final AccountService accountService;
+
+	public final GameService gameService;
+	
+	public final PoiDAO poiDao;
 
 	@Autowired
-	public MapService(AccountService accountService, GameService gameService) {
+	public MapService(AccountService accountService, GameService gameService, PoiDAO poiDao) {
 		this.accountService = accountService;
 		this.gameService = gameService;
+		this.poiDao = poiDao;
 	}
 
 	/**
@@ -92,7 +111,7 @@ public class MapService {
 		for (Account account : accountList) {
 			try {
 				String gameSessionId = this.launchWorld(account);
-				UserSession userSession = new UserSession(0, 0, gameSessionId, this.accountService.getServerInfos(account).getSessionGUID());
+				UserSession userSession = new UserSession(0, 0, gameSessionId, this.accountService.getOriginAccountInfo(account).getSessionGUID());
 				
 				ServerInfoResponse serverInfos = this.gameService.getServerInfos(userSession.getGameSessionId());
 				Set<Alliance> alliancesListTotal = new HashSet<Alliance>();
@@ -124,6 +143,13 @@ public class MapService {
 				List<POI> listePOI = listeObjectMap.stream().filter(p-> p instanceof POI).map(obj -> (POI) obj).collect(Collectors.toList());
 				List<EndGame> listeEndGames = listeObjectMap.stream().filter(p-> p instanceof EndGame).map(obj -> (EndGame) obj).collect(Collectors.toList());
 
+				
+				DBContext.setSchema("monde"+ account.getMonde());
+				Poi poi = new Poi();
+				poi.setA(1);
+				poi.setL(21);
+				poi.setId(new PoiId(1,1));
+				this.poiDao.save(poi);
 
 			} catch (AuthException ae){
 				log.error("Error during auth step with account {}", account.getUser(), ae);
@@ -138,10 +164,20 @@ public class MapService {
 	 * @return game session Id
 	 */
 	public String launchWorld(Account account) {
+		return this.launchWorld(account, 0);
+	}
+	
+	/**
+	 * Launch world and get Game Session Id
+	 * @param account
+	 * @param retryCount nb of login retry
+	 * @return game session Id
+	 */
+	public String launchWorld(Account account, int retryCount) {
 		if (!this.accountService.isLogged(account)) {
 			this.accountService.connect(account);
 		}
-		OriginAccountInfo accountInfos = this.accountService.getServerInfos(account);
+		OriginAccountInfo accountInfos = this.accountService.getOriginAccountInfo(account);
 		Optional<Server> server = accountInfos.getServers()
 				.stream()
 				.filter(item -> item.getId().equals(account.getMonde()))
@@ -150,9 +186,18 @@ public class MapService {
 			throw new BatchException("World offline " + server.get().getId() + " User " + account.getUser());
 		}
 		this.gameService.init(server.get());
-		String sessionId = this.accountService.getServerInfos(account).getSessionGUID();
 
-		return this.gameService.openGameSession(account, sessionId);
+		String gameSessionId = this.gameService.openGameSession(account, accountInfos.getSessionGUID());
+		
+		if (gameSessionId.equals(EXPIRED_GAME_SESSIONID)) {
+			if (retryCount >= MAX_RETRY) {
+				throw new AuthException("Can't log on account " + account.getUser() + " World " + account.getMonde());
+			}
+			this.accountService.logout(account);
+			return this.launchWorld(account, ++retryCount);
+		}
+		
+		return gameSessionId;
 	}
 
 
@@ -185,7 +230,7 @@ public class MapService {
 			JsonObject jsonObject = element.getAsJsonObject();
 			String tagInfo = jsonObject.get("t").getAsString();
 
-			log.info("TAG {}", tagInfo);
+			log.debug("TAG {}", tagInfo);
 			if (TAG_WORLD.equals(tagInfo)) {
 				pollRequest = gson.fromJson(jsonObject.get("d"), PollWorld.class);
 				log.debug(pollRequest.toString());

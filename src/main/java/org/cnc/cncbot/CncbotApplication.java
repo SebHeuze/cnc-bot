@@ -2,9 +2,11 @@ package org.cnc.cncbot;
 
 import java.util.concurrent.Executor;
 
+import org.cnc.cncbot.config.DynamicSchemaRoutingDatasource;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -33,4 +35,10 @@ public class CncbotApplication {
         executor.initialize();
         return executor;
     }
+	
+	@Primary
+	@Bean(name = "dataSource")
+	public DynamicSchemaRoutingDatasource dataSource() {
+	    return new DynamicSchemaRoutingDatasource();
+	}
 }
