@@ -119,11 +119,19 @@ public class AccountService {
 	}
 	
 	/**
+	 * Logout account
+	 * @param account
+	 */
+	public void logout(Account account) {
+		this.loggedAccounts.remove(account.getUser());
+	}
+	
+	/**
 	 * Return Origin Info of account
 	 * @param account
 	 * @return OriginAccountInfo accountInfos
 	 */
-	public OriginAccountInfo getServerInfos(Account account) {
+	public OriginAccountInfo getOriginAccountInfo(Account account) {
 		return this.loggedAccounts.get(account.getUser());
 	}
 	
