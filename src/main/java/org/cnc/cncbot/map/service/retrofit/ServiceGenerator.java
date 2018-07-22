@@ -19,9 +19,12 @@ public final class ServiceGenerator {
    private static OkHttpClient.Builder httpClient
      = new OkHttpClient.Builder();
    
+   /**
+    * Change Value of Level to enable Http logs
+    */
    private static HttpLoggingInterceptor logging
    = new HttpLoggingInterceptor()
-     .setLevel(HttpLoggingInterceptor.Level.BASIC);
+     .setLevel(HttpLoggingInterceptor.Level.NONE);
    
    
    public static <S> S createService(Class<S> serviceClass, String baseUrl, ResponseType responseType) {

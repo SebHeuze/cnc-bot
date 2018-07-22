@@ -1,19 +1,18 @@
 package org.cnc.cncbot.map.dao;
 
 
-import org.cnc.cncbot.map.entities.Poi;
-import org.cnc.cncbot.map.entities.Coords;
+import org.cnc.cncbot.map.entities.Player;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * DAO Class for POI
+ * DAO Class for Player
  * @author heuze
  *
  */
 @Transactional
 @Repository
-public interface PoiDAO  extends JpaRepository<Poi, Coords> {
+public interface PlayerDAO  extends JpaRepository<Player, Integer> {
 
 }

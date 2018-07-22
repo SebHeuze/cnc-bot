@@ -12,8 +12,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.cnc.cncbot.config.DBContext;
-import org.cnc.cncbot.dto.EndGameType;
-import org.cnc.cncbot.dto.POIType;
 import org.cnc.cncbot.dto.generated.OriginAccountInfo;
 import org.cnc.cncbot.dto.generated.PollWorld;
 import org.cnc.cncbot.dto.generated.S;
@@ -21,19 +19,24 @@ import org.cnc.cncbot.dto.generated.Server;
 import org.cnc.cncbot.dto.serverinfos.ServerInfoResponse;
 import org.cnc.cncbot.exception.AuthException;
 import org.cnc.cncbot.exception.BatchException;
+import org.cnc.cncbot.map.dao.AllianceDAO;
+import org.cnc.cncbot.map.dao.BaseDAO;
+import org.cnc.cncbot.map.dao.EndGameDAO;
+import org.cnc.cncbot.map.dao.PlayerDAO;
 import org.cnc.cncbot.map.dao.PoiDAO;
-import org.cnc.cncbot.map.dto.Alliance;
-import org.cnc.cncbot.map.dto.Base;
+import org.cnc.cncbot.map.dao.SettingsDAO;
 import org.cnc.cncbot.map.dto.DecryptResult;
-import org.cnc.cncbot.map.dto.EndGame;
 import org.cnc.cncbot.map.dto.MapData;
-import org.cnc.cncbot.map.dto.MapObject;
-import org.cnc.cncbot.map.dto.POI;
-import org.cnc.cncbot.map.dto.Player;
 import org.cnc.cncbot.map.dto.UserSession;
 import org.cnc.cncbot.map.entities.Account;
+import org.cnc.cncbot.map.entities.Alliance;
+import org.cnc.cncbot.map.entities.Base;
+import org.cnc.cncbot.map.entities.Coords;
+import org.cnc.cncbot.map.entities.EndGame;
+import org.cnc.cncbot.map.entities.MapObject;
+import org.cnc.cncbot.map.entities.Player;
 import org.cnc.cncbot.map.entities.Poi;
-import org.cnc.cncbot.map.entities.PoiId;
+import org.cnc.cncbot.map.entities.Settings;
 import org.cnc.cncbot.map.utils.CryptoUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -91,12 +94,23 @@ public class MapService {
 	public final GameService gameService;
 	
 	public final PoiDAO poiDao;
+	public final AllianceDAO allianceDao;
+	public final PlayerDAO playerDao;
+	public final BaseDAO baseDao;
+	public final EndGameDAO endGameDao;
+	public final SettingsDAO settingsDao;
 
 	@Autowired
-	public MapService(AccountService accountService, GameService gameService, PoiDAO poiDao) {
+	public MapService(AccountService accountService, GameService gameService, SettingsDAO settingsDao, 
+			PoiDAO poiDao, AllianceDAO allianceDao, PlayerDAO playerDao, BaseDAO baseDao, EndGameDAO endGameDao) {
 		this.accountService = accountService;
 		this.gameService = gameService;
 		this.poiDao = poiDao;
+		this.allianceDao = allianceDao;
+		this.playerDao = playerDao;
+		this.baseDao = baseDao;
+		this.endGameDao = endGameDao;
+		this.settingsDao = settingsDao;
 	}
 
 	/**
@@ -110,6 +124,7 @@ public class MapService {
 
 		for (Account account : accountList) {
 			try {
+				log.info("Start map batch of World : {}", account.getMonde());
 				String gameSessionId = this.launchWorld(account);
 				UserSession userSession = new UserSession(0, 0, gameSessionId, this.accountService.getOriginAccountInfo(account).getSessionGUID());
 				
@@ -140,16 +155,36 @@ public class MapService {
 				
 				//Get POI/Bases from the list
 				List<Base> listeBase =  listeObjectMap.stream().filter(p-> p instanceof Base).map(obj -> (Base) obj).collect(Collectors.toList());
-				List<POI> listePOI = listeObjectMap.stream().filter(p-> p instanceof POI).map(obj -> (POI) obj).collect(Collectors.toList());
+				List<Poi> listePOI = listeObjectMap.stream().filter(p-> p instanceof Poi).map(obj -> (Poi) obj).collect(Collectors.toList());
 				List<EndGame> listeEndGames = listeObjectMap.stream().filter(p-> p instanceof EndGame).map(obj -> (EndGame) obj).collect(Collectors.toList());
 
-				
+
+				log.info("Data retrieved : Base {}/Poi {}/EndGame {}/Alliance {}/Player {}", 
+						listeBase.size(), listePOI.size(), listeEndGames.size(), alliancesListTotal.size(), playersListTotal.size());
+
+				log.info("Saving data of World : {}", account.getMonde());
+				/*
+				 * Save Data in DB 
+				 */
 				DBContext.setSchema("monde"+ account.getMonde());
-				Poi poi = new Poi();
-				poi.setA(1);
-				poi.setL(21);
-				poi.setId(new PoiId(1,1));
-				this.poiDao.save(poi);
+			    //Delete all the actual data
+			    this.allianceDao.deleteAll();
+			    this.playerDao.deleteAll();
+			    this.poiDao.deleteAll();
+			    this.baseDao.deleteAll();
+			    this.endGameDao.deleteAll();
+			    
+				this.poiDao.saveAll(listePOI);
+				this.baseDao.saveAll(listeBase);
+				this.endGameDao.saveAll(listeEndGames);
+				this.allianceDao.saveAll(alliancesListTotal);
+				this.playerDao.saveAll(playersListTotal);
+
+			    this.allianceDao.updateNbJoueurs();
+			    
+			    this.settingsDao.deleteAll();
+			    this.settingsDao.save(new Settings("timestamp",  String.valueOf(System.currentTimeMillis() / 1000)));
+			    
 
 			} catch (AuthException ae){
 				log.error("Error during auth step with account {}", account.getUser(), ae);
@@ -276,7 +311,7 @@ public class MapService {
 				Alliance allianceTmp = new Alliance();
 
 				//Default
-				allianceTmp.setScore(100);
+				allianceTmp.setPoints(100);
 
 				// Alliance Index
 				DecryptResult result = CryptoUtils.base91Decode(allianceStr, 0, 2);
@@ -285,7 +320,7 @@ public class MapService {
 
 				//Alliance ID
 				result = CryptoUtils.base91Decode(allianceStr, 0, 5);
-				allianceTmp.setId(result.getResult());
+				allianceTmp.setAllianceId(result.getResult());
 				allianceStr = allianceStr.substring(result.getCurrentIndex(), allianceStr.length());
 
 				//Unknown, I need to find out
@@ -334,14 +369,14 @@ public class MapService {
 				int indexAlliance = resultTmp >> 2;
 				if (indexAlliance > 0) {
 					if (alliancesList.containsKey(indexAlliance)) {
-						joueurTmp.setIdAlliance(alliancesList.get(indexAlliance).getId());
+						joueurTmp.setAllianceId(alliancesList.get(indexAlliance).getAllianceId());
 					} else {
 						throw new BatchException("Erreur, alliance ID doesn't exist");
 					}
 				}
 
 				//Player name
-				joueurTmp.setUsername(joueurStr.substring(decryptResult.getCurrentIndex(), joueurStr.length()));
+				joueurTmp.setName(joueurStr.substring(decryptResult.getCurrentIndex(), joueurStr.length()));
 
 				//We add it to the list
 				log.debug("Adding player {}", joueurTmp);
@@ -380,13 +415,13 @@ public class MapService {
 				int typeObjectMap = coordData >> 5;
 				dataMapStr = dataMapStr.substring(decryptResult.getCurrentIndex(), dataMapStr.length());
 
+				Coords coords = new Coords(coordX, coordY);
+				
 				switch (typeObjectMap){
 				case 1 : 
 					//If 1 => Base
 					Base baseObjectTmp = new Base();
-
-					baseObjectTmp.setX(coordX);
-					baseObjectTmp.setY(coordY);
+					baseObjectTmp.setCoords(coords);
 
 					//Base Data String
 					decryptResult = CryptoUtils.base91Decode(dataMapStr, 0, 5);
@@ -435,7 +470,7 @@ public class MapService {
 
 					//Player index
 					int indexJoueur = baseData & 1023;
-					baseObjectTmp.setIdJoueur(playersList.get(indexJoueur).getId());
+					baseObjectTmp.setPlayerId(playersList.get(indexJoueur).getId());
 					baseData = baseData >> 6;
 
 					dataMapStr = dataMapStr.substring(decryptResult.getCurrentIndex(), dataMapStr.length());
@@ -443,7 +478,7 @@ public class MapService {
 					//hasLockDown
 					if (hasLockDownEnd) {
 						decryptResult = CryptoUtils.base91Decode(dataMapStr, 0, 5);
-						baseObjectTmp.setLockDown(decryptResult.getResult());
+						//baseObjectTmp.setLockDown(decryptResult.getResult());
 						dataMapStr = dataMapStr.substring(decryptResult.getCurrentIndex(), dataMapStr.length());
 					}
 
@@ -451,48 +486,49 @@ public class MapService {
 					if (hasProtectionEnd) {
 						decryptResult = CryptoUtils.base91Decode(dataMapStr, 0, 5);
 						baseObjectTmp.setProtectionEnd(decryptResult.getResult());
+						baseObjectTmp.setHasProtectionEnd(hasProtectionEnd);
 						dataMapStr = dataMapStr.substring(decryptResult.getCurrentIndex(), dataMapStr.length());
 					}
 
 					//hasProtectionEnd
 					if (hasSupportAlert) {
 						decryptResult = CryptoUtils.base91Decode(dataMapStr, 0, 5);
-						baseObjectTmp.setSupportAlertStart(decryptResult.getResult());
+						//baseObjectTmp.setSupportAlertStart(decryptResult.getResult());
 						dataMapStr = dataMapStr.substring(decryptResult.getCurrentIndex(), dataMapStr.length());
 
 						decryptResult = CryptoUtils.base91Decode(dataMapStr, 0, 5);
-						baseObjectTmp.setSupportAlertEnd(decryptResult.getResult());
+						//baseObjectTmp.setSupportAlertEnd(decryptResult.getResult());
 						dataMapStr = dataMapStr.substring(decryptResult.getCurrentIndex(), dataMapStr.length());
 					}
 
 					//hasMoveCoolDown
 					if (hasMoveCoolDownEndStep) {
 						decryptResult = CryptoUtils.base91Decode(dataMapStr, 0, 5);
-						baseObjectTmp.setMoveCoolDownEndStep(decryptResult.getResult());
+						//baseObjectTmp.setMoveCoolDownEndStep(decryptResult.getResult());
 						dataMapStr = dataMapStr.substring(decryptResult.getCurrentIndex(), dataMapStr.length());
 					}
 
 					//hasMoveRestriction
 					if (hasMoveRestrictionEndStep) {
 						decryptResult = CryptoUtils.base91Decode(dataMapStr, 0, 5);
-						baseObjectTmp.setMoveRestrictionEndStep(decryptResult.getResult());
+						//baseObjectTmp.setMoveRestrictionEndStep(decryptResult.getResult());
 						dataMapStr = dataMapStr.substring(decryptResult.getCurrentIndex(), dataMapStr.length());
 
 						decryptResult = CryptoUtils.base91Decode(dataMapStr, 0, 5);
-						baseObjectTmp.setMoveRestrictionCoord(decryptResult.getResult());
+						//baseObjectTmp.setMoveRestrictionCoord(decryptResult.getResult());
 						dataMapStr = dataMapStr.substring(decryptResult.getCurrentIndex(), dataMapStr.length());
 					}
 
 					//hasRecoveryEndStep
 					if (hasRecoveryEndStep) {
 						decryptResult = CryptoUtils.base91Decode(dataMapStr, 0, 5);
-						baseObjectTmp.setRecoveryEndStep(decryptResult.getResult());
+						//baseObjectTmp.setRecoveryEndStep(decryptResult.getResult());
 						dataMapStr = dataMapStr.substring(decryptResult.getCurrentIndex(), dataMapStr.length());
 					}
 
 					//Building condition
 					decryptResult = CryptoUtils.base91Decode(dataMapStr, 0, 5);
-					baseObjectTmp.setConditionBatiments(decryptResult.getResult());
+					baseObjectTmp.setConditionBuilding(decryptResult.getResult());
 					dataMapStr = dataMapStr.substring(decryptResult.getCurrentIndex(), dataMapStr.length());
 
 					//Defense condition
@@ -528,9 +564,10 @@ public class MapService {
 
 				case 4 : 
 					//POI
-					POI poiObjectTmp = new POI();
-					poiObjectTmp.setX(coordX);
-					poiObjectTmp.setY(coordY);
+					Poi poiObjectTmp = new Poi();
+
+					poiObjectTmp.setCoords(coords);
+					
 					//POI Level
 					decryptResult = CryptoUtils.base91Decode(dataMapStr, 0, 4);
 					int dataTmp = decryptResult.getResult();
@@ -539,14 +576,14 @@ public class MapService {
 
 					//POI type
 					int idTypePoi = dataTmp & 7;
-					poiObjectTmp.setType(POIType.values()[idTypePoi]);
+					poiObjectTmp.setType(idTypePoi);
 
 					dataTmp = dataTmp >> 3;
 
 					//Alliance index
 					int indexAlliance = dataTmp & 1023;
 					if (indexAlliance > 0 && alliancesList.containsKey(indexAlliance)) {
-						poiObjectTmp.setIdAlliance(alliancesList.get(indexAlliance).getId());
+						poiObjectTmp.setAllianceId(alliancesList.get(indexAlliance).getAllianceId());
 					}
 
 					dataMapStr = dataMapStr.substring(decryptResult.getCurrentIndex(), dataMapStr.length());
@@ -600,25 +637,21 @@ public class MapService {
 
 				switch(type){
 				case 1:
-					endGameTmp.setType(EndGameType.SHIELD);
 					coordX+=3;
 					coordY+=3;
 					break;
 				case 2:
-					endGameTmp.setType(EndGameType.SATTELITE);
 					endGameTmp.setStep(typeData >> 2);
-
 					break;
 				case 3:
-					endGameTmp.setType(EndGameType.FORTRESS);
 					coordX+=2;
 					coordY+=2;
 					break;
 				}
+				endGameTmp.setType(type);
 
-
-				endGameTmp.setX(coordX);
-				endGameTmp.setY(coordY);
+				Coords coords = new Coords(coordX, coordY);
+				endGameTmp.setCoords(coords);
 				listEndgame.add(endGameTmp);
 			}
 
