@@ -1,9 +1,8 @@
 package org.cnc.cncbot.map.entities;
 
-import java.io.Serializable;
-
-import javax.persistence.EmbeddedId;
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Table;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -16,14 +15,14 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-public class Poi implements Serializable {
+@Table(name="poi")
+public class Poi extends MapObject{
+	@Column(name = "t")
+	private Integer  type;
+
+	@Column(name = "l")
+	private Integer level;
 	
-	private static final long serialVersionUID = 1L;
-	
-	@EmbeddedId
-	PoiId id;
-	
-	private String  t;
-	private Integer l;
-	private Integer a;
+	@Column(name = "a")
+	private Integer allianceId;
 }

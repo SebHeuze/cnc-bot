@@ -14,14 +14,14 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class PoiId implements Serializable {
-
+public class Coords implements Serializable {
+	
 	/**
 	 * Serial
 	 */
-	private static final long serialVersionUID = 4280714718242640231L;
-	
-	private Integer y;
-	
-	private Integer x;
+	private static final long serialVersionUID = 5538445357672451530L;
+
+	Integer x;
+
+	Integer y;
 }
