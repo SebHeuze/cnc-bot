@@ -24,4 +24,26 @@ public class Coords implements Serializable {
 	Integer x;
 
 	Integer y;
+	
+	 /**
+     * Equals
+     */
+    @Override
+    public boolean equals(Object obj) {
+           if (this == obj) return true;
+           if (obj == null || this.getClass() != obj.getClass()){
+                  return false;
+           }
+           Coords other = (Coords) obj;
+           return other.x.equals(this.x) && other.y.equals(this.y);
+    }
+    
+    /**
+     * Hash
+     */
+    @Override
+    public int hashCode() {
+      return this.x | this.y<< 16;
+    }
+    
 }

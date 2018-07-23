@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
  * @author heuze
  *
  */
-@Transactional
 @Repository
 public interface SettingsDAO  extends JpaRepository<Settings, String> {
 

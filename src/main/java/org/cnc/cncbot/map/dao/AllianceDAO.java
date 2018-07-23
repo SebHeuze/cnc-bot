@@ -13,14 +13,15 @@ import org.springframework.transaction.annotation.Transactional;
  * @author heuze
  *
  */
-@Transactional
 @Repository
 public interface AllianceDAO  extends JpaRepository<Alliance, Long> {
 	@Modifying
+	@Transactional
 	@Query("UPDATE Alliance a set a.nbPlayers = (SELECT COUNT(1) FROM Player p WHERE p.allianceId = a.allianceId)")
 	void updateNbJoueurs();
 
 	@Query(value = "TRUNCATE TABLE alliance", nativeQuery = true)
+	@Transactional
 	@Modifying
 	public void truncateTable();
 }

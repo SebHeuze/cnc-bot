@@ -13,11 +13,11 @@ import org.springframework.transaction.annotation.Transactional;
  * @author heuze
  *
  */
-@Transactional
 @Repository
 public interface PlayerDAO  extends JpaRepository<Player, Integer> {
 
 	@Query(value = "TRUNCATE TABLE joueur", nativeQuery = true)
+	@Transactional
 	@Modifying
 	public void truncateTable();
 }
