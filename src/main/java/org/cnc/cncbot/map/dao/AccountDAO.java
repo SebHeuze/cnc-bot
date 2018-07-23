@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
  * @author heuze
  *
  */
-@Transactional
 @Repository
 public interface AccountDAO  extends JpaRepository<Account, Integer> {
 

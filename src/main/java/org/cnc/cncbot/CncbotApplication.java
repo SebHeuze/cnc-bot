@@ -2,7 +2,6 @@ package org.cnc.cncbot;
 
 import java.util.concurrent.Executor;
 
-import org.cnc.cncbot.config.DynamicSchemaRoutingDatasource;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -37,10 +36,4 @@ public class CncbotApplication {
         executor.initialize();
         return executor;
     }
-	
-	@Primary
-	@Bean(name = "dataSource")
-	public DynamicSchemaRoutingDatasource dataSource() {
-	    return new DynamicSchemaRoutingDatasource();
-	}
 }

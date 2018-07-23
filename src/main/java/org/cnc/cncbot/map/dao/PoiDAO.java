@@ -14,11 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
  * @author heuze
  *
  */
-@Transactional
 @Repository
 public interface PoiDAO  extends JpaRepository<Poi, Coords> {
 
 	@Query(value = "TRUNCATE TABLE poi", nativeQuery = true)
+	@Transactional
 	@Modifying
 	public void truncateTable();
 }

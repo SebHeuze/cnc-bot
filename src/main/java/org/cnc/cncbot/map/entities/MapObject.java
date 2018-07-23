@@ -36,7 +36,7 @@ public class MapObject implements Persistable<Coords>{
                   return false;
            }
            MapObject other = (MapObject) obj;
-           return other.coords.x.equals(this.coords.x) && other.coords.y.equals(this.coords.y);
+           return other.coords.equals(this.coords);
     }
     
     /**
@@ -44,7 +44,7 @@ public class MapObject implements Persistable<Coords>{
      */
     @Override
     public int hashCode() {
-      return this.coords.x | this.coords.y<< 16;
+      return this.coords.hashCode();
     }
     
 	/**

@@ -14,11 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
  * @author heuze
  *
  */
-@Transactional
 @Repository
 public interface EndGameDAO  extends JpaRepository<EndGame, Coords> {
 
 	@Query(value = "TRUNCATE TABLE endgame", nativeQuery = true)
+	@Transactional
 	@Modifying
 	public void truncateTable();
 }
