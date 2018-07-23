@@ -18,7 +18,7 @@ public class DBContext {
 		return CONTEXT.get() != null ? CONTEXT.get() : defaultSchema;
 	}
 
-	@Value("${spring.datasource.defaultSchema}")
+	@Value("${spring.datasource.defaultSchema:public}")
     public void setDefaultSchema(String ds) {
 		defaultSchema = ds;
     }
