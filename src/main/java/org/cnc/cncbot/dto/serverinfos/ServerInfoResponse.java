@@ -186,7 +186,7 @@ public class ServerInfoResponse {
 
 	private Double tlufrp;
 
-	private Integer tlufrpo;
+	private Double tlufrpo;
 
 	private Double tlufs;
 
