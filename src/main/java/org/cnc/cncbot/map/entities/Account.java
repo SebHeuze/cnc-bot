@@ -24,6 +24,6 @@ public class Account {
 	private String user;
 	private String  pass;
 	private Integer monde;
-	private Integer active;
+	private Boolean active;
 	private Integer numbatch;
 }

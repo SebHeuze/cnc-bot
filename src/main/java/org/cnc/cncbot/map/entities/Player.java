@@ -5,7 +5,6 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,10 +23,10 @@ public class Player {
 	private Integer id;
 	
 	@Column(name = "p")
-	private Long points;
+	private Long points = new Long(0);
 	
 	@Column(name = "a")
-	private Integer allianceId;
+	private Integer allianceId = 0;
 	
 	@Column(name = "n")
 	private String name;
@@ -36,13 +35,13 @@ public class Player {
 	private Integer faction;
 	
 	@Column(name = "ps")
-	private Integer ps;
+	private Integer ps = 0;
 	
 	@Column(name = "pd")
-	private Integer pd;
+	private Integer pd = 0;
 	
 	@Column(name = "bc")
-	private Integer baseCount;
+	private Integer baseCount = 0;
     
     @Override
     public boolean equals(Object obj) {

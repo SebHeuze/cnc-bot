@@ -24,5 +24,5 @@ public class Poi extends MapObject{
 	private Integer level;
 	
 	@Column(name = "a")
-	private Integer allianceId;
+	private Integer allianceId = 0;
 }

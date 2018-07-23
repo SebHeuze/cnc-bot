@@ -130,7 +130,7 @@ public class MapService {
 				
 				ServerInfoResponse serverInfos = this.gameService.getServerInfos(userSession.getGameSessionId());
 				Set<Alliance> alliancesListTotal = new HashSet<Alliance>();
-				alliancesListTotal.add(new Alliance(0, "No Alliance", 0, 0));
+				alliancesListTotal.add(new Alliance(0, "No Alliance", new Long(0), 0));
 				Set<Player> playersListTotal = new HashSet<Player>();
 				Set<MapObject> listeObjectMap = new HashSet<MapObject>();
 
@@ -188,6 +188,8 @@ public class MapService {
 
 			} catch (AuthException ae){
 				log.error("Error during auth step with account {}", account.getUser(), ae);
+
+				this.accountService.disableAccount(account);
 			}
 		}
 
@@ -311,7 +313,7 @@ public class MapService {
 				Alliance allianceTmp = new Alliance();
 
 				//Default
-				allianceTmp.setPoints(100);
+				allianceTmp.setPoints(new Long(100));
 
 				// Alliance Index
 				DecryptResult result = CryptoUtils.base91Decode(allianceStr, 0, 2);

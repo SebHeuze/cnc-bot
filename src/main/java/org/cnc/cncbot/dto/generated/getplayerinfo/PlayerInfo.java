@@ -1,6 +1,7 @@
 package org.cnc.cncbot.dto.generated.getplayerinfo;
 
 import java.util.List;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 

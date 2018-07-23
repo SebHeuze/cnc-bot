@@ -30,7 +30,7 @@ public class Alliance {
 	private String name;
 	
 	@Column(name = "p")
-	private Integer points;
+	private Long points = new Long(0);
 	
 	@Column(name = "c")
 	private Integer nbPlayers;

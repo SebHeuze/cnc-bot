@@ -103,12 +103,20 @@ public class AccountService {
 	 */
 	public List<Account> getAccountsForBatch(int batchNumber) {
 		
-		List<Account> accountList = this.accountDAO.findByNumbatch(batchNumber);
+		List<Account> accountList = this.accountDAO.findByNumbatchAndActiveTrue(batchNumber);
 		log.info("accounts retrieved : {}", accountList.size());
 		
 		return accountList;
 	}
 	
+	/**
+	 * Disable account by setting active to null (to be able to distinguish from manually disabled accounts)
+	 * @param account
+	 */
+	public void disableAccount(Account account) {
+		account.setActive(null);
+		this.accountDAO.save(account);
+	}
 	/**
 	 * Return if an account is currently logged
 	 * @param account
