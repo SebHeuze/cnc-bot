@@ -40,15 +40,18 @@ public class ScheduledTasks {
     @Scheduled(fixedRateString = "${cncmap.batch10.fixedRate}")
     public void batch10() {
         log.info("Map batch num 10 started at {}", new Date());
+        this.mapService.mapDataJob(10);
     }
 
     @Scheduled(fixedRateString = "${cncmap.batch20.fixedRate}")
     public void batch20() {
         log.info("Map batch num 20 started at {}", new Date());
+        this.mapService.mapDataJob(20);
     }
 
     @Scheduled(fixedRateString = "${cncmap.batch60.fixedRate}")
     public void batch60() {
         log.info("Map batch num 60 started at {}", new Date());
+        this.mapService.mapDataJob(60);
     }
 }
