@@ -24,7 +24,13 @@ public class ScheduledTasks {
 	public ScheduledTasks (MapService mapService) {
 		this.mapService = mapService;
 	}
-	
+
+    @Scheduled(fixedRateString = "${cncmap.batch1.fixedRate}")
+    public void batch1() {
+        log.info("Map batch num 1 started at {}", new Date());
+        this.mapService.mapDataJob(1);
+    }
+    
     @Scheduled(fixedRateString = "${cncmap.batch5.fixedRate}")
     public void batch5() {
         log.info("Map batch num 5 started at {}", new Date());
