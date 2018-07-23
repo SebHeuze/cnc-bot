@@ -1,4 +1,4 @@
-package org.cnc.cncbot.config;
+/*package org.cnc.cncbot.config;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,8 +37,8 @@ public class HibernateConfig {
         jpaProperties.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, multiTenantConnectionProvider);
         jpaProperties.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, tenantIdentifierResolver);
         jpaProperties.put(Environment.FORMAT_SQL, true);
-
+        
         em.setJpaPropertyMap(jpaProperties);
         return em;
     }
-}
+}*/

@@ -2,6 +2,8 @@ package org.cnc.cncbot;
 
 import java.util.concurrent.Executor;
 
+import org.cnc.cncbot.config.DBContext;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
