@@ -20,6 +20,7 @@ import org.cnc.cncbot.map.service.retrofit.ServiceGenerator;
 import org.cnc.cncbot.map.service.retrofit.SigninEAService;
 import org.cnc.cncbot.map.service.retrofit.TiberiumAlliancesService;
 import org.cnc.cncbot.map.utils.HttpUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,7 @@ import retrofit2.Response;
 public class EALoginTest {
 
 	@Test
+	@Ignore
 	public void connectAuthTest() throws IOException {
 		AccountsEAService accountsEaService = ServiceGenerator.createService(AccountsEAService.class, AccountsEAService.BASE_URL, ResponseType.PLAIN_TEXT);
 		SigninEAService signinEaService = ServiceGenerator.createService(SigninEAService.class, SigninEAService.BASE_URL, ResponseType.PLAIN_TEXT);

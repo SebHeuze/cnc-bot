@@ -1,11 +1,7 @@
 package org.cnc.cncbot.map.entities;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.Table;
 
 import lombok.Getter;
@@ -34,18 +30,18 @@ public class Base  extends MapObject {
 	private Integer level;
 
 	@Column(name = "al")
-	private Boolean alert;
+	private Boolean alert = false;
 
 	@Column(name = "pr")
-	private Boolean hasProtectionEnd;
+	private Boolean hasProtectionEnd = false;
 
 	@Column(name = "cb")
-	private Integer conditionBuilding;
+	private Integer conditionBuilding = 0;;
 
 	@Column(name = "cd")
-	private Integer conditionDefense;
+	private Integer conditionDefense = 0;;
 
 	@Column(name = "ps")
-	private Integer protectionEnd;
+	private Integer protectionEnd = 0;
 	
 }

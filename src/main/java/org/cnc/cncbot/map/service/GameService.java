@@ -1,8 +1,6 @@
 package org.cnc.cncbot.map.service;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.cnc.cncbot.dto.ResponseType;
 import org.cnc.cncbot.dto.generated.Server;

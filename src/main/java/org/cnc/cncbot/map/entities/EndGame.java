@@ -1,9 +1,6 @@
 package org.cnc.cncbot.map.entities;
 
-import java.io.Serializable;
-
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.Table;
 
 import lombok.Getter;
@@ -20,6 +17,6 @@ import lombok.Setter;
 @Table(name="endgame")
 public class EndGame extends MapObject {
 	private Integer type;
-	private Integer  step;
+	private Integer  step = 0;
 	
 }
