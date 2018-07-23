@@ -7,13 +7,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class CurrentWorldSchemaIdentifierResolver implements CurrentTenantIdentifierResolver {
 
-
-    @Value("${spring.datasource.defaultSchema}")
-    String defaultSchema;
-    
     @Override
     public String resolveCurrentTenantIdentifier() {
-    	return  DBContext.getSchema() != null ? DBContext.getSchema() : defaultSchema;
+    	return  DBContext.getSchema();
     }
 
     @Override

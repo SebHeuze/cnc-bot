@@ -7,8 +7,6 @@ CREATE TABLE if not exists scripting.liste_comptes (
     active boolean DEFAULT false,
     numbatch integer
 );
-
-
 create schema if not exists monde373;
 CREATE TABLE if not exists monde373.poi (
     x integer,
@@ -56,5 +54,3 @@ CREATE TABLE if not exists monde373.settings (
     name character varying(255),
     value character varying(255)
 );
-
-INSERT INTO scripting.liste_comptes(id, user, pass, monde, active, numbatch) VALUES (2, 'xxxxx@test.fr', 'xxxxx', 373, true, 5);
