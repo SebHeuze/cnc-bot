@@ -2,11 +2,16 @@ package org.cnc.cncbot.config;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
 import org.hibernate.HibernateException;
+import org.hibernate.cfg.Environment;
+import org.hibernate.engine.config.spi.ConfigurationService;
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
+import org.hibernate.service.spi.ServiceRegistryAwareService;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
@@ -14,7 +19,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Profile("prod")
-public class SchemaPerWorldConnectionProviderPgsql implements MultiTenantConnectionProvider {
+public class SchemaPerWorldConnectionProviderPgsql implements MultiTenantConnectionProvider, ServiceRegistryAwareService {
 
 	/**
 	 * Generated Serial
@@ -27,6 +32,12 @@ public class SchemaPerWorldConnectionProviderPgsql implements MultiTenantConnect
 	@Autowired
     private DataSource dataSource;
 
+	@Override
+	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
+	    Map lSettings = serviceRegistry.getService(ConfigurationService.class).getSettings();
+	    dataSource = (DataSource) lSettings.get( Environment.DATASOURCE );
+
+	}
     @Override
     public Connection getAnyConnection() throws SQLException {
         return this.dataSource.getConnection();
