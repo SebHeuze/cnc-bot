@@ -64,9 +64,4 @@ public class Player implements Persistable<Integer> {
 	public boolean isNew() {
 		return true;
 	}
-
-	@Override
-	public Integer getId() {
-		return this.allianceId;
-	}
 }
