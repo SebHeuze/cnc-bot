@@ -25,9 +25,6 @@ public class SchemaPerWorldConnectionProviderH2 implements MultiTenantConnection
 	 * Generated Serial
 	 */
 	private static final long serialVersionUID = -5469717413476068582L;
-
-	@Value("${spring.datasource.defaultSchema:public}")
-    String defaultSchema;
     
 	@Autowired
     private DataSource dataSource;
@@ -64,7 +61,7 @@ public class SchemaPerWorldConnectionProviderH2 implements MultiTenantConnection
     @Override
     public void releaseConnection(String tenantIdentifier, Connection connection) throws SQLException {
         try {
-            connection.createStatement().execute(String.format("SET SCHEMA %s", defaultSchema));
+            connection.createStatement().execute(String.format("SET SCHEMA %s", DBContext.defaultSchema ));
         } catch (SQLException e) {
             throw new HibernateException("Could not alter JDBC connection to specified schema [" + tenantIdentifier + "]",
                     e);
@@ -87,4 +84,5 @@ public class SchemaPerWorldConnectionProviderH2 implements MultiTenantConnection
     public <T> T unwrap(Class<T> unwrapType) {
         return null;
     }
+
 }

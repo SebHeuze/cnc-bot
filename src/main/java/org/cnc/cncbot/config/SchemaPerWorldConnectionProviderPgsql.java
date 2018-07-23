@@ -25,9 +25,6 @@ public class SchemaPerWorldConnectionProviderPgsql implements MultiTenantConnect
 	 * Generated Serial
 	 */
 	private static final long serialVersionUID = -1921110949968624499L;
-
-    @Value("${spring.datasource.defaultSchema}")
-    String defaultSchema;
     
 	@Autowired
     private DataSource dataSource;
@@ -63,7 +60,7 @@ public class SchemaPerWorldConnectionProviderPgsql implements MultiTenantConnect
     @Override
     public void releaseConnection(String tenantIdentifier, Connection connection) throws SQLException {
         try {
-            connection.createStatement().execute(String.format("SET search_path to %s", defaultSchema));
+            connection.createStatement().execute(String.format("SET search_path to %s", DBContext.defaultSchema));
         } catch (SQLException e) {
             throw new HibernateException("Could not alter JDBC connection to specified schema [" + tenantIdentifier + "]",
                     e);
