@@ -70,6 +70,8 @@ public class DynamicSchemaRoutingDatasource extends AbstractDataSource {
             .build();
         HikariDataSource hds = (HikariDataSource) ds;
         hds.setMinimumIdle(minIdle);
+        hds.setAutoCommit(false);
+        hds.setPoolName("HikariPool-"+schema);
         hds.setMaximumPoolSize(maxPoolSize);
         return hds;
     }

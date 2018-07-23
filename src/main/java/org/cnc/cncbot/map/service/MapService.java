@@ -11,6 +11,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import javax.transaction.Transactional;
+
 import org.cnc.cncbot.config.DBContext;
 import org.cnc.cncbot.dto.generated.OriginAccountInfo;
 import org.cnc.cncbot.dto.generated.PollWorld;
@@ -70,7 +72,7 @@ public class MapService {
 	 * Expired game session id
 	 */
 	public static final String EXPIRED_GAME_SESSIONID = "00000000-0000-0000-0000-000000000000";
-	
+
 	/**
 	 * Size X map.
 	 */
@@ -80,19 +82,19 @@ public class MapService {
 	 * Max RETRY for Auth
 	 */
 	public static final int MAX_RETRY = 3;
-	
+
 	/**
 	 * Tag for ENDGAME data.
 	 */
 	public static final String TAG_ENDGAME = "ENDGAME";
-	
-	
+
+
 
 
 	public final AccountService accountService;
 
 	public final GameService gameService;
-	
+
 	public final PoiDAO poiDao;
 	public final AllianceDAO allianceDao;
 	public final PlayerDAO playerDao;
@@ -124,68 +126,7 @@ public class MapService {
 
 		for (Account account : accountList) {
 			try {
-				log.info("Start map batch of World : {}", account.getMonde());
-				String gameSessionId = this.launchWorld(account);
-				UserSession userSession = new UserSession(0, 0, gameSessionId, this.accountService.getOriginAccountInfo(account).getSessionGUID());
-				
-				ServerInfoResponse serverInfos = this.gameService.getServerInfos(userSession.getGameSessionId());
-				Set<Alliance> alliancesListTotal = new HashSet<Alliance>();
-				alliancesListTotal.add(new Alliance(0, "No Alliance", new Long(0), 0));
-				Set<Player> playersListTotal = new HashSet<Player>();
-				Set<MapObject> listeObjectMap = new HashSet<MapObject>();
-
-				//Server Size (ex 1100) / Bloc Size (32) = 34.25
-				//Need 35 request to get the full World info
-				try {
-					List<CompletableFuture<MapData>> futures = new ArrayList<CompletableFuture<MapData>>();
-					for (int x = 1; x < (int) (serverInfos.getWw() / SIZE_TILE) + 1; x++) {
-						CompletableFuture<MapData> future = this.getMapDataTile(x, serverInfos, userSession);          
-						futures.add(future);
-					}
-	
-					for (CompletableFuture<MapData> future : futures) {
-							alliancesListTotal.addAll(new ArrayList<Alliance>(future.get().getAlliancesList()));
-							playersListTotal.addAll(new ArrayList<Player>(future.get().getPlayersList()));
-							listeObjectMap.addAll(future.get().getObjectsList());
-					}
-				} catch (InterruptedException | ExecutionException e) {
-					throw new BatchException("Error while trying to get future data");
-				}
-				
-				
-				//Get POI/Bases from the list
-				List<Base> listeBase =  listeObjectMap.stream().filter(p-> p instanceof Base).map(obj -> (Base) obj).collect(Collectors.toList());
-				List<Poi> listePOI = listeObjectMap.stream().filter(p-> p instanceof Poi).map(obj -> (Poi) obj).collect(Collectors.toList());
-				List<EndGame> listeEndGames = listeObjectMap.stream().filter(p-> p instanceof EndGame).map(obj -> (EndGame) obj).collect(Collectors.toList());
-
-
-				log.info("Data retrieved : Base {}/Poi {}/EndGame {}/Alliance {}/Player {}", 
-						listeBase.size(), listePOI.size(), listeEndGames.size(), alliancesListTotal.size(), playersListTotal.size());
-
-				log.info("Saving data of World : {}", account.getMonde());
-				/*
-				 * Save Data in DB 
-				 */
-				DBContext.setSchema("monde"+ account.getMonde());
-			    //Delete all the actual data
-			    this.allianceDao.deleteAll();
-			    this.playerDao.deleteAll();
-			    this.poiDao.deleteAll();
-			    this.baseDao.deleteAll();
-			    this.endGameDao.deleteAll();
-			    
-				this.poiDao.saveAll(listePOI);
-				this.baseDao.saveAll(listeBase);
-				this.endGameDao.saveAll(listeEndGames);
-				this.allianceDao.saveAll(alliancesListTotal);
-				this.playerDao.saveAll(playersListTotal);
-
-			    this.allianceDao.updateNbJoueurs();
-			    
-			    this.settingsDao.deleteAll();
-			    this.settingsDao.save(new Settings("timestamp",  String.valueOf(System.currentTimeMillis() / 1000)));
-			    
-
+				this.mapForAccount(account);
 			} catch (AuthException ae){
 				log.error("Error during auth step with account {}", account.getUser(), ae);
 
@@ -196,6 +137,74 @@ public class MapService {
 	}
 
 	/**
+	 * Retrieve map data for account
+	 * @param account
+	 */
+	@Transactional
+	public void mapForAccount(Account account) {
+		log.info("Start map batch of World : {}", account.getMonde());
+		String gameSessionId = this.launchWorld(account);
+		UserSession userSession = new UserSession(0, 0, gameSessionId, this.accountService.getOriginAccountInfo(account).getSessionGUID());
+
+		ServerInfoResponse serverInfos = this.gameService.getServerInfos(userSession.getGameSessionId());
+		Set<Alliance> alliancesListTotal = new HashSet<Alliance>();
+		alliancesListTotal.add(new Alliance(0, "No Alliance", new Long(0), 0));
+		Set<Player> playersListTotal = new HashSet<Player>();
+		Set<MapObject> listeObjectMap = new HashSet<MapObject>();
+
+		//Server Size (ex 1100) / Bloc Size (32) = 34.25
+		//Need 35 request to get the full World info
+		try {
+			List<CompletableFuture<MapData>> futures = new ArrayList<CompletableFuture<MapData>>();
+			for (int x = 1; x < (int) (serverInfos.getWw() / SIZE_TILE) + 1; x++) {
+				CompletableFuture<MapData> future = this.getMapDataTile(x, serverInfos, userSession);          
+				futures.add(future);
+			}
+
+			for (CompletableFuture<MapData> future : futures) {
+				alliancesListTotal.addAll(new ArrayList<Alliance>(future.get().getAlliancesList()));
+				playersListTotal.addAll(new ArrayList<Player>(future.get().getPlayersList()));
+				listeObjectMap.addAll(future.get().getObjectsList());
+			}
+		} catch (InterruptedException | ExecutionException e) {
+			throw new BatchException("Error while trying to get future data");
+		}
+
+
+		//Get POI/Bases from the list
+		List<Base> listeBase =  listeObjectMap.stream().filter(p-> p instanceof Base).map(obj -> (Base) obj).collect(Collectors.toList());
+		List<Poi> listePOI = listeObjectMap.stream().filter(p-> p instanceof Poi).map(obj -> (Poi) obj).collect(Collectors.toList());
+		List<EndGame> listeEndGames = listeObjectMap.stream().filter(p-> p instanceof EndGame).map(obj -> (EndGame) obj).collect(Collectors.toList());
+
+
+		log.info("Data retrieved : Base {}/Poi {}/EndGame {}/Alliance {}/Player {}", 
+				listeBase.size(), listePOI.size(), listeEndGames.size(), alliancesListTotal.size(), playersListTotal.size());
+
+		log.info("Saving data of World : {}", account.getMonde());
+		/*
+		 * Save Data in DB 
+		 */
+		DBContext.setSchema("monde"+ account.getMonde());
+		//Delete all the actual data
+		this.allianceDao.truncateTable();
+		this.playerDao.truncateTable();
+		this.poiDao.truncateTable();
+		this.baseDao.truncateTable();
+		this.endGameDao.truncateTable();
+
+		this.poiDao.saveAll(listePOI);
+		this.baseDao.saveAll(listeBase);
+		this.endGameDao.saveAll(listeEndGames);
+		this.allianceDao.saveAll(alliancesListTotal);
+		this.playerDao.saveAll(playersListTotal);
+		
+		this.allianceDao.updateNbJoueurs();
+
+		this.settingsDao.deleteAll();
+		this.settingsDao.save(new Settings("timestamp",  String.valueOf(System.currentTimeMillis() / 1000)));
+	}
+
+	/**
 	 * Launch world and get Game Session Id
 	 * @param account
 	 * @return game session Id
@@ -203,7 +212,7 @@ public class MapService {
 	public String launchWorld(Account account) {
 		return this.launchWorld(account, 0);
 	}
-	
+
 	/**
 	 * Launch world and get Game Session Id
 	 * @param account
@@ -225,7 +234,7 @@ public class MapService {
 		this.gameService.init(server.get());
 
 		String gameSessionId = this.gameService.openGameSession(account, accountInfos.getSessionGUID());
-		
+
 		if (gameSessionId.equals(EXPIRED_GAME_SESSIONID)) {
 			if (retryCount >= MAX_RETRY) {
 				throw new AuthException("Can't log on account " + account.getUser() + " World " + account.getMonde());
@@ -233,7 +242,7 @@ public class MapService {
 			this.accountService.logout(account);
 			return this.launchWorld(account, ++retryCount);
 		}
-		
+
 		return gameSessionId;
 	}
 
@@ -296,7 +305,7 @@ public class MapService {
 			}
 
 		} 
-		
+
 		if(pollRequestEndGame != null) {
 			mapObjectList.addAll(this.processPollEndGame(pollRequestEndGame.getCH()));
 		}
@@ -418,7 +427,7 @@ public class MapService {
 				dataMapStr = dataMapStr.substring(decryptResult.getCurrentIndex(), dataMapStr.length());
 
 				Coords coords = new Coords(coordX, coordY);
-				
+
 				switch (typeObjectMap){
 				case 1 : 
 					//If 1 => Base
@@ -547,7 +556,7 @@ public class MapService {
 
 					//Base ID
 					decryptResult = CryptoUtils.base91Decode(dataMapStr, 0, 5);
-					baseObjectTmp.setId(decryptResult.getResult());
+					baseObjectTmp.setBaseId(decryptResult.getResult());
 					dataMapStr = dataMapStr.substring(decryptResult.getCurrentIndex(), dataMapStr.length());
 
 					//Unknown
@@ -569,7 +578,7 @@ public class MapService {
 					Poi poiObjectTmp = new Poi();
 
 					poiObjectTmp.setCoords(coords);
-					
+
 					//POI Level
 					decryptResult = CryptoUtils.base91Decode(dataMapStr, 0, 4);
 					int dataTmp = decryptResult.getResult();

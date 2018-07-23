@@ -5,6 +5,8 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.springframework.data.domain.Persistable;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,7 +19,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Table(name = "joueur")
-public class Player {
+public class Player implements Persistable<Integer> {
 	@Id
 	@Column(name = "i")
 	private Integer id;
@@ -52,5 +54,19 @@ public class Player {
     @Override
     public int hashCode() {
        return this.id;
-    }
+    }   
+    
+	/**
+	 * We are doing to stop hibernate from doing select to check if exist before insert
+	 * Perfomance improvement since we delete all result before insert
+	 */
+	@Override
+	public boolean isNew() {
+		return true;
+	}
+
+	@Override
+	public Integer getId() {
+		return this.allianceId;
+	}
 }

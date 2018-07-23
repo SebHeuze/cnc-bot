@@ -4,6 +4,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import org.springframework.data.domain.Persistable;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,7 +18,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Table(name="poi")
-public class Poi extends MapObject{
+public class Poi extends MapObject {
 	@Column(name = "t")
 	private Integer  type;
 
@@ -25,4 +27,5 @@ public class Poi extends MapObject{
 	
 	@Column(name = "a")
 	private Integer allianceId = 0;
+
 }

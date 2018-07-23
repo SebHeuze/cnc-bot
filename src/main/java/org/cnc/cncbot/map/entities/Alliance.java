@@ -5,6 +5,8 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.springframework.data.domain.Persistable;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,7 +23,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name="alliance")
-public class Alliance {
+public class Alliance implements Persistable<Integer>{
 	@Id
 	@Column(name = "a")
 	private Integer allianceId;
@@ -45,4 +47,18 @@ public class Alliance {
     public int hashCode() {
        return this.allianceId.hashCode();
     }
+    
+	/**
+	 * We are doing to stop hibernate from doing select to check if exist before insert
+	 * Perfomance improvement since we delete all result before insert
+	 */
+	@Override
+	public boolean isNew() {
+		return true;
+	}
+
+	@Override
+	public Integer getId() {
+		return this.allianceId;
+	}
 }

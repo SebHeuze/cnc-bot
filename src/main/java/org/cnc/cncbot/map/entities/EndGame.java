@@ -18,5 +18,5 @@ import lombok.Setter;
 public class EndGame extends MapObject {
 	private Integer type;
 	private Integer  step = 0;
-	
+
 }
