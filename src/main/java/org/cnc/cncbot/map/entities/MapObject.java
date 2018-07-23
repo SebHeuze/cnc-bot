@@ -6,6 +6,8 @@ import javax.persistence.Entity;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 
+import org.springframework.data.domain.Persistable;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,7 +20,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-public class MapObject {
+public class MapObject implements Persistable<Coords>{
 	
 	@EmbeddedId
 	Coords coords;
@@ -44,4 +46,18 @@ public class MapObject {
     public int hashCode() {
       return this.coords.x | this.coords.y<< 16;
     }
+    
+	/**
+	 * We are doing to stop hibernate from doing select to check if exist before insert
+	 * Perfomance improvement since we delete all result before insert
+	 */
+	@Override
+	public boolean isNew() {
+		return true;
+	}
+
+	@Override
+	public Coords getId() {
+		return this.coords;
+	}
 }

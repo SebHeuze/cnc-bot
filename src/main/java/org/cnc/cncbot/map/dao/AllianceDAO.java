@@ -19,4 +19,8 @@ public interface AllianceDAO  extends JpaRepository<Alliance, Long> {
 	@Modifying
 	@Query("UPDATE Alliance a set a.nbPlayers = (SELECT COUNT(1) FROM Player p WHERE p.allianceId = a.allianceId)")
 	void updateNbJoueurs();
+
+	@Query(value = "TRUNCATE TABLE alliance", nativeQuery = true)
+	@Modifying
+	public void truncateTable();
 }

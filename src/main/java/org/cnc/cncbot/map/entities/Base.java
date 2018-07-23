@@ -4,6 +4,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import org.springframework.data.domain.Persistable;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,7 +20,7 @@ import lombok.Setter;
 @Table(name="base")
 public class Base  extends MapObject {
 	@Column(name = "i")
-	private Integer id;
+	private Integer baseId;
 
 	@Column(name = "pi")
 	private Integer playerId;
@@ -43,5 +45,5 @@ public class Base  extends MapObject {
 
 	@Column(name = "ps")
 	private Integer protectionEnd = 0;
-	
+
 }
