@@ -111,7 +111,7 @@ public class MapService {
 	 * @throws BatchException
 	 */
 	public void mapDataJob(int batchNumber) throws BatchException {
-
+		DBContext.setDatasource("cncmap");
 		List<Account> accountList = this.accountService.getAccountsForBatch(batchNumber);
 
 		for (Account account : accountList) {

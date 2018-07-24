@@ -2,14 +2,10 @@ package org.cnc.cncbot;
 
 import java.util.concurrent.Executor;
 
-import org.cnc.cncbot.config.DBContext;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -20,7 +16,9 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
  *
  */
 @EnableScheduling
-@SpringBootApplication
+@SpringBootApplication(
+		exclude = { DataSourceAutoConfiguration.class } //, HibernateJpaAutoConfiguration.class
+		)
 @EnableAsync
 public class CncbotApplication {
 
