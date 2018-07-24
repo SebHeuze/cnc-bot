@@ -168,7 +168,7 @@ public class GameService {
 					.subject(unMessage.getTitre())
 					.build());
 			ArrayList<Integer> result = pollCall.execute().body();
-			if (result.size() == 2 && result.get(0) == 1 && result.get(1) == 1){
+			if (result.size() == 2 && result.get(0).equals(1) && result.get(1).equals(1)){
 		         throw new BatchException("Echec lors de l'envoi du message : " + result);
 		    }
 			return true;
