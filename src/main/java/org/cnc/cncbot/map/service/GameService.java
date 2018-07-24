@@ -1,6 +1,7 @@
 package org.cnc.cncbot.map.service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -159,15 +160,15 @@ public class GameService {
 	public boolean sendMessage(Message unMessage, UserSession userSession) {
 
 		try {
-			Call<String> pollCall  = this.cncGameService.sendMessage(
+			Call<ArrayList<Integer>> pollCall  = this.cncGameService.sendMessage(
 					SendMessageRequest.builder()
 					.session(userSession.getGameSessionId())
 					.body("<cnc><cncs>"+userSession.getPlayerName()+"</cncs><cncd>1408406611796</cncd><cnct>" + unMessage.getMessage() + "</cnct></cnc>")
 					.players(unMessage.getPseudo())
 					.subject(unMessage.getTitre())
 					.build());
-			String result = pollCall.execute().body();
-			if (!"[1,1]".equals(result)){
+			ArrayList<Integer> result = pollCall.execute().body();
+			if (result.size() == 2 && result.get(0) == 1 && result.get(1) == 1){
 		         throw new BatchException("Echec lors de l'envoi du message : " + result);
 		    }
 			return true;

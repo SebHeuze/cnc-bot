@@ -1,5 +1,7 @@
 package org.cnc.cncbot.map.service.retrofit;
 
+import java.util.ArrayList;
+
 import org.cnc.cncbot.dto.opensession.OpenSessionRequest;
 import org.cnc.cncbot.dto.opensession.OpenSessionResponse;
 import org.cnc.cncbot.dto.poll.PollRequest;
@@ -32,7 +34,7 @@ public interface CNCGameService {
 	Call<ServerInfoResponse> getServerInfo(@Body ServerInfoRequest getServerInfoRequest);
 
 	@POST("IGMBulkSendMsg")
-	Call<String> sendMessage(@Body SendMessageRequest sendMessageRequest);
+	Call<ArrayList<Integer>> sendMessage(@Body SendMessageRequest sendMessageRequest);
 
 	/*
 	@POST("RankingGetCount")
