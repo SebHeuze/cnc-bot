@@ -61,18 +61,8 @@ public class StatsService {
 	 * @throws BatchException
 	 */
 	public void statsJob() throws BatchException {
-
-		List<Account> accountList = this.accountService.getAccountsForBatch(batchNumber);
-
-		for (Account account : accountList) {
-			try {
-				this.mapForAccount(account);
-			} catch (AuthException ae){
-				log.error("Error during auth step with account {}", account.getUser(), ae);
-
-				this.accountService.disableAccount(account);
-			}
-		}
+		DBContext.setDatasource("cctastats");
+		log.info("Account size {}",this.accountService.getAccountsForBatch(32).size());
 
 	}
 
