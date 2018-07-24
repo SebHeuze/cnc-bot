@@ -1,20 +1,29 @@
 package org.cnc.cncbot.map.service;
 
 import java.io.IOException;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.cnc.cncbot.dto.ResponseType;
+import org.cnc.cncbot.dto.generated.OriginAccountInfo;
 import org.cnc.cncbot.dto.generated.Server;
 import org.cnc.cncbot.dto.opensession.OpenSessionRequest;
 import org.cnc.cncbot.dto.opensession.OpenSessionResponse;
 import org.cnc.cncbot.dto.poll.PollRequest;
+import org.cnc.cncbot.dto.sendmessage.Message;
+import org.cnc.cncbot.dto.sendmessage.SendMessageRequest;
 import org.cnc.cncbot.dto.serverinfos.ServerInfoRequest;
 import org.cnc.cncbot.dto.serverinfos.ServerInfoResponse;
+import org.cnc.cncbot.exception.AuthException;
+import org.cnc.cncbot.exception.BatchException;
 import org.cnc.cncbot.exception.GameException;
 import org.cnc.cncbot.map.dto.UserSession;
 import org.cnc.cncbot.map.entities.Account;
 import org.cnc.cncbot.map.service.retrofit.CNCGameService;
 import org.cnc.cncbot.map.service.retrofit.ServiceGenerator;
 import org.cnc.cncbot.map.utils.CncUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.JsonArray;
@@ -32,17 +41,78 @@ import retrofit2.Call;
 @Service
 @Setter
 @Slf4j
+@Scope("prototype")
 public class GameService {
 
 	public CNCGameService cncGameService;
+	
+	public final AccountService accountService;
 
 	public final static String URL_PATH_API = "/Presentation/Service.svc/ajaxEndpoint/";
+	
+	/**
+	 * Expired game session id
+	 */
+	public static final String EXPIRED_GAME_SESSIONID = "00000000-0000-0000-0000-000000000000";
 
+	/**
+	 * Max RETRY for Auth
+	 */
+	public static final int MAX_RETRY = 3;
+
+
+	@Autowired
+	public GameService(AccountService accountService) {
+		this.accountService = accountService;
+	}
+	
 	public void init(Server server) {
 		this.cncGameService = ServiceGenerator.createService(CNCGameService.class, server.getUrl() + URL_PATH_API, ResponseType.JSON);
 	}
 
+	/**
+	 * Launch world and get Game Session Id
+	 * @param account
+	 * @return game session Id
+	 */
+	public String launchWorld(Account account) {
+		return this.launchWorld(account, 0);
+	}
 
+	/**
+	 * Launch world and get Game Session Id
+	 * @param account
+	 * @param retryCount nb of login retry
+	 * @return game session Id
+	 */
+	public String launchWorld(Account account, int retryCount) {
+		if (!this.accountService.isLogged(account)) {
+			this.accountService.connect(account);
+		}
+		OriginAccountInfo accountInfos = this.accountService.getOriginAccountInfo(account);
+		Optional<Server> server = accountInfos.getServers()
+				.stream()
+				.filter(item -> item.getId().equals(account.getMonde()))
+				.collect(Collectors.reducing((a, b) -> null));
+		if (!server.get().getOnline()) {
+			throw new BatchException("World offline " + server.get().getId() + " User " + account.getUser());
+		}
+		this.init(server.get());
+
+		String gameSessionId = this.openGameSession(account, accountInfos.getSessionGUID());
+
+		if (gameSessionId.equals(EXPIRED_GAME_SESSIONID)) {
+			if (retryCount >= MAX_RETRY) {
+				throw new AuthException("Can't log on account " + account.getUser() + " World " + account.getMonde());
+			}
+			this.accountService.logout(account);
+			return this.launchWorld(account, ++retryCount);
+		}
+
+		return gameSessionId;
+	}
+	
+	
 	/**
 	 * Get  server infos
 	 * @param sessionId
@@ -61,7 +131,7 @@ public class GameService {
 	}
 
 	/**
-	 * Get  server infos
+	 * Poll
 	 * @param sessionId
 	 * @return
 	 */
@@ -75,6 +145,32 @@ public class GameService {
 					.sequenceid(userSession.useSequenceId())
 					.requestid(userSession.useRequestId()).build());
 			return pollCall.execute().body();
+		} catch (IOException e) {
+			log.error("Error with request getServerInfos", e);
+			throw new GameException("Error with request getServerInfos");
+		}
+	}
+	
+	/**
+	 * send message
+	 * @param sessionId
+	 * @return
+	 */
+	public boolean sendMessage(Message unMessage, UserSession userSession) {
+
+		try {
+			Call<String> pollCall  = this.cncGameService.sendMessage(
+					SendMessageRequest.builder()
+					.session(userSession.getGameSessionId())
+					.body("<cnc><cncs>"+userSession.getPlayerName()+"</cncs><cncd>1408406611796</cncd><cnct>" + unMessage.getMessage() + "</cnct></cnc>")
+					.players(unMessage.getPseudo())
+					.subject(unMessage.getTitre())
+					.build());
+			String result = pollCall.execute().body();
+			if (!"[1,1]".equals(result)){
+		         throw new BatchException("Echec lors de l'envoi du message : " + result);
+		    }
+			return true;
 		} catch (IOException e) {
 			log.error("Error with request getServerInfos", e);
 			throw new GameException("Error with request getServerInfos");
