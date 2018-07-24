@@ -109,6 +109,11 @@ public class AccountService {
 		return accountList;
 	}
 	
+	public Account getAccount(int worldId) {
+		Account account = this.accountDAO.findByMondeAndActiveTrue(worldId);
+		return account;
+	}
+	
 	/**
 	 * Disable account by setting active to null (to be able to distinguish from manually disabled accounts)
 	 * @param account

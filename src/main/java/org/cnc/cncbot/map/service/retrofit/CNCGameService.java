@@ -3,6 +3,7 @@ package org.cnc.cncbot.map.service.retrofit;
 import org.cnc.cncbot.dto.opensession.OpenSessionRequest;
 import org.cnc.cncbot.dto.opensession.OpenSessionResponse;
 import org.cnc.cncbot.dto.poll.PollRequest;
+import org.cnc.cncbot.dto.sendmessage.SendMessageRequest;
 import org.cnc.cncbot.dto.serverinfos.ServerInfoRequest;
 import org.cnc.cncbot.dto.serverinfos.ServerInfoResponse;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,9 @@ public interface CNCGameService {
 	
 	@POST("GetServerInfo")
 	Call<ServerInfoResponse> getServerInfo(@Body ServerInfoRequest getServerInfoRequest);
+
+	@POST("IGMBulkSendMsg")
+	Call<String> sendMessage(@Body SendMessageRequest sendMessageRequest);
 
 	/*
 	@POST("RankingGetCount")

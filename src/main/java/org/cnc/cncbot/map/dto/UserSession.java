@@ -15,6 +15,8 @@ public class UserSession {
 	
 	private String gameSessionId;
 	
+	private String playerName;
+	
 	private String sessionId;
 	
 	public int useRequestId() {

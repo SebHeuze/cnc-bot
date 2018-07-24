@@ -1,0 +1,72 @@
+package org.cnc.cncbot.controller;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.cnc.cncbot.dto.sendmessage.Message;
+import org.cnc.cncbot.dto.sendmessage.MessageRequest;
+import org.cnc.cncbot.dto.sendmessage.Result;
+import org.cnc.cncbot.exception.BatchException;
+import org.cnc.cncbot.map.service.GameService;
+import org.cnc.cncbot.map.service.WebService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Controller
+@RequestMapping("/")
+@Slf4j
+public class CNCController {
+
+  /**
+   * Game Service
+   */
+  private final WebService webService;
+
+  @Autowired
+  public CNCController(WebService webService) {
+	  this.webService = webService;
+  }
+  
+  @RequestMapping(value = "/sendMessage", method = RequestMethod.POST)
+  public @ResponseBody Result messageRequest(@RequestBody MessageRequest messageRequest) {
+    Result result = new Result();
+    
+    if(messageRequest.getKey().equals("key")){
+      try {
+      Message message = new Message();
+      message.setTitre(messageRequest.getTitre());
+      message.setMessage(messageRequest.getMessage());
+      message.setPseudo(messageRequest.getJoueur());
+      message.setMonde(messageRequest.getMonde());
+      webService.sendMessage(message);
+      
+      result.setMessage("Message envoyé avec succès");
+      result.setResult("OK");
+      } catch (BatchException be){
+        log.error("Erreur lors de l'envoi du message",be);
+        result.setMessage(be.getMessage());
+        result.setResult("KO");
+      }  catch (Exception e){
+        log.error("Erreur lors de l'envoi du message",e);
+        result.setMessage("Erreur technique");
+        result.setResult("KO");
+      }
+    } else {
+      result.setMessage("Clé invalide");
+      result.setResult("KO");
+    }
+    
+    return result;
+
+  }
+  
+
+}

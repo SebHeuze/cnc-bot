@@ -69,19 +69,9 @@ public class MapService {
 	public static final String TAG_WORLD = "WORLD";
 
 	/**
-	 * Expired game session id
-	 */
-	public static final String EXPIRED_GAME_SESSIONID = "00000000-0000-0000-0000-000000000000";
-
-	/**
 	 * Size X map.
 	 */
 	public static final int SIZE_TILE = 32;
-
-	/**
-	 * Max RETRY for Auth
-	 */
-	public static final int MAX_RETRY = 3;
 
 	/**
 	 * Tag for ENDGAME data.
@@ -143,8 +133,8 @@ public class MapService {
 	@Transactional
 	public void mapForAccount(Account account) {
 		log.info("Start map batch of World : {}", account.getMonde());
-		String gameSessionId = this.launchWorld(account);
-		UserSession userSession = new UserSession(0, 0, gameSessionId, this.accountService.getOriginAccountInfo(account).getSessionGUID());
+		String gameSessionId = this.gameService.launchWorld(account);
+		UserSession userSession = new UserSession(0, 0, gameSessionId, "World42Dummy", this.accountService.getOriginAccountInfo(account).getSessionGUID());
 
 		ServerInfoResponse serverInfos = this.gameService.getServerInfos(userSession.getGameSessionId());
 		Set<Alliance> alliancesListTotal = new HashSet<Alliance>();
@@ -202,48 +192,6 @@ public class MapService {
 
 		this.settingsDao.deleteAll();
 		this.settingsDao.save(new Settings("timestamp",  String.valueOf(System.currentTimeMillis() / 1000)));
-	}
-
-	/**
-	 * Launch world and get Game Session Id
-	 * @param account
-	 * @return game session Id
-	 */
-	public String launchWorld(Account account) {
-		return this.launchWorld(account, 0);
-	}
-
-	/**
-	 * Launch world and get Game Session Id
-	 * @param account
-	 * @param retryCount nb of login retry
-	 * @return game session Id
-	 */
-	public String launchWorld(Account account, int retryCount) {
-		if (!this.accountService.isLogged(account)) {
-			this.accountService.connect(account);
-		}
-		OriginAccountInfo accountInfos = this.accountService.getOriginAccountInfo(account);
-		Optional<Server> server = accountInfos.getServers()
-				.stream()
-				.filter(item -> item.getId().equals(account.getMonde()))
-				.collect(Collectors.reducing((a, b) -> null));
-		if (!server.get().getOnline()) {
-			throw new BatchException("World offline " + server.get().getId() + " User " + account.getUser());
-		}
-		this.gameService.init(server.get());
-
-		String gameSessionId = this.gameService.openGameSession(account, accountInfos.getSessionGUID());
-
-		if (gameSessionId.equals(EXPIRED_GAME_SESSIONID)) {
-			if (retryCount >= MAX_RETRY) {
-				throw new AuthException("Can't log on account " + account.getUser() + " World " + account.getMonde());
-			}
-			this.accountService.logout(account);
-			return this.launchWorld(account, ++retryCount);
-		}
-
-		return gameSessionId;
 	}
 
 
