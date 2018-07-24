@@ -10,6 +10,7 @@ import org.cnc.cncbot.exception.BatchException;
 import org.cnc.cncbot.map.service.GameService;
 import org.cnc.cncbot.map.service.WebService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,16 +31,28 @@ public class CNCController {
    */
   private final WebService webService;
 
+  /**
+   * API Key
+   * @param webService
+   */
+  private final String key;
+  
   @Autowired
-  public CNCController(WebService webService) {
+  public CNCController(WebService webService,  @Value("${org.cnc.cncbot.api-key}") String key) {
 	  this.webService = webService;
+	  this.key = key;
   }
   
+  /**
+   * Message service, used by SpyCNC
+   * @param messageRequest
+   * @return
+   */
   @RequestMapping(value = "/sendMessage", method = RequestMethod.POST)
   public @ResponseBody Result messageRequest(@RequestBody MessageRequest messageRequest) {
     Result result = new Result();
     
-    if(messageRequest.getKey().equals("key")){
+    if(messageRequest.getKey().equals(this.key)){
       try {
       Message message = new Message();
       message.setTitre(messageRequest.getTitre());
