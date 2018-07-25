@@ -103,6 +103,7 @@ public class GameService {
 		String gameSessionId = this.openGameSession(account, accountInfos.getSessionGUID());
 
 		if (gameSessionId.equals(EXPIRED_GAME_SESSIONID)) {
+			log.info("Session expirée pour le compte {}", account.getUser());
 			if (retryCount >= MAX_RETRY) {
 				throw new AuthException("Can't log on account " + account.getUser() + " World " + account.getMonde());
 			}
