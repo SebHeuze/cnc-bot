@@ -62,6 +62,13 @@ public class StatsService {
 	 */
 	public void statsJob() throws BatchException {
 		DBContext.setDatasource("cctastats");
+		
+		log.info("Launch of stats batch");
+		
+	    List<Account> accountList = this.accountService.getAccount();
+
+	    long idBatch = this.scriptingDAO.createBatchLog(listeComptes.size());
+	    
 		log.info("Account size {}",this.accountService.getAccountsForBatch(32).size());
 
 	}
