@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import lombok.extern.slf4j.Slf4j;
 
 @Controller
-@RequestMapping("/")
+@RequestMapping("/cncmap")
 @Slf4j
 public class CNCController {
 
