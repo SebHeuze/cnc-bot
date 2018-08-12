@@ -59,12 +59,6 @@ public class SpringJpaConfiguration {
   }
 
   @Bean
-  public MultiTenantConnectionProvider multiTenantConnectionProvider() {
-    // Autowires dataSourcesDvdRental
-    return new SchemaPerWorldConnectionProviderH2();
-  }
-
-  @Bean
   public CurrentTenantIdentifierResolver currentTenantIdentifierResolver() {
     return new CurrentWorldSchemaIdentifierResolver();
   }
