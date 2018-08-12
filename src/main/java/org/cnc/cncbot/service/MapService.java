@@ -1,4 +1,4 @@
-package org.cnc.cncbot.map.service;
+package org.cnc.cncbot.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;

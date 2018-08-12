@@ -2,8 +2,8 @@ package org.cnc.cncbot.config;
 
 import java.util.Date;
 
-import org.cnc.cncbot.map.service.MapService;
-import org.cnc.cncbot.map.service.StatsService;
+import org.cnc.cncbot.service.MapService;
+import org.cnc.cncbot.service.StatsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;

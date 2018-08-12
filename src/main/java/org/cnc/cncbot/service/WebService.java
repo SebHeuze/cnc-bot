@@ -1,4 +1,4 @@
-package org.cnc.cncbot.map.service;
+package org.cnc.cncbot.service;
 
 import org.cnc.cncbot.config.DBContext;
 import org.cnc.cncbot.dto.sendmessage.Message;

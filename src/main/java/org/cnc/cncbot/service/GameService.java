@@ -1,4 +1,4 @@
-package org.cnc.cncbot.map.service;
+package org.cnc.cncbot.service;
 
 import java.io.IOException;
 import java.util.ArrayList;
