@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -13,7 +12,6 @@ import java.util.stream.Collectors;
 import org.cnc.cncbot.dto.ResponseType;
 import org.cnc.cncbot.dto.generated.OriginAccountInfo;
 import org.cnc.cncbot.exception.AuthException;
-import org.cnc.cncbot.map.dao.AccountDAO;
 import org.cnc.cncbot.map.entities.Account;
 import org.cnc.cncbot.map.service.retrofit.AccountsEAService;
 import org.cnc.cncbot.map.service.retrofit.GameCDNOriginService;
@@ -40,12 +38,7 @@ import retrofit2.Response;
 @Setter
 @Slf4j
 public class AccountService {
-	
-	/**
-	 * Account DAO
-	 */
-	public final AccountDAO accountDAO;
-	
+
 	/**
 	 * Retrofit services class
 	 */
@@ -86,42 +79,13 @@ public class AccountService {
 	public final static String SESSION_ID_REGEX = "name=\"sessionId\" value=\"([^\"]*)\"";
 	
 	@Autowired
-	public AccountService(AccountDAO accountDAO) {
-		this.accountDAO = accountDAO;
-		
+	public AccountService() {
 		this.accountsEaService = ServiceGenerator.createService(AccountsEAService.class, AccountsEAService.BASE_URL, ResponseType.PLAIN_TEXT);
 		this.signinEaService = ServiceGenerator.createService(SigninEAService.class, SigninEAService.BASE_URL, ResponseType.PLAIN_TEXT);
 		this.tiberiumAlliancesService = ServiceGenerator.createService(TiberiumAlliancesService.class, TiberiumAlliancesService.BASE_URL, ResponseType.PLAIN_TEXT);
 		this.gameCDNService = ServiceGenerator.createService(GameCDNOriginService.class, GameCDNOriginService.BASE_URL, ResponseType.JSON);
-
 	}
 	
-	/**
-	 * Get account with batchNumber, batch number is currently the periodicity of the batch (batch 5 is called every 5 min)
-	 * @param batchNumber
-	 * @return
-	 */
-	public List<Account> getAccountsForBatch(int batchNumber) {
-		
-		List<Account> accountList = this.accountDAO.findByNumbatchAndActiveTrue(batchNumber);
-		log.info("accounts retrieved : {}", accountList.size());
-		
-		return accountList;
-	}
-	
-	public Account getAccount(int worldId) {
-		Account account = this.accountDAO.findByMondeAndActiveTrue(worldId);
-		return account;
-	}
-	
-	/**
-	 * Disable account by setting active to null (to be able to distinguish from manually disabled accounts)
-	 * @param account
-	 */
-	public void disableAccount(Account account) {
-		account.setActive(null);
-		this.accountDAO.save(account);
-	}
 	/**
 	 * Return if an account is currently logged
 	 * @param account

@@ -1,7 +1,9 @@
 package org.cnc.cncbot.map.service;
 
+import org.cnc.cncbot.config.DBContext;
 import org.cnc.cncbot.dto.sendmessage.Message;
 import org.cnc.cncbot.exception.BatchException;
+import org.cnc.cncbot.map.dao.AccountDAO;
 import org.cnc.cncbot.map.dto.UserSession;
 import org.cnc.cncbot.map.entities.Account;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,19 +23,23 @@ import lombok.extern.slf4j.Slf4j;
 public class WebService {
 
 	public final AccountService accountService;
-
 	public final GameService gameService;
 
+	public final AccountDAO accountDAO;
 
 	@Autowired
-	public WebService(AccountService accountService, GameService gameService) {
+	public WebService(AccountService accountService, GameService gameService, AccountDAO accountDAO) {
 		this.accountService = accountService;
 		this.gameService = gameService;
+		this.accountDAO = accountDAO;
 	}
 
 	public void sendMessage(Message unMessage) {
 		log.info("Sending message {}", unMessage);
-		Account account = this.accountService.getAccount(unMessage.getMonde());
+
+		DBContext.setDatasource("cncmap");
+		
+		Account account = this.accountDAO.findByMondeAndActiveTrue(unMessage.getMonde());
 		if (account == null){
 			throw new BatchException("No account for world "+ unMessage.getMonde());
 		}

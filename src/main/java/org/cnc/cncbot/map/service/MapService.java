@@ -21,6 +21,7 @@ import org.cnc.cncbot.dto.generated.Server;
 import org.cnc.cncbot.dto.serverinfos.ServerInfoResponse;
 import org.cnc.cncbot.exception.AuthException;
 import org.cnc.cncbot.exception.BatchException;
+import org.cnc.cncbot.map.dao.AccountDAO;
 import org.cnc.cncbot.map.dao.AllianceDAO;
 import org.cnc.cncbot.map.dao.BaseDAO;
 import org.cnc.cncbot.map.dao.EndGameDAO;
@@ -85,6 +86,7 @@ public class MapService {
 
 	public final GameService gameService;
 
+	public final AccountDAO accountDAO;
 	public final PoiDAO poiDao;
 	public final AllianceDAO allianceDao;
 	public final PlayerDAO playerDao;
@@ -94,8 +96,9 @@ public class MapService {
 
 	@Autowired
 	public MapService(AccountService accountService, GameService gameService, SettingsDAO settingsDao, 
-			PoiDAO poiDao, AllianceDAO allianceDao, PlayerDAO playerDao, BaseDAO baseDao, EndGameDAO endGameDao) {
+			PoiDAO poiDao, AllianceDAO allianceDao, PlayerDAO playerDao, BaseDAO baseDao, EndGameDAO endGameDao, AccountDAO accountDAO) {
 		this.accountService = accountService;
+		this.accountDAO = accountDAO;
 		this.gameService = gameService;
 		this.poiDao = poiDao;
 		this.allianceDao = allianceDao;
@@ -112,15 +115,20 @@ public class MapService {
 	 */
 	public void mapDataJob(int batchNumber) throws BatchException {
 		DBContext.setDatasource("cncmap");
-		List<Account> accountList = this.accountService.getAccountsForBatch(batchNumber);
+		
+		//Get account with batchNumber, batch number is currently the periodicity of the batch (batch 5 is called every 5 min)
+		List<Account> accountList = this.accountDAO.findByNumbatchAndActiveTrue(batchNumber);
+		log.info("accounts retrieved : {}", accountList.size());
 
 		for (Account account : accountList) {
 			try {
 				this.mapForAccount(account);
 			} catch (AuthException ae){
 				log.error("Error during auth step with account {}", account.getUser(), ae);
-
-				this.accountService.disableAccount(account);
+				
+				//Disable account by setting active to null (to be able to distinguish from manually disabled accounts)
+				account.setActive(null);
+				this.accountDAO.save(account);
 			}
 		}
 
