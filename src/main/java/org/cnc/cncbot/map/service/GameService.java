@@ -148,8 +148,8 @@ public class GameService {
 					.requestid(userSession.useRequestId()).build());
 			return pollCall.execute().body();
 		} catch (IOException e) {
-			log.error("Error with request getServerInfos", e);
-			throw new GameException("Error with request getServerInfos");
+			log.error("Error with request poll", e);
+			throw new GameException("Error with request poll");
 		}
 	}
 	
@@ -174,8 +174,8 @@ public class GameService {
 		    }
 			return true;
 		} catch (IOException e) {
-			log.error("Error with request getServerInfos", e);
-			throw new GameException("Error with request getServerInfos");
+			log.error("Error with request sendMessage", e);
+			throw new GameException("Error with request sendMessage");
 		}
 	}
 
