@@ -134,6 +134,8 @@ public class StatsService {
 		UserSession userSession = new UserSession(account.getUser(), account.getPass(), account.getWorldId(), 0, 0,
 				null, "World42Dummy", null);
 		
+
+		//@TODO call player endpoint to get username in launchWorld
 		String gameSessionId = this.gameService.launchWorld(userSession);
 		
 		userSession.setGameSessionId(gameSessionId);
