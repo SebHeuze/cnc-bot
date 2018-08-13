@@ -141,7 +141,7 @@ public class MapService {
 		userSession.setGameSessionId(gameSessionId);
 		
 		
-		ServerInfoResponse serverInfos = this.gameService.getServerInfos(userSession.getGameSessionId());
+		ServerInfoResponse serverInfos = this.gameService.getServerInfos(userSession);
 		Set<Alliance> alliancesListTotal = new HashSet<Alliance>();
 		alliancesListTotal.add(new Alliance(0, "No Alliance", new Long(0), 0));
 		Set<Player> playersListTotal = new HashSet<Player>();
@@ -260,7 +260,7 @@ public class MapService {
 		} 
 
 		if(pollRequestEndGame != null) {
-			mapObjectList.addAll(this.processPollEndGame(pollRequestEndGame.getCH()));
+			mapObjectList.addAll(this.processPollEndGame(pollRequestEndGame.getCh()));
 		}
 
 		return CompletableFuture.completedFuture(new MapData(mapObjectList, alliancesListTotal, playersListTotal));

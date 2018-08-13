@@ -1,4 +1,4 @@
-package org.cnc.cncbot.dto;
+package org.cnc.cncbot.dto.publicallianceinfo;
 
 import lombok.Getter;
 import lombok.Setter;

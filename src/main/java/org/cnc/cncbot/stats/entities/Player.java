@@ -1,10 +1,12 @@
 package org.cnc.cncbot.stats.entities;
 
 import java.io.Serializable;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import lombok.AllArgsConstructor;
@@ -27,7 +29,7 @@ public class Player implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	private Long id;
+	private Integer id;
 
 	@Column(name="bases_joueurs_detruites")
 	private Integer destroyedPlayersBases;
@@ -42,9 +44,8 @@ public class Player implements Serializable {
 
 	@Column(name="id_alliance")
 	private Integer idAlliance;
-
 	/**
-	 * Only 1st rank medail
+ 	 * Only 1st rank medail
 	 */
 	@Column(name="nb_tacitus")
 	private Integer tacitusCount;
@@ -59,5 +60,8 @@ public class Player implements Serializable {
 
 	@Column(name="total_bases_detruites")
 	private Integer destroyedTotalBases;
+	
+	@OneToMany
+	private List<Base> bases;
 
 }

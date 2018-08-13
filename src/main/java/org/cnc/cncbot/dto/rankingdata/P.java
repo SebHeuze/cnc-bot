@@ -1,4 +1,4 @@
-package org.cnc.cncbot.dto;
+package org.cnc.cncbot.dto.rankingdata;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -26,7 +26,7 @@ private String pn;
 
 private Integer r;
 
-private Integer s;
+private Long s;
 
 private Integer vwr;
 

@@ -12,6 +12,11 @@ import org.cnc.cncbot.dto.UserSession;
 import org.cnc.cncbot.dto.opensession.OpenSessionRequest;
 import org.cnc.cncbot.dto.opensession.OpenSessionResponse;
 import org.cnc.cncbot.dto.poll.PollRequest;
+import org.cnc.cncbot.dto.publicplayerinfo.PublicPlayerInfoRequest;
+import org.cnc.cncbot.dto.publicplayerinfo.PublicPlayerInfoResponse;
+import org.cnc.cncbot.dto.rankingcount.RankingCountRequest;
+import org.cnc.cncbot.dto.rankingdata.RankingDataRequest;
+import org.cnc.cncbot.dto.rankingdata.RankingDataResponse;
 import org.cnc.cncbot.dto.sendmessage.Message;
 import org.cnc.cncbot.dto.sendmessage.SendMessageRequest;
 import org.cnc.cncbot.dto.serverinfos.ServerInfoRequest;
@@ -45,11 +50,11 @@ import retrofit2.Call;
 public class GameService {
 
 	public CNCGameService cncGameService;
-	
+
 	public final AccountService accountService;
 
 	public final static String URL_PATH_API = "/Presentation/Service.svc/ajaxEndpoint/";
-	
+
 	/**
 	 * Expired game session id
 	 */
@@ -65,7 +70,7 @@ public class GameService {
 	public GameService(AccountService accountService) {
 		this.accountService = accountService;
 	}
-	
+
 	public void init(Server server) {
 		this.cncGameService = ServiceGenerator.createService(CNCGameService.class, server.getUrl() + URL_PATH_API, ResponseType.JSON);
 	}
@@ -90,7 +95,7 @@ public class GameService {
 			this.accountService.connect(userSession);
 		} 
 		userSession.setSessionId(this.accountService.getSessionId(userSession));
-		
+
 		OriginAccountInfo accountInfos = this.accountService.getAccountInfo(userSession);
 		Optional<Server> server = accountInfos.getServers()
 				.stream()
@@ -114,24 +119,88 @@ public class GameService {
 
 		return gameSessionId;
 	}
-	
-	
+
+
 	/**
 	 * Get  server infos
 	 * @param sessionId
 	 * @return
 	 */
-	public ServerInfoResponse getServerInfos(String gameSessionId) {
+	public ServerInfoResponse getServerInfos(UserSession userSession) {
 
 		try {
 			Call<ServerInfoResponse> getServerInfoCall  = this.cncGameService.getServerInfo(
-					ServerInfoRequest.builder().session(gameSessionId).build());
+					ServerInfoRequest.builder().session(userSession.getGameSessionId()).build());
 			return getServerInfoCall.execute().body();
 		} catch (IOException e) {
 			log.error("Error with request getServerInfos", e);
 			throw new GameException("Error with request getServerInfos");
 		}
 	}
+
+	/**
+	 * Ranking Get Count Request.
+	 * @param view (Alliance = 1, player = 0)
+	 * @param rankingType Score = 0...
+	 * @return count
+	 */
+	public int getRankingCount(UserSession userSession, int view, int rankingType) {
+
+		try {
+			Call<Integer> getRankingCountCall  = this.cncGameService.rankingGetCount(
+					RankingCountRequest.builder().rankingType(0).view(0).session(userSession.getGameSessionId()).build());
+			return getRankingCountCall.execute().body();
+		} catch (IOException e) {
+			log.error("Error with request getRankingCount", e);
+			throw new GameException("Error with request getRankingCount");
+		}
+	}
+	
+	/**
+     * Récupérer les informations joueurs.
+     * @param id l'id du joueur
+     * @return requete
+     */
+	PublicPlayerInfoResponse getPublicPlayerInfoRequest(UserSession userSession, int id) {
+		try {
+			Call<PublicPlayerInfoResponse> getRankingCountCall  = this.cncGameService.getPublicPlayerInfo(
+					PublicPlayerInfoRequest.builder().id(id).session(userSession.getGameSessionId())
+					.build());
+			return getRankingCountCall.execute().body();
+		} catch (IOException e) {
+			log.error("Error with request getRankingCount", e);
+			throw new GameException("Error with request getRankingCount");
+		}
+	}
+	
+	/**
+	 * Ranking Get Data Request.
+	 * @param view (Alliance = 1, Joueur = 0)
+	 * @param rankingType Score = 0...
+	 * @param firstIndex début index
+	 * @param lastIndex fin index
+	 * @param sortColumn Par quelle colonne ordonner les joueurs (score = 2)
+	 * @param ascending true ou false
+	 * @return requete
+	 */
+	public RankingDataResponse getRankingData(UserSession userSession, int view,
+			int firstIndex, int lastIndex, int sortColumn, boolean ascending) {
+		try {
+			Call<RankingDataResponse> getRankingCountCall  = this.cncGameService.rankingGetData(
+					RankingDataRequest.builder().view(0)
+					.firstIndex(firstIndex)
+					.lastIndex(lastIndex)
+					.sortColumn(sortColumn)
+					.ascending(ascending)
+					.session(userSession.getGameSessionId())
+					.build());
+			return getRankingCountCall.execute().body();
+		} catch (IOException e) {
+			log.error("Error with request getRankingCount", e);
+			throw new GameException("Error with request getRankingCount");
+		}
+	}
+
 
 	/**
 	 * Poll
@@ -153,7 +222,7 @@ public class GameService {
 			throw new GameException("Error with request poll");
 		}
 	}
-	
+
 	/**
 	 * send message
 	 * @param sessionId
@@ -171,8 +240,8 @@ public class GameService {
 					.build());
 			ArrayList<Integer> result = pollCall.execute().body();
 			if (result.size() != 2 || !result.get(0).equals(1) || !result.get(1).equals(1)){
-		         throw new BatchException("Echec lors de l'envoi du message : " + result);
-		    }
+				throw new BatchException("Echec lors de l'envoi du message : " + result);
+			}
 			return true;
 		} catch (IOException e) {
 			log.error("Error with request sendMessage", e);
@@ -180,7 +249,7 @@ public class GameService {
 		}
 	}
 
-	
+
 	/**
 	 * Open game session to get Game Session Id
 	 * @param account
@@ -191,7 +260,7 @@ public class GameService {
 		try {
 			Call<OpenSessionResponse> openGameSessionCall  = this.cncGameService.openSession(
 					OpenSessionRequest.builder().session(userSession.getSessionId()).build());
-			
+
 			return openGameSessionCall.execute().body().getI();
 		} catch (IOException e) {
 			log.error("Error opening game session of account {}", userSession.getUser(), e);
