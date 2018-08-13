@@ -88,10 +88,10 @@ public class GameService {
 	public String launchWorld(UserSession userSession, int retryCount) {
 		if (!this.accountService.isLogged(userSession)) {
 			this.accountService.connect(userSession);
-		}
-		//@TODO Refresh OriginAccountInfo
+		} 
+		userSession.setSessionId(this.accountService.getSessionId(userSession));
 		
-		OriginAccountInfo accountInfos = this.accountService.getOriginAccountInfo(userSession.getUser());
+		OriginAccountInfo accountInfos = this.accountService.getAccountInfo(userSession);
 		Optional<Server> server = accountInfos.getServers()
 				.stream()
 				.filter(item -> item.getId().equals(userSession.getWorldId()))
@@ -101,7 +101,6 @@ public class GameService {
 		}
 		this.init(server.get());
 
-		userSession.setSessionId(accountInfos.getSessionGUID());
 		String gameSessionId = this.openGameSession(userSession);
 
 		if (gameSessionId.equals(EXPIRED_GAME_SESSIONID)) {
