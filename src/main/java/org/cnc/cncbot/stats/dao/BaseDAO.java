@@ -19,4 +19,9 @@ public interface BaseDAO extends JpaRepository<Base, Long> {
 	@Transactional
 	@Modifying
 	public void truncateTable();
+	
+	@Query(value = "INSERT INTO base_hist (id, id_joueur, nom_base, score_base,coord_x,coord_y,date) SELECT base.*,to_date(?, 'YYYY-MM-DD') FROM base", nativeQuery = true)
+	@Transactional
+	@Modifying
+	public void archive();
 }
