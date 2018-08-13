@@ -5,10 +5,10 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.cnc.cncbot.dto.OriginAccountInfo;
 import org.cnc.cncbot.dto.ResponseType;
+import org.cnc.cncbot.dto.Server;
 import org.cnc.cncbot.dto.UserSession;
-import org.cnc.cncbot.dto.generated.OriginAccountInfo;
-import org.cnc.cncbot.dto.generated.Server;
 import org.cnc.cncbot.dto.opensession.OpenSessionRequest;
 import org.cnc.cncbot.dto.opensession.OpenSessionResponse;
 import org.cnc.cncbot.dto.poll.PollRequest;

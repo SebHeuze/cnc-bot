@@ -2,7 +2,7 @@ package org.cnc.cncbot.service.retrofit;
 
 import java.util.Map;
 
-import org.cnc.cncbot.dto.generated.OriginAccountInfo;
+import org.cnc.cncbot.dto.OriginAccountInfo;
 import org.springframework.stereotype.Service;
 
 import retrofit2.Call;
