@@ -1,4 +1,4 @@
-package org.cnc.cncbot.map.service.retrofit;
+package org.cnc.cncbot.service.retrofit;
 
 import java.util.ArrayList;
 

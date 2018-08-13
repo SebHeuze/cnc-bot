@@ -4,6 +4,8 @@ import java.util.Date;
 import java.util.List;
 
 import org.cnc.cncbot.config.DBContext;
+import org.cnc.cncbot.dto.UserSession;
+import org.cnc.cncbot.dto.serverinfos.ServerInfoResponse;
 import org.cnc.cncbot.exception.BatchException;
 import org.cnc.cncbot.map.dao.DAOConstants;
 import org.cnc.cncbot.stats.dao.AccountDAO;
@@ -86,7 +88,7 @@ public class StatsService {
 			if (!currentDateTimezone.equals(updateDate.getValue())){
 				log.info("Launch stats for account {} on world {}", account.getUser(), account.getWorldId());
 				try {
-					this.statsJobForWorld(account);
+					this.statsJobForWorld(account, false);
 				} catch (BatchException e){
 					log.error("Error, end of stats batch for World {}", account.getWorldId(), e);
 					nbFails++;
@@ -100,7 +102,7 @@ public class StatsService {
 				if (Integer.parseInt(forceStats.getValue()) == 1){
 					log.info("Force stats for account {} on world {}", account.getUser(), account.getWorldId());
 					try {
-						this.statsJobForWorld(account);
+						this.statsJobForWorld(account, true);
 					} catch (BatchException e){
 						log.error("Error, end of stats batch for World {}", account.getWorldId(), e);
 						nbFails++;
@@ -126,8 +128,17 @@ public class StatsService {
 	 * @throws BatchException
 	 * @param Account account to use
 	 */
-	public void statsJobForWorld(Account account) throws BatchException {
+	public void statsJobForWorld(Account account, boolean statsOnly) throws BatchException {
+		log.info("Start map batch of World : {}", account.getWorldId());
+		
+		UserSession userSession = new UserSession(account.getUser(), account.getPass(), account.getWorldId(), 0, 0,
+				null, "World42Dummy", null);
+		
+		String gameSessionId = this.gameService.launchWorld(userSession);
+		
+		userSession.setGameSessionId(gameSessionId);
 
+		ServerInfoResponse serverInfos = this.gameService.getServerInfos(userSession.getGameSessionId());
 	}
 
 }
