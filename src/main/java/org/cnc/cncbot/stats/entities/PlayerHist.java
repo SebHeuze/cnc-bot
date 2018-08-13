@@ -26,8 +26,10 @@ public class PlayerHist implements Serializable {
 
 	@Id
 	@Column(name="id_hist")
-	private Integer idHist;
+	private Long idHist;
 
+	private Long id;
+	
 	@Column(name="bases_joueurs_detruites")
 	private Integer destroyedPlayersBases;
 

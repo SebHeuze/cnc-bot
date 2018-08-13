@@ -24,11 +24,11 @@ import java.util.Date;
 public class BaseHist implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	@Column(name="id_hist")
-	private Integer idHist;
-
 	@Id
-	private Integer id;
+	@Column(name="id_hist")
+	private Long idHist;
+
+	private Long id;
 
 	@Column(name="coord_x")
 	private Integer coordX;
