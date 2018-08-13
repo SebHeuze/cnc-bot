@@ -209,8 +209,8 @@ public class StatsService {
 		      //On ajoute sans alliance
 		      alliancesListe.add(new Alliance(0, "", 0, 0, 9999, 0, 0, 0, 0, 0, 0,"", 0, new int[]{0,0,0,0,0,0,0,0}, new int[]{0,0,0,0,0,0,0,0}, new ArrayList<POI>()));
 		      
-		      this.allianceDAO.insertAll(compteActuel.getIdMonde(), alliancesListe);
-		      this.poiDAO.insertAll(compteActuel.getIdMonde(), poisList);
+		      this.allianceDAO.saveAll(alliancesListe);
+		      this.poiDAO.saveAll(poisList);
 		      
 		      //On crée la date du jour pour la timezone concernée
 		      DateTimeZone zone = DateTimeZone.forID(compteActuel.getTimezone());
@@ -218,10 +218,10 @@ public class StatsService {
 		      String currentDateTimezone = formatter.print(dt);
 		      
 		      //Archivage
-		      this.playerDAO.archiver(currentDateTimezone);
-		      this.baseDAO.archiver(currentDateTimezone);
-		      this.allianceDAO.archiver(currentDateTimezone);
-		      this.poiDAO.archiver(currentDateTimezone);
+		      this.playerDAO.archive(currentDateTimezone);
+		      this.baseDAO.archive(currentDateTimezone);
+		      this.allianceDAO.archive(currentDateTimezone);
+		      this.poiDAO.archive(currentDateTimezone);
 		      
 		      //On crée une date en fonction de la timezone
 		      this.settingDAO.updateSetting(userSession.getWorldId(), "date_last_update", currentDateTimezone);

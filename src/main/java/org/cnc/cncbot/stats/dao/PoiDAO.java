@@ -19,4 +19,9 @@ public interface PoiDAO extends JpaRepository<Poi, Long> {
 	@Transactional
 	@Modifying
 	public void truncateTable();
+	
+	@Query(value = "INSERT INTO poi_hist (id,id_alliance,level,type,coord_x,coord_y,date) SELECT poi.*,to_date(?, 'YYYY-MM-DD') FROM poi", nativeQuery = true)
+	@Transactional
+	@Modifying
+	public void archive();
 }
