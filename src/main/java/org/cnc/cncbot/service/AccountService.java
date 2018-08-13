@@ -9,9 +9,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.cnc.cncbot.dto.OriginAccountInfo;
 import org.cnc.cncbot.dto.ResponseType;
 import org.cnc.cncbot.dto.UserSession;
-import org.cnc.cncbot.dto.generated.OriginAccountInfo;
 import org.cnc.cncbot.exception.AuthException;
 import org.cnc.cncbot.service.retrofit.AccountsEAService;
 import org.cnc.cncbot.service.retrofit.GameCDNOriginService;
