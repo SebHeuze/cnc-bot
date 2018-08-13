@@ -89,6 +89,8 @@ public class GameService {
 		if (!this.accountService.isLogged(userSession)) {
 			this.accountService.connect(userSession);
 		}
+		//@TODO Refresh OriginAccountInfo
+		
 		OriginAccountInfo accountInfos = this.accountService.getOriginAccountInfo(userSession.getUser());
 		Optional<Server> server = accountInfos.getServers()
 				.stream()
