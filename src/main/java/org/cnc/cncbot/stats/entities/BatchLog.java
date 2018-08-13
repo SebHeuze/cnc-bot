@@ -9,7 +9,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.validation.constraints.NotNull;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -42,7 +41,7 @@ public class BatchLog {
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date dateFin;
 	
-	private Integer duree;
+	private Long duree;
 	
 	private Integer nbWorlds;
 	

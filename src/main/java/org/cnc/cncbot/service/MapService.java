@@ -24,6 +24,7 @@ import org.cnc.cncbot.exception.BatchException;
 import org.cnc.cncbot.map.dao.AccountDAO;
 import org.cnc.cncbot.map.dao.AllianceDAO;
 import org.cnc.cncbot.map.dao.BaseDAO;
+import org.cnc.cncbot.map.dao.DAOConstants;
 import org.cnc.cncbot.map.dao.EndGameDAO;
 import org.cnc.cncbot.map.dao.PlayerDAO;
 import org.cnc.cncbot.map.dao.PoiDAO;
@@ -182,7 +183,7 @@ public class MapService {
 		/*
 		 * Save Data in DB 
 		 */
-		DBContext.setSchema("monde"+ account.getMonde());
+		DBContext.setSchema(DAOConstants.SCHEMA_PREFIX + account.getMonde());
 		//Delete all the actual data
 		this.allianceDao.truncateTable();
 		this.playerDao.truncateTable();

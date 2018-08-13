@@ -1,4 +1,4 @@
-package org.cnc.cncbot.map.entities;
+package org.cnc.cncbot.stats.entities;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
