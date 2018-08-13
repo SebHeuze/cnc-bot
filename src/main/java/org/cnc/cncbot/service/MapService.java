@@ -80,11 +80,6 @@ public class MapService {
 	 */
 	public static final String TAG_ENDGAME = "ENDGAME";
 
-
-
-
-	public final AccountService accountService;
-
 	public final GameService gameService;
 
 	public final AccountDAO accountDAO;
@@ -96,9 +91,8 @@ public class MapService {
 	public final SettingsDAO settingsDao;
 
 	@Autowired
-	public MapService(AccountService accountService, GameService gameService, SettingsDAO settingsDao, 
+	public MapService(GameService gameService, SettingsDAO settingsDao, 
 			PoiDAO poiDao, AllianceDAO allianceDao, PlayerDAO playerDao, BaseDAO baseDao, EndGameDAO endGameDao, AccountDAO accountDAO) {
-		this.accountService = accountService;
 		this.accountDAO = accountDAO;
 		this.gameService = gameService;
 		this.poiDao = poiDao;

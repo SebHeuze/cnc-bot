@@ -35,7 +35,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class StatsService {
 
-	private final AccountService accountService;
 	private final GameService gameService;
 
 	private final AccountDAO accountDAO;
@@ -48,8 +47,7 @@ public class StatsService {
 	DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd");
 
 	@Autowired
-	public StatsService(AccountService accountService, GameService gameService, AccountDAO accountDAO, BatchLogDAO batchLogDAO, SettingsDAO settingDAO) {
-		this.accountService = accountService;
+	public StatsService(GameService gameService, AccountDAO accountDAO, BatchLogDAO batchLogDAO, SettingsDAO settingDAO) {
 		this.gameService = gameService;
 		this.accountDAO = accountDAO;
 		this.batchLogDAO = batchLogDAO;

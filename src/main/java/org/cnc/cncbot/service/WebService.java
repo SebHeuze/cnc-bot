@@ -22,14 +22,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class WebService {
 
-	public final AccountService accountService;
 	public final GameService gameService;
 
 	public final AccountDAO accountDAO;
 
 	@Autowired
-	public WebService(AccountService accountService, GameService gameService, AccountDAO accountDAO) {
-		this.accountService = accountService;
+	public WebService(GameService gameService, AccountDAO accountDAO) {
 		this.gameService = gameService;
 		this.accountDAO = accountDAO;
 	}
