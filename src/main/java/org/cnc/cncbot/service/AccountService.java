@@ -10,15 +10,15 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.cnc.cncbot.dto.ResponseType;
+import org.cnc.cncbot.dto.UserSession;
 import org.cnc.cncbot.dto.generated.OriginAccountInfo;
 import org.cnc.cncbot.exception.AuthException;
-import org.cnc.cncbot.map.entities.Account;
-import org.cnc.cncbot.map.service.retrofit.AccountsEAService;
-import org.cnc.cncbot.map.service.retrofit.GameCDNOriginService;
-import org.cnc.cncbot.map.service.retrofit.ServiceGenerator;
-import org.cnc.cncbot.map.service.retrofit.SigninEAService;
-import org.cnc.cncbot.map.service.retrofit.TiberiumAlliancesService;
-import org.cnc.cncbot.map.utils.HttpUtils;
+import org.cnc.cncbot.service.retrofit.AccountsEAService;
+import org.cnc.cncbot.service.retrofit.GameCDNOriginService;
+import org.cnc.cncbot.service.retrofit.ServiceGenerator;
+import org.cnc.cncbot.service.retrofit.SigninEAService;
+import org.cnc.cncbot.service.retrofit.TiberiumAlliancesService;
+import org.cnc.cncbot.utils.HttpUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -91,16 +91,16 @@ public class AccountService {
 	 * @param account
 	 * @return boolean true if logged in
 	 */
-	public boolean isLogged(Account account) {
-		return this.loggedAccounts.containsKey(account.getUser());
+	public boolean isLogged(UserSession userSession) {
+		return this.loggedAccounts.containsKey(userSession.getUser());
 	}
 	
 	/**
 	 * Logout account
 	 * @param account
 	 */
-	public void logout(Account account) {
-		this.loggedAccounts.remove(account.getUser());
+	public void logout(UserSession userSession) {
+		this.loggedAccounts.remove(userSession.getUser());
 	}
 	
 	/**
@@ -108,17 +108,17 @@ public class AccountService {
 	 * @param account
 	 * @return OriginAccountInfo accountInfos
 	 */
-	public OriginAccountInfo getOriginAccountInfo(Account account) {
-		return this.loggedAccounts.get(account.getUser());
+	public OriginAccountInfo getOriginAccountInfo(String user) {
+		return this.loggedAccounts.get(user);
 	}
 	
 	/**
 	 * Connect account with EA oauth system
 	 * @param account
 	 */
-	public void connect(Account account) throws AuthException {
+	public void connect(UserSession userSession) throws AuthException {
 		
-		log.info("Connect to account {} on world {}", account.getUser(), account.getMonde());
+		log.info("Connect to account {} on world {}", userSession.getUser(), userSession.getWorldId());
 		
 		
 		try {
@@ -201,7 +201,7 @@ public class AccountService {
 					eaCookies,
 					execution,
 					initref,
-					account.getUser(),account.getPass(),"FR",null,null,"on","submit",null,"false",null);
+					userSession.getUser(),userSession.getPassword(),"FR",null,null,"on","submit",null,"false",null);
 			Response<Void> secondLoginResponse = secondLoginCall.execute();
 			log.info(secondLoginResponse.headers().get(HEADER_LOCATION));
 			
@@ -275,10 +275,10 @@ public class AccountService {
 		    Call<OriginAccountInfo> originAccountCall  = this.gameCDNService.getOriginAccountInfo(params);
 			Response<OriginAccountInfo> originAccountResponse = originAccountCall.execute();
 			
-		    this.loggedAccounts.put(account.getUser(), originAccountResponse.body());
+		    this.loggedAccounts.put(userSession.getUser(), originAccountResponse.body());
 		    
 		} catch (IOException ioe) {
-			log.error("Error during authentification of account {}", account.getUser(), ioe);
+			log.error("Error during authentification of account {}", userSession.getUser(), ioe);
 			throw new AuthException("Error during authentification");
 		}
 	}

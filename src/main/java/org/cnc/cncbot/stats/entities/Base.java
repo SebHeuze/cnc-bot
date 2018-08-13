@@ -24,7 +24,7 @@ public class Base implements Serializable {
 
 	@Id
 	private Long id;
-
+	
 	@Column(name="coord_x")
 	private Integer coordX;
 

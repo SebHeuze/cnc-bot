@@ -1,4 +1,4 @@
-package org.cnc.cncbot.map.utils;
+package org.cnc.cncbot.utils;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;

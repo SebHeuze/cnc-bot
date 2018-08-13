@@ -1,4 +1,4 @@
-package org.cnc.cncbot.map.dto;
+package org.cnc.cncbot.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,6 +9,12 @@ import lombok.Setter;
 @AllArgsConstructor
 public class UserSession {
 
+	private String user;
+	
+	private String password;
+	
+	private int worldId;
+	
 	private int requestId = 0;
 	
 	private int sequenceId = 0;

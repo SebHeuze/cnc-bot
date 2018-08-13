@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.cnc.cncbot.dto.ResponseType;
+import org.cnc.cncbot.dto.UserSession;
 import org.cnc.cncbot.dto.generated.OriginAccountInfo;
 import org.cnc.cncbot.dto.generated.Server;
 import org.cnc.cncbot.dto.opensession.OpenSessionRequest;
@@ -18,11 +19,9 @@ import org.cnc.cncbot.dto.serverinfos.ServerInfoResponse;
 import org.cnc.cncbot.exception.AuthException;
 import org.cnc.cncbot.exception.BatchException;
 import org.cnc.cncbot.exception.GameException;
-import org.cnc.cncbot.map.dto.UserSession;
-import org.cnc.cncbot.map.entities.Account;
-import org.cnc.cncbot.map.service.retrofit.CNCGameService;
-import org.cnc.cncbot.map.service.retrofit.ServiceGenerator;
-import org.cnc.cncbot.map.utils.CncUtils;
+import org.cnc.cncbot.service.retrofit.CNCGameService;
+import org.cnc.cncbot.service.retrofit.ServiceGenerator;
+import org.cnc.cncbot.utils.CncUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
@@ -76,8 +75,8 @@ public class GameService {
 	 * @param account
 	 * @return game session Id
 	 */
-	public String launchWorld(Account account) {
-		return this.launchWorld(account, 0);
+	public String launchWorld(UserSession userSession) {
+		return this.launchWorld(userSession, 0);
 	}
 
 	/**
@@ -86,29 +85,30 @@ public class GameService {
 	 * @param retryCount nb of login retry
 	 * @return game session Id
 	 */
-	public String launchWorld(Account account, int retryCount) {
-		if (!this.accountService.isLogged(account)) {
-			this.accountService.connect(account);
+	public String launchWorld(UserSession userSession, int retryCount) {
+		if (!this.accountService.isLogged(userSession)) {
+			this.accountService.connect(userSession);
 		}
-		OriginAccountInfo accountInfos = this.accountService.getOriginAccountInfo(account);
+		OriginAccountInfo accountInfos = this.accountService.getOriginAccountInfo(userSession.getUser());
 		Optional<Server> server = accountInfos.getServers()
 				.stream()
-				.filter(item -> item.getId().equals(account.getMonde()))
+				.filter(item -> item.getId().equals(userSession.getWorldId()))
 				.collect(Collectors.reducing((a, b) -> null));
 		if (!server.get().getOnline()) {
-			throw new BatchException("World offline " + server.get().getId() + " User " + account.getUser());
+			throw new BatchException("World offline " + server.get().getId() + " User " + userSession.getUser());
 		}
 		this.init(server.get());
 
-		String gameSessionId = this.openGameSession(account, accountInfos.getSessionGUID());
+		userSession.setSessionId(accountInfos.getSessionGUID());
+		String gameSessionId = this.openGameSession(userSession);
 
 		if (gameSessionId.equals(EXPIRED_GAME_SESSIONID)) {
-			log.info("Session expirée pour le compte {}", account.getUser());
+			log.info("Session expirée pour le compte {}", userSession.getUser());
 			if (retryCount >= MAX_RETRY) {
-				throw new AuthException("Can't log on account " + account.getUser() + " World " + account.getMonde());
+				throw new AuthException("Can't log on account " + userSession.getUser() + " World " + userSession.getWorldId());
 			}
-			this.accountService.logout(account);
-			return this.launchWorld(account, ++retryCount);
+			this.accountService.logout(userSession);
+			return this.launchWorld(userSession, ++retryCount);
 		}
 
 		return gameSessionId;
@@ -185,16 +185,16 @@ public class GameService {
 	 * @param account
 	 * @param sessionId
 	 */
-	public String openGameSession(Account account, String sessionId) {
+	public String openGameSession(UserSession userSession) {
 
 		try {
 			Call<OpenSessionResponse> openGameSessionCall  = this.cncGameService.openSession(
-					OpenSessionRequest.builder().session(sessionId).build());
+					OpenSessionRequest.builder().session(userSession.getSessionId()).build());
 			
 			return openGameSessionCall.execute().body().getI();
 		} catch (IOException e) {
-			log.error("Error opening game session of account {}", account.getUser(), e);
-			throw new GameException("Error opening game session of account " + account.getUser());
+			log.error("Error opening game session of account {}", userSession.getUser(), e);
+			throw new GameException("Error opening game session of account " + userSession.getUser());
 		}
 	}
 

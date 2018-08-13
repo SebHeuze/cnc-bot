@@ -14,12 +14,12 @@ import java.util.stream.Collectors;
 
 import org.cnc.cncbot.dto.ResponseType;
 import org.cnc.cncbot.dto.generated.OriginAccountInfo;
-import org.cnc.cncbot.map.service.retrofit.AccountsEAService;
-import org.cnc.cncbot.map.service.retrofit.GameCDNOriginService;
-import org.cnc.cncbot.map.service.retrofit.ServiceGenerator;
-import org.cnc.cncbot.map.service.retrofit.SigninEAService;
-import org.cnc.cncbot.map.service.retrofit.TiberiumAlliancesService;
-import org.cnc.cncbot.map.utils.HttpUtils;
+import org.cnc.cncbot.service.retrofit.AccountsEAService;
+import org.cnc.cncbot.service.retrofit.GameCDNOriginService;
+import org.cnc.cncbot.service.retrofit.ServiceGenerator;
+import org.cnc.cncbot.service.retrofit.SigninEAService;
+import org.cnc.cncbot.service.retrofit.TiberiumAlliancesService;
+import org.cnc.cncbot.utils.HttpUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 

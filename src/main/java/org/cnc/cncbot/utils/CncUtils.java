@@ -1,4 +1,4 @@
-package org.cnc.cncbot.map.utils;
+package org.cnc.cncbot.utils;
 
 import lombok.extern.slf4j.Slf4j;
 

@@ -1,10 +1,10 @@
 package org.cnc.cncbot.service;
 
 import org.cnc.cncbot.config.DBContext;
+import org.cnc.cncbot.dto.UserSession;
 import org.cnc.cncbot.dto.sendmessage.Message;
 import org.cnc.cncbot.exception.BatchException;
 import org.cnc.cncbot.map.dao.AccountDAO;
-import org.cnc.cncbot.map.dto.UserSession;
 import org.cnc.cncbot.map.entities.Account;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,14 +43,12 @@ public class WebService {
 		if (account == null){
 			throw new BatchException("No account for world "+ unMessage.getMonde());
 		}
+	
+		UserSession userSession = new UserSession(account.getUser(), account.getPass(), account.getWorldId(), 0, 0,
+				null, "World42Dummy", null);
+		String gameSessionId = this.gameService.launchWorld(userSession);
+		userSession.setGameSessionId(gameSessionId);
 		
-		if (!this.accountService.isLogged(account)) {
-			this.accountService.connect(account);
-		}
-
-		String gameSessionId = this.gameService.launchWorld(account);
-		UserSession userSession = new UserSession(0, 0, gameSessionId, "World42Dummy", this.accountService.getOriginAccountInfo(account).getSessionGUID());
-
 		this.gameService.sendMessage(unMessage, userSession);
 	}
 

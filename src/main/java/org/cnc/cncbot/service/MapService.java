@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 
 import org.cnc.cncbot.config.DBContext;
+import org.cnc.cncbot.dto.UserSession;
 import org.cnc.cncbot.dto.generated.OriginAccountInfo;
 import org.cnc.cncbot.dto.generated.PollWorld;
 import org.cnc.cncbot.dto.generated.S;
@@ -31,7 +32,6 @@ import org.cnc.cncbot.map.dao.PoiDAO;
 import org.cnc.cncbot.map.dao.SettingsDAO;
 import org.cnc.cncbot.map.dto.DecryptResult;
 import org.cnc.cncbot.map.dto.MapData;
-import org.cnc.cncbot.map.dto.UserSession;
 import org.cnc.cncbot.map.entities.Account;
 import org.cnc.cncbot.map.entities.Alliance;
 import org.cnc.cncbot.map.entities.Base;
@@ -41,7 +41,7 @@ import org.cnc.cncbot.map.entities.MapObject;
 import org.cnc.cncbot.map.entities.Player;
 import org.cnc.cncbot.map.entities.Poi;
 import org.cnc.cncbot.map.entities.Settings;
-import org.cnc.cncbot.map.utils.CryptoUtils;
+import org.cnc.cncbot.utils.CryptoUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -141,10 +141,15 @@ public class MapService {
 	 */
 	@Transactional
 	public void mapForAccount(Account account) {
-		log.info("Start map batch of World : {}", account.getMonde());
-		String gameSessionId = this.gameService.launchWorld(account);
-		UserSession userSession = new UserSession(0, 0, gameSessionId, "World42Dummy", this.accountService.getOriginAccountInfo(account).getSessionGUID());
+		log.info("Start map batch of World : {}", account.getWorldId());
 
+		UserSession userSession = new UserSession(account.getUser(), account.getPass(), account.getWorldId(), 0, 0,
+				null, "World42Dummy", null);
+
+		String gameSessionId = this.gameService.launchWorld(userSession);
+		userSession.setGameSessionId(gameSessionId);
+		
+		
 		ServerInfoResponse serverInfos = this.gameService.getServerInfos(userSession.getGameSessionId());
 		Set<Alliance> alliancesListTotal = new HashSet<Alliance>();
 		alliancesListTotal.add(new Alliance(0, "No Alliance", new Long(0), 0));
@@ -179,11 +184,11 @@ public class MapService {
 		log.info("Data retrieved : Base {}/Poi {}/EndGame {}/Alliance {}/Player {}", 
 				listeBase.size(), listePOI.size(), listeEndGames.size(), alliancesListTotal.size(), playersListTotal.size());
 
-		log.info("Saving data of World : {}", account.getMonde());
+		log.info("Saving data of World : {}", account.getWorldId());
 		/*
 		 * Save Data in DB 
 		 */
-		DBContext.setSchema(DAOConstants.SCHEMA_PREFIX + account.getMonde());
+		DBContext.setSchema(DAOConstants.SCHEMA_PREFIX + account.getWorldId());
 		//Delete all the actual data
 		this.allianceDao.truncateTable();
 		this.playerDao.truncateTable();

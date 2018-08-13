@@ -1,7 +1,7 @@
-package org.cnc.cncbot.map.service.retrofit;
+package org.cnc.cncbot.service.retrofit;
 
 import org.cnc.cncbot.dto.ResponseType;
-import org.cnc.cncbot.map.utils.StringConverterFactory;
+import org.cnc.cncbot.utils.StringConverterFactory;
 
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
