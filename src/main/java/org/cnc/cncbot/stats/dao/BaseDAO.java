@@ -1,5 +1,7 @@
 package org.cnc.cncbot.stats.dao;
 
+import java.util.Date;
+
 import org.cnc.cncbot.stats.entities.Base;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -20,8 +22,8 @@ public interface BaseDAO extends JpaRepository<Base, Long> {
 	@Modifying
 	public void truncateTable();
 	
-	@Query(value = "INSERT INTO base_hist (id, id_joueur, nom_base, score_base,coord_x,coord_y,date) SELECT base.*,to_date(?, 'YYYY-MM-DD') FROM base", nativeQuery = true)
+	@Query(value = "INSERT INTO base_hist (id, id_joueur, nom_base, score_base,coord_x,coord_y,date) SELECT base.*, ?1 FROM base", nativeQuery = true)
 	@Transactional
 	@Modifying
-	public void archive();
+	public void archive(Date dateArchive);
 }

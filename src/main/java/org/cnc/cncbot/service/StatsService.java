@@ -186,11 +186,11 @@ public class StatsService {
 		      this.playerDAO.insertAll(joueursListe);
 		      this.baseDAO.insertAll(basesList);
 		      
-		      //Récupération des alliances et POI
+		      //get POI and Alliances
 		      int maxRankingAlliance = Integer.valueOf(this.settingDAO.getOne("maxRankingAlliance").getValue());
 		      List<Alliance> alliancesListe = this.getAlliancesData(maxRankingAlliance);
 		      
-		      // On enlève les dupliqués
+		      //Removing duplicates
 		      alliancesListe = alliancesListe.stream()
 				      .distinct()
 				      .collect(Collectors.toList());
@@ -206,31 +206,31 @@ public class StatsService {
 				      .distinct()
 				      .collect(Collectors.toList());
 		      
-		      //On ajoute sans alliance
-		      alliancesListe.add(new Alliance(0, "", 0, 0, 9999, 0, 0, 0, 0, 0, 0,"", 0, new int[]{0,0,0,0,0,0,0,0}, new int[]{0,0,0,0,0,0,0,0}, new ArrayList<POI>()));
+		      //We add "no alliance" as Alliance with Id 0
+		      Alliance noAlliance = new Alliance();
+		      noAlliance.setId(new Long(0));
+		      alliancesListe.add(noAlliance);
 		      
 		      this.allianceDAO.saveAll(alliancesListe);
 		      this.poiDAO.saveAll(poisList);
 		      
-		      //On crée la date du jour pour la timezone concernée
-		      DateTimeZone zone = DateTimeZone.forID(compteActuel.getTimezone());
+		      DateTimeZone zone = DateTimeZone.forID(account.getTimezone());
 		      DateTime dt = new DateTime(zone);
-		      String currentDateTimezone = formatter.print(dt);
 		      
-		      //Archivage
-		      this.playerDAO.archive(currentDateTimezone);
-		      this.baseDAO.archive(currentDateTimezone);
-		      this.allianceDAO.archive(currentDateTimezone);
-		      this.poiDAO.archive(currentDateTimezone);
+		      //Archive
+		      this.playerDAO.archive(dt.toDate());
+		      this.baseDAO.archive(dt.toDate());
+		      this.allianceDAO.archive(dt.toDate());
+		      this.poiDAO.archive(dt.toDate());
 		      
-		      //On crée une date en fonction de la timezone
-		      this.settingDAO.updateSetting(userSession.getWorldId(), "date_last_update", currentDateTimezone);
-		      this.scriptingDAO.updateCompteurs(userSession.getWorldId(), joueursListe.size(), alliancesListe.size());
+		      this.settingDAO.save(new Settings("date_last_update", formatter.print(dt)));
+		      this.scriptingDAO.updateCompteurs(joueursListe.size(), alliancesListe.size());
 		    }  
-		    //Calcul stats
+		
+		    //stats Processing
 		    this.calculStats();
 		    
-		    //clearCache
+		    //clearCache on ccta stats side
 		    this.cnCService.clearCache(userSession.getWorldId());
 	}
 

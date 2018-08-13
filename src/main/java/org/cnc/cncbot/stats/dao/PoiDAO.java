@@ -1,5 +1,7 @@
 package org.cnc.cncbot.stats.dao;
 
+import java.util.Date;
+
 import org.cnc.cncbot.stats.entities.Poi;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -20,8 +22,8 @@ public interface PoiDAO extends JpaRepository<Poi, Long> {
 	@Modifying
 	public void truncateTable();
 	
-	@Query(value = "INSERT INTO poi_hist (id,id_alliance,level,type,coord_x,coord_y,date) SELECT poi.*,to_date(?, 'YYYY-MM-DD') FROM poi", nativeQuery = true)
+	@Query(value = "INSERT INTO poi_hist (id,id_alliance,level,type,coord_x,coord_y,date) SELECT poi.*, ?1 FROM poi", nativeQuery = true)
 	@Transactional
 	@Modifying
-	public void archive();
+	public void archive(Date dateArchive);
 }
