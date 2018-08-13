@@ -27,7 +27,7 @@ public class Base implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	private Long id;
+	private Integer id;
 	
 	@Column(name="coord_x")
 	private Integer coordX;

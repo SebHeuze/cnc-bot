@@ -1,4 +1,4 @@
-package org.cnc.cncbot.dto;
+package org.cnc.cncbot.dto.publicplayerinfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +9,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class PublicPlayerInfo {
+public class PublicPlayerInfoResponse {
 
 private Integer a;
 

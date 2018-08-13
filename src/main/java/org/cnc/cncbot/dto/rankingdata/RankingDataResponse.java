@@ -1,4 +1,4 @@
-package org.cnc.cncbot.dto;
+package org.cnc.cncbot.dto.rankingdata;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +8,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class RankingData {
+public class RankingDataResponse {
 
 private List<P> p = new ArrayList<P>();
 
