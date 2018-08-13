@@ -25,9 +25,10 @@ public class PoiHist implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Column(name="id_hist")
-	private Integer idHist;
+	@Id
+	private Long idHist;
 
-	private Integer id;
+	private Long id;
 	
 	@Column(name="coord_x")
 	private Integer coordX;

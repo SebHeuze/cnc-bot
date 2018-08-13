@@ -23,7 +23,7 @@ public class Player implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	private Integer id;
+	private Long id;
 
 	@Column(name="bases_joueurs_detruites")
 	private Integer destroyedPlayersBases;

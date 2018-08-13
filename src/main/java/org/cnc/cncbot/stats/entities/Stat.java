@@ -23,7 +23,7 @@ public class Stat implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	private Integer id;
+	private Long id;
 
 	@Column(name="donnees_stat")
 	private String data;

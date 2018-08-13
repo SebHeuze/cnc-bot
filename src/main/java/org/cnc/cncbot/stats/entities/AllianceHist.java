@@ -26,10 +26,9 @@ public class AllianceHist implements Serializable {
 
 	@Id
 	@Column(name="id_hist")
-	private Integer idHist;
+	private Long idHist;
 
-	@Id
-	private Integer id;
+	private Long id;
 
 	@Column(name="alliance_description")
 	private String allianceDescription;
