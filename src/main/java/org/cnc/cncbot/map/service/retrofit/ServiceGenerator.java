@@ -1,33 +1,48 @@
 package org.cnc.cncbot.map.service.retrofit;
 
+import org.cnc.cncbot.dto.ResponseType;
 import org.cnc.cncbot.map.utils.StringConverterFactory;
 
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
+import retrofit2.Retrofit.Builder;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+/**
+ * Retrofit service generator
+ * @author sheuze
+ *
+ */
 public final class ServiceGenerator {
 
    private static OkHttpClient.Builder httpClient
      = new OkHttpClient.Builder();
    
+   /**
+    * Change Value of Level to enable Http logs
+    */
    private static HttpLoggingInterceptor logging
    = new HttpLoggingInterceptor()
-     .setLevel(HttpLoggingInterceptor.Level.BASIC);
+     .setLevel(HttpLoggingInterceptor.Level.NONE);
    
    
-   public static <S> S createService(Class<S> serviceClass, String baseUrl) {
+   public static <S> S createService(Class<S> serviceClass, String baseUrl, ResponseType responseType) {
 	   if (!httpClient.interceptors().contains(logging)) {
            httpClient.addInterceptor(logging);
 	   }
-       Retrofit retrofit = new Retrofit.Builder()
+       Builder retrofitBuilder = new Retrofit.Builder()
 		   .client(httpClient.followRedirects(false).build())
-	       .baseUrl(baseUrl)
-	       .addConverterFactory(new  StringConverterFactory())
-	       .addConverterFactory(GsonConverterFactory.create())
-	       .build();
+	       .baseUrl(baseUrl);
        
-       return retrofit.create(serviceClass);
+       switch (responseType) {
+       	case JSON :
+       		retrofitBuilder = retrofitBuilder.addConverterFactory(GsonConverterFactory.create());
+       	case PLAIN_TEXT:
+       	default:
+       		retrofitBuilder = retrofitBuilder.addConverterFactory(new  StringConverterFactory());
+       }
+       
+       return retrofitBuilder.build().create(serviceClass);
    }
 }

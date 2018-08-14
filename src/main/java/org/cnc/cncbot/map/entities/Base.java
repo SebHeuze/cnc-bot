@@ -1,9 +1,10 @@
 package org.cnc.cncbot.map.entities;
 
-import java.io.Serializable;
-
+import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.Table;
+
+import org.springframework.data.domain.Persistable;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -16,21 +17,33 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-public class Base  implements Serializable {
-	
-	private static final long serialVersionUID = 1L;
-	
-	@Id
-	private Integer i;
-	private Integer pi;
-	private Integer y;
-	private Integer x;
-	private String  n;
-	private Integer l;
-	private Boolean al;
-	private Boolean pr;
-	private Integer cb;
-	private Integer cd;
-	private Long ps;
-	
+@Table(name="base")
+public class Base  extends MapObject {
+	@Column(name = "i")
+	private Integer baseId;
+
+	@Column(name = "pi")
+	private Integer playerId;
+
+	@Column(name = "n")
+	private String  name;
+
+	@Column(name = "l")
+	private Integer level;
+
+	@Column(name = "al")
+	private Boolean alert = false;
+
+	@Column(name = "pr")
+	private Boolean hasProtectionEnd = false;
+
+	@Column(name = "cb")
+	private Integer conditionBuilding = 0;;
+
+	@Column(name = "cd")
+	private Integer conditionDefense = 0;;
+
+	@Column(name = "ps")
+	private Integer protectionEnd = 0;
+
 }

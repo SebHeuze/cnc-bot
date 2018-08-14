@@ -3,12 +3,19 @@ package org.cnc.cncbot.map.utils;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Converter;
 import retrofit2.Retrofit;
 
+
+/**
+ * String converter used by Retrofit
+ * @author sheuze
+ *
+ */
 public final class StringConverterFactory extends Converter.Factory {
   @Override
   public Converter<ResponseBody, ?> responseBodyConverter(Type type, Annotation[] annotations,

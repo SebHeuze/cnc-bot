@@ -2,8 +2,11 @@ package org.cnc.cncbot.map.entities;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -14,6 +17,9 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name="settings")
 public class Settings {
 	@Id
 	private String name;
