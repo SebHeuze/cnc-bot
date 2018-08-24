@@ -12,6 +12,8 @@ import org.cnc.cncbot.dto.UserSession;
 import org.cnc.cncbot.dto.opensession.OpenSessionRequest;
 import org.cnc.cncbot.dto.opensession.OpenSessionResponse;
 import org.cnc.cncbot.dto.poll.PollRequest;
+import org.cnc.cncbot.dto.publicallianceinfo.PublicAllianceInfoRequest;
+import org.cnc.cncbot.dto.publicallianceinfo.PublicAllianceInfoResponse;
 import org.cnc.cncbot.dto.publicplayerinfo.PublicPlayerInfoRequest;
 import org.cnc.cncbot.dto.publicplayerinfo.PublicPlayerInfoResponse;
 import org.cnc.cncbot.dto.rankingcount.RankingCountRequest;
@@ -168,8 +170,25 @@ public class GameService {
 					.build());
 			return getRankingCountCall.execute().body();
 		} catch (IOException e) {
-			log.error("Error with request getRankingCount", e);
-			throw new GameException("Error with request getRankingCount");
+			log.error("Error with request getPublicPlayerInfoRequest", e);
+			throw new GameException("Error with request getPublicPlayerInfoRequest");
+		}
+	}
+	
+	/**
+     * Récupérer les informations joueurs.
+     * @param id l'id du joueur
+     * @return requete
+     */
+	PublicAllianceInfoResponse getPublicAllianceInfoRequest(UserSession userSession, int id) {
+		try {
+			Call<PublicAllianceInfoResponse> getPublicAllianceInfoCall  = this.cncGameService.getPublicAllianceInfo(
+					PublicAllianceInfoRequest.builder().id(id).session(userSession.getGameSessionId())
+					.build());
+			return getPublicAllianceInfoCall.execute().body();
+		} catch (IOException e) {
+			log.error("Error with request getPublicAllianceInfoRequest", e);
+			throw new GameException("Error with request getPublicAllianceInfoRequest");
 		}
 	}
 	
