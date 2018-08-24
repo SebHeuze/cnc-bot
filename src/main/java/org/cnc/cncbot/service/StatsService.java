@@ -2,30 +2,27 @@ package org.cnc.cncbot.service;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 import org.cnc.cncbot.config.DBContext;
-import org.cnc.cncbot.dto.PollWorld;
-import org.cnc.cncbot.dto.S;
+import org.cnc.cncbot.dto.POIType;
 import org.cnc.cncbot.dto.UserSession;
+import org.cnc.cncbot.dto.publicallianceinfo.Opoi;
+import org.cnc.cncbot.dto.publicallianceinfo.PublicAllianceInfoResponse;
+import org.cnc.cncbot.dto.publicallianceinfo.Rpoi;
 import org.cnc.cncbot.dto.publicplayerinfo.C;
 import org.cnc.cncbot.dto.publicplayerinfo.Ew;
 import org.cnc.cncbot.dto.publicplayerinfo.PublicPlayerInfoResponse;
+import org.cnc.cncbot.dto.rankingdata.A;
 import org.cnc.cncbot.dto.rankingdata.P;
 import org.cnc.cncbot.dto.rankingdata.RankingDataResponse;
 import org.cnc.cncbot.dto.serverinfos.ServerInfoResponse;
 import org.cnc.cncbot.exception.BatchException;
 import org.cnc.cncbot.map.dao.DAOConstants;
-import org.cnc.cncbot.map.dto.MapData;
-import org.cnc.cncbot.map.entities.MapObject;
 import org.cnc.cncbot.stats.dao.AccountDAO;
 import org.cnc.cncbot.stats.dao.AllianceDAO;
 import org.cnc.cncbot.stats.dao.BaseDAO;
@@ -47,12 +44,8 @@ import org.joda.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -191,7 +184,7 @@ public class StatsService {
 
 		userSession.setGameSessionId(gameSessionId);
 
-		ServerInfoResponse serverInfos = this.gameService.getServerInfos(userSession.getGameSessionId());
+		ServerInfoResponse serverInfos = this.gameService.getServerInfos(userSession);
 
 
 		if(!statsOnly){
@@ -204,7 +197,7 @@ public class StatsService {
 			//Get players data
 
 			int maxRankingJoueur = Integer.valueOf(this.settingDAO.getOne("maxRankingJoueur").getValue());
-			List<Player> joueursListe = this.getPlayerData(maxRankingJoueur);
+			List<Player> joueursListe = this.getPlayerData(userSession, maxRankingJoueur);
 
 			// Removing duplicates
 			joueursListe = joueursListe.stream()
@@ -218,14 +211,14 @@ public class StatsService {
 
 			//get POI and Alliances
 			int maxRankingAlliance = Integer.valueOf(this.settingDAO.getOne("maxRankingAlliance").getValue());
-			List<Alliance> alliancesListe = this.getAlliancesData(maxRankingAlliance);
+			List<Alliance> alliancesListe = this.getAlliancesData(userSession, maxRankingAlliance);
 
 			//Removing duplicates
 			alliancesListe = alliancesListe.stream()
 					.distinct()
 					.collect(Collectors.toList());
 
-			List<Poi> poisList = this.extractPois(alliancesListe);
+			List<Poi> poisList = this.extractPois( alliancesListe);
 
 			//We look for free POI in cncmap DB
 			DBContext.setDatasource("cncmap");
@@ -265,6 +258,64 @@ public class StatsService {
 	}
 
 
+	public List<Alliance> getAlliancesData(UserSession userSession, int maxRanking) {
+		
+	    log.info("Get alliances data");
+	    int countAlliances = this.gameService.getRankingCount(userSession, 1, 0);
+		
+	    log.info("Alliances count: {}", countAlliances);
+	  
+	    if (countAlliances <= 0){
+	      throw new BatchException("Error with alliance rank data");
+	    }
+
+	    int currentIndex = 0;
+	    int endIndex;
+	    
+
+	    RankingDataResponse rankingData = null;
+	    /*
+	     * Get full rankings
+	     */
+	    log.debug("Get alliance rank");
+	    
+	    do {
+			endIndex = currentIndex + (this.rankingInterval - 1);
+			//On vérifie si on a pas atteint les limites
+			if (endIndex > countAlliances - 1) { endIndex =  countAlliances - 1; } 
+			if (endIndex > maxRanking - 1) { endIndex = maxRanking - 1; } 
+
+			RankingDataResponse rankDataTmp = this.gameService.getRankingData(userSession, 1, currentIndex, endIndex, 2, true);
+			currentIndex = endIndex + 1; 
+
+			if (rankingData == null) {
+				rankingData = rankDataTmp;
+			} else {
+				rankingData.getA().addAll(rankDataTmp.getA());
+			}
+
+		} while (currentIndex < maxRanking - 1 && currentIndex < countAlliances - 1); 
+
+		
+	    List<Alliance> alliancesList = new ArrayList<>();
+		
+		try {
+			List<CompletableFuture<Alliance>> futures = new ArrayList<CompletableFuture<Alliance>>();
+			for (A a : rankingData.getA()) {
+				CompletableFuture<Alliance> future = this.getPublicAllianceInfo(userSession, a);          
+				futures.add(future);
+			}
+
+			for (CompletableFuture<Alliance> future : futures) {
+				alliancesList.add(future.get());
+			}
+		} catch (InterruptedException | ExecutionException e) {
+			throw new BatchException("Error while trying to get future data");
+		}
+		
+	  }
+	  
+	
 	public List<Player> getPlayerData(UserSession userSession, int maxRanking) {
 		log.info("Get players data");
 		int countPlayers = this.gameService.getRankingCount(userSession, 0, 0);
@@ -272,30 +323,30 @@ public class StatsService {
 		//WORKAROUND for bug in CNC Rank when you hit the end
 		countPlayers = countPlayers - 5;
 
-		log.info("Nombre de joueurs : {}", countPlayers);
+		log.info("Players count : {}", countPlayers);
 
 		if (countPlayers <= 0) {
 			throw new BatchException("Bad Player Count");
 		}
 
 
-		int currentIndex = -1; 
-		RankingDataResponse rankingData = null;
+		int currentIndex = 0; 
 		int endIndex;
+		
+		RankingDataResponse rankingData = null;
 
 		/*
 		 * Get player rank
 		 */
-		//TODO WTF WITH INDEX ? it can be simplier
 		log.debug("Get player rank");
 		do {
-			endIndex = currentIndex + this.rankingInterval;
+			endIndex = currentIndex + (this.rankingInterval - 1);
 			//On vérifie si on a pas atteint les limites
 			if (endIndex > countPlayers - 1) { endIndex =  countPlayers - 1; } 
 			if (endIndex > maxRanking - 1) { endIndex = maxRanking - 1; } 
 
-			RankingDataResponse rankDataTmp = this.gameService.getRankingData(userSession, 0, currentIndex + 1, endIndex, 2, true);
-			currentIndex = endIndex; //Les joueurs traités à ajouter
+			RankingDataResponse rankDataTmp = this.gameService.getRankingData(userSession, 0, currentIndex, endIndex, 2, true);
+			currentIndex = endIndex + 1; //Les joueurs traités à ajouter
 
 			if (rankingData == null) {
 				rankingData = rankDataTmp;
@@ -304,14 +355,14 @@ public class StatsService {
 			}
 
 			//Tant qu'on a pas fait tous les joueurs ou atteint la limite
-		} while (currentIndex + 1 < maxRanking && currentIndex + 1< countPlayers); 
+		} while (currentIndex < maxRanking - 1 && currentIndex < countPlayers - 1); 
 
 		List<Player> playerList = new ArrayList<>();
 		
 		try {
 			List<CompletableFuture<Player>> futures = new ArrayList<CompletableFuture<Player>>();
 			for (P p : rankingData.getP()) {
-				CompletableFuture<Player> future = this.getPlayerData(userSession, p);          
+				CompletableFuture<Player> future = this.getPlayerPublicInfos(userSession, p);          
 				futures.add(future);
 			}
 
@@ -327,15 +378,14 @@ public class StatsService {
 
 	
 	/**
-	 * Get map data for tile X
-	 * @param x
-	 * @param serverInfos
-	 * @param gameSessionId
+	 * Get Player public detailled infos
+	 * @param userSession
+	 * @param rankingDataP
 	 * @return
 	 * @throws InterruptedException
 	 */
 	@Async
-	public CompletableFuture<Player> getPlayerData(UserSession userSession, P rankingDataP) throws InterruptedException {
+	public CompletableFuture<Player> getPlayerPublicInfos(UserSession userSession, P rankingDataP) throws InterruptedException {
 
       PublicPlayerInfoResponse playerInfo = this.gameService.getPublicPlayerInfoRequest(userSession, rankingDataP.getP());
       List<Base> basesList = new ArrayList<Base>();
@@ -363,4 +413,69 @@ public class StatsService {
 		return CompletableFuture.completedFuture(playerTmp);
 	}
 	
+	/**
+	 * Get public alliance infos
+	 * @param rankingDataA
+	 * @return
+	 */
+	@Async
+	public CompletableFuture<Alliance> getAlliancePublicInfos(UserSession userSession, A rankingDataA) {
+        List<Alliance> result = new ArrayList<Alliance>(); // this is some custom bean holding your result
+
+          PublicAllianceInfoResponse allianceInfo = this.gameService.getPublicAllianceInfoRequest(userSession, rankingDataA.getA());
+
+          //We get rank and POI Score
+          List<Rpoi> listeInfosPois = allianceInfo.getRpois();
+          int[] rangsPoi = new int[8];
+          int[] scoresPoi = new int[8];
+          int indexTmp = 1;
+          for (Rpoi poiInfo : listeInfosPois) {
+            rangsPoi[indexTmp] = poiInfo.getR();
+            scoresPoi[indexTmp] = poiInfo.getS();
+            indexTmp++;
+          }
+
+          List<Poi> listePois = new ArrayList<Poi>();
+          
+          //Get alliance Poi
+          for (Opoi poi : allianceInfo.getOpois()) {
+        	Poi poiTmp = new Poi(POIType.values()[poi.getT()-1], poi.getI(), rankingDataA.getA(), poi.getL());
+            poiTmp.setX(poi.getX()); 
+            poiTmp.setY(poi.getY());
+            listePois.add(poiTmp);
+          }
+          Alliance allianceTmp = new Alliance(rankingDataA.getA(), rankingDataA.getAn(), rankingDataA.getBc(), rankingDataA.getPc(), rankingDataA.getR(), rankingDataA.getSc(), rankingDataA.getS(), rankingDataA.getSa(), allianceInfo.getBd(), allianceInfo.getBde(), allianceInfo.getBdp(), allianceInfo.getD(), allianceInfo.getPoi(), rangsPoi, scoresPoi, listePois);
+
+          result.add(allianceTmp);
+        
+        return CompletableFuture.completedFuture(allianceTmp);
+    }
+	
+	/**
+	 * Extract all bases from players
+	 * @param playersListe
+	 * @return
+	 */
+	public List<Base> extractBases(List<Player> playersListe) {
+	    List<Base> bases = new ArrayList<Base>();
+	    for (Player player : playersListe) {
+	      bases.addAll(player.getBases());
+	    }
+	    return bases;
+	  }
+	  
+	 
+	/**
+	 * Extract all Pois from alliances
+	 * @param alliancesListe
+	 * @return
+	 */
+	  public List<Poi> extractPois(List<Alliance> alliancesListe) {
+	    List<Poi> pois = new ArrayList<Poi>();
+	    for (Alliance alliance : alliancesListe) {
+	      pois.addAll(alliance.getPoiList());
+	    }
+	    return pois;
+	  }
+
 }
