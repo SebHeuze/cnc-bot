@@ -35,7 +35,7 @@ public class Alliance implements Serializable {
 	private String allianceDescription;
 
 	@Column(name="average_score")
-	private Integer averageScore;
+	private Long averageScore;
 
 	@Column(name="bases_joueurs_detruites")
 	private Integer destroyedPlayersBases;
