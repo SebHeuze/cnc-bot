@@ -1,14 +1,18 @@
 package org.cnc.cncbot.service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.cnc.cncbot.config.DBContext;
+import org.cnc.cncbot.dto.ResponseType;
 import org.cnc.cncbot.dto.UserSession;
+import org.cnc.cncbot.dto.cctastats.JoueursRegistered;
 import org.cnc.cncbot.dto.publicallianceinfo.Opoi;
 import org.cnc.cncbot.dto.publicallianceinfo.PublicAllianceInfoResponse;
 import org.cnc.cncbot.dto.publicallianceinfo.Rpoi;
@@ -21,6 +25,8 @@ import org.cnc.cncbot.dto.rankingdata.RankingDataResponse;
 import org.cnc.cncbot.dto.serverinfos.ServerInfoResponse;
 import org.cnc.cncbot.exception.BatchException;
 import org.cnc.cncbot.map.dao.DAOConstants;
+import org.cnc.cncbot.service.retrofit.CctaStatsService;
+import org.cnc.cncbot.service.retrofit.ServiceGenerator;
 import org.cnc.cncbot.stats.dao.AccountDAO;
 import org.cnc.cncbot.stats.dao.AllianceDAO;
 import org.cnc.cncbot.stats.dao.BaseDAO;
@@ -55,6 +61,8 @@ import com.google.gson.JsonArray;
 
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import retrofit2.Call;
+import retrofit2.Response;
 
 /**
  * Map service
@@ -83,6 +91,7 @@ public class StatsService {
 	private final PoiDAO poiDAO;
 	private final org.cnc.cncbot.map.dao.PoiDAO poiDAOMap;
 
+	private final CctaStatsService cctaStatsService;
 
 	/**
 	 * Intervalle de récupération pour les rangs.
@@ -90,6 +99,11 @@ public class StatsService {
 	@Value("${cncbot.stats.ranking_interval}")
 	private int rankingInterval; 
 
+	/**
+	 * Url CCTA Stats
+	 */
+	@Value("${org.cnc.cncbot.cctastats.host}")
+	private String cctaStatsHost;
 
 	/**
 	 * Formatteur de date SQL.
@@ -115,6 +129,9 @@ public class StatsService {
 		this.baseDAO = baseDAO;
 		this.poiDAO = poiDAO;
 		this.poiDAOMap = poiDAOMap;
+		
+
+		this.cctaStatsService = ServiceGenerator.createService(CctaStatsService.class, this.cctaStatsHost, ResponseType.JSON);
 	}
 
 	/**
@@ -200,10 +217,7 @@ public class StatsService {
 		String gameSessionId = this.gameService.launchWorld(userSession);
 
 		userSession.setGameSessionId(gameSessionId);
-
-		ServerInfoResponse serverInfos = this.gameService.getServerInfos(userSession);
-
-
+		
 		if(!statsOnly){
 			//Deleting existing data
 			this.playerDAO.truncateTable();
@@ -242,15 +256,15 @@ public class StatsService {
 			List<org.cnc.cncbot.map.entities.Poi> allPOIList = this.poiDAOMap.findAll();
 
 			//Since we have no id we create one with coords
-			allPOIList.forEach(
-					poiMap -> poisList.add(new Poi(new Long(poiMap.getCoords().getX()*1000 + poiMap.getCoords().getY()),
-							poiMap.getCoords().getX(), poiMap.getCoords().getY(), poiMap.getAllianceId(),
-							poiMap.getLevel(), poiMap.getType())));
-			DBContext.setDatasource("cctastats");
-
-			poisList = poisList.stream()
+			poisList = allPOIList.stream()
+					.map(poiMap -> new Poi(new Long(poiMap.getCoords().getX()*1000 + poiMap.getCoords().getY()),
+														poiMap.getCoords().getX(), poiMap.getCoords().getY(), poiMap.getAllianceId(),
+														poiMap.getLevel(), poiMap.getType()))
 					.distinct()
-					.collect(Collectors.toList());
+	        		.collect(Collectors.toList()); 
+			
+			DBContext.setDatasource("cctastats");
+			
 
 			//We add "no alliance" as Alliance with Id 0
 			Alliance noAlliance = new Alliance();
@@ -277,14 +291,15 @@ public class StatsService {
 		this.processStats(userSession);
 
 		//clearCache on ccta stats side
-		this.cnCService.clearCache(userSession.getWorldId());
+		this.cctaStatsService.clearCache(userSession.getWorldId());
 	}
 
 	/**
 	 * Process stats
 	 * @param idMonde
+	 * @throws IOException 
 	 */
-	public void processStats(UserSession userSession){
+	public void processStats(UserSession userSession) {
 		log.info("Starting stats process");
 
 		this.statsDAO.truncateTable();
@@ -296,41 +311,54 @@ public class StatsService {
 		for (StatsList stat : statsListGlobal) {
 			long startTime = System.currentTimeMillis();
 			
-			JsonArray jsonResult = this.statsProcessingDAO.excecuteGlobalStat(stat);
+			JsonArray jsonResult = this.statsProcessingDAO.excecuteStat(stat, null);
 			this.statsDAO.save(new Stat(null, jsonResult.toString(), 0, stat.getName()));
 			
 		    long endTime = System.currentTimeMillis();
 		    Long duree = endTime -startTime;
 		    
-		    this.statsLogDAO.save(new StatsLog(null, stat.getId(), duree.intValue(), new Date(), userSession.getWorldId(), 0));
+		    this.statsLogDAO.save(new StatsLog(null, stat.getId(), duree.intValue(), new Date(), userSession.getWorldId(), new Long(0)));
 		}
 
 		//Get Stats by Alliance
 		List<StatsList> statsListAlliance = this.statsListDAO.findAllByType(0);
 
-		log.debug("Find Players that are registered on ccta stats");
-		List<Integer> listeIdJoueurs = this.cnCService.getIdJoueursRegistered(idMonde);
-		log.debug("End of Player find");
-
-		if (listeIdJoueurs.size() > 0){
-
-			log.debug("Récupération des alliances");
-			List<Integer> listeIdAlliances = this.joueurDAO.getIdAlliancesFromJoueurs(listeIdJoueurs, idMonde);
-			log.debug(" Fin Récupération des alliances");
-			//Pour chaque ally
-			for (Integer idAlliance : listeIdAlliances){
-				//Pour chaque stat
-				log.debug("Calcul stats alliance {}", idAlliance);
-				for (Stat stat : listeStatsAllys) {
-					this.scriptingDAO.executeAllyStat(idMonde, idAlliance, stat);
+		try {
+			log.debug("Find Players that are registered on ccta stats");
+			Call<List<JoueursRegistered>> listeIdJoueursCall = this.cctaStatsService.getPlayersRegistered(userSession.getWorldId());
+			Response<List<JoueursRegistered>> listeIdJoueursResponse = listeIdJoueursCall.execute();			
+			log.debug("End of Player find");
+	
+			if (listeIdJoueursResponse.body().size() > 0){
+				List<Integer> playersId = listeIdJoueursResponse.body().stream()
+				        .filter(Objects::nonNull)
+				        .map(elt -> elt.getIdJoueur())
+				        .collect(Collectors.toList()); 
+				
+				log.debug("Start get alliances");
+				List<Alliance> listeIdAlliances = this.playerDAO.findAlliancesOfPlayers(playersId);
+				log.debug("End get alliances");
+				
+				//For each alliance
+				for (Alliance alliance : listeIdAlliances){
+					//Pour chaque stat
+					log.debug("Process stats alliance {}", alliance);
+					for (StatsList stat : statsListAlliance) {
+						long startTime = System.currentTimeMillis();
+						this.statsProcessingDAO.excecuteStat(stat, alliance); 
+						long endTime = System.currentTimeMillis();
+					    Long duree = endTime - startTime;
+					    this.statsLogDAO.save(new StatsLog(null, stat.getId(), duree.intValue(), new Date(), userSession.getWorldId(), alliance.getId()));
+					}
 				}
-				log.debug(" Fin Calcul stats alliance {}", idAlliance);
+			} else {
+				log.info("No alliance stats to process");
 			}
-		} else {
-			log.info("Aucune stat alliance à calculer");
+	
+			this.settingDAO.updateSetting("force_stats", "0");
+		} catch (IOException e) {
+			log.error("Cannot access cctastats service to get Player list, stats processing stopped", e);
 		}
-
-		this.settingDAO.updateSetting(idMonde, "force_stats", "0");
 	}
 
 	/***
