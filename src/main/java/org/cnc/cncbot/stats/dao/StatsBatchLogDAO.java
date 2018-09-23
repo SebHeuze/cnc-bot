@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
  *
  */
 @Repository
-public interface BatchLogDAO extends JpaRepository<StatsBatchLog, Integer> {
+public interface StatsBatchLogDAO extends JpaRepository<StatsBatchLog, Integer> {
 
 }

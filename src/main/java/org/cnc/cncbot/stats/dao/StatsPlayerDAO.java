@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
  *
  */
 @Repository
-public interface PlayerDAO extends JpaRepository<StatsPlayer, Long> {
+public interface StatsPlayerDAO extends JpaRepository<StatsPlayer, Long> {
 
 	@Query(value = "TRUNCATE TABLE joueur", nativeQuery = true)
 	@Transactional

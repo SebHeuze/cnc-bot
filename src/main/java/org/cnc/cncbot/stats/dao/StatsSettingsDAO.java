@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
  *
  */
 @Repository
-public interface SettingsDAO  extends JpaRepository<StatsSettings, String> {
+public interface StatsSettingsDAO  extends JpaRepository<StatsSettings, String> {
 
 	@Modifying
 	@Transactional

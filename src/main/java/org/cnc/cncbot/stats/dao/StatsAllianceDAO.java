@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
  *
  */
 @Repository
-public interface AllianceDAO extends JpaRepository<StatsAlliance, Long> {
+public interface StatsAllianceDAO extends JpaRepository<StatsAlliance, Long> {
 
 	@Query(value = "TRUNCATE TABLE alliance", nativeQuery = true)
 	@Transactional
