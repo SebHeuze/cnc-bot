@@ -2,7 +2,7 @@ package org.cnc.cncbot.stats.dao;
 
 import java.util.Date;
 
-import org.cnc.cncbot.stats.entities.Alliance;
+import org.cnc.cncbot.stats.entities.StatsAlliance;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
  *
  */
 @Repository
-public interface AllianceDAO extends JpaRepository<Alliance, Long> {
+public interface AllianceDAO extends JpaRepository<StatsAlliance, Long> {
 
 	@Query(value = "TRUNCATE TABLE alliance", nativeQuery = true)
 	@Transactional

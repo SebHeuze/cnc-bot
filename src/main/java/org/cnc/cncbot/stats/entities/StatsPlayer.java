@@ -25,7 +25,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name="stats_joueur")
-public class Player implements Serializable {
+public class StatsPlayer implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id
@@ -62,6 +62,6 @@ public class Player implements Serializable {
 	private Integer destroyedTotalBases;
 	
 	@OneToMany
-	private List<Base> bases;
+	private List<StatsBase> bases;
 
 }

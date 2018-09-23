@@ -20,7 +20,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name="stats_settings")
-public class Settings {
+public class StatsSettings {
 	@Id
 	private String name;
 	private String value;

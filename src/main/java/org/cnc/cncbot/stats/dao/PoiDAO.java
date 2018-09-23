@@ -2,7 +2,7 @@ package org.cnc.cncbot.stats.dao;
 
 import java.util.Date;
 
-import org.cnc.cncbot.stats.entities.Poi;
+import org.cnc.cncbot.stats.entities.StatsPoi;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
  *
  */
 @Repository
-public interface PoiDAO extends JpaRepository<Poi, Long> {
+public interface PoiDAO extends JpaRepository<StatsPoi, Long> {
 
 	@Query(value = "TRUNCATE TABLE poi", nativeQuery = true)
 	@Transactional

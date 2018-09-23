@@ -38,13 +38,13 @@ import org.cnc.cncbot.stats.dao.StatsDAO;
 import org.cnc.cncbot.stats.dao.StatsListDAO;
 import org.cnc.cncbot.stats.dao.StatsLogDAO;
 import org.cnc.cncbot.stats.dao.StatsProcessingDAO;
-import org.cnc.cncbot.stats.entities.Account;
-import org.cnc.cncbot.stats.entities.Alliance;
-import org.cnc.cncbot.stats.entities.Base;
-import org.cnc.cncbot.stats.entities.BatchLog;
-import org.cnc.cncbot.stats.entities.Player;
-import org.cnc.cncbot.stats.entities.Poi;
-import org.cnc.cncbot.stats.entities.Settings;
+import org.cnc.cncbot.stats.entities.StatsAccount;
+import org.cnc.cncbot.stats.entities.StatsAlliance;
+import org.cnc.cncbot.stats.entities.StatsBase;
+import org.cnc.cncbot.stats.entities.StatsBatchLog;
+import org.cnc.cncbot.stats.entities.StatsPlayer;
+import org.cnc.cncbot.stats.entities.StatsPoi;
+import org.cnc.cncbot.stats.entities.StatsSettings;
 import org.cnc.cncbot.stats.entities.Stat;
 import org.cnc.cncbot.stats.entities.StatsList;
 import org.cnc.cncbot.stats.entities.StatsLog;
@@ -143,9 +143,9 @@ public class StatsService {
 
 		log.info("Launch of stats batch");
 
-		List<Account> accountList = this.accountDAO.findAll();
+		List<StatsAccount> accountList = this.accountDAO.findAll();
 
-		BatchLog batchLog = new BatchLog();
+		StatsBatchLog batchLog = new StatsBatchLog();
 		batchLog.setDateDebut(new Date());
 		batchLog.setNbWorlds(accountList.size());
 
@@ -155,9 +155,9 @@ public class StatsService {
 
 		int nbFails = 0;
 		String failList = "";
-		for (Account account : accountList) {
+		for (StatsAccount account : accountList) {
 			DBContext.setSchema(DAOConstants.SCHEMA_PREFIX + account.getWorldId()); 
-			Settings updateDate = this.settingDAO.getOne("date_last_update");
+			StatsSettings updateDate = this.settingDAO.getOne("date_last_update");
 
 			DateTimeZone zone = DateTimeZone.forID(account.getTimezone());
 			DateTime dt = new DateTime(zone);
@@ -175,7 +175,7 @@ public class StatsService {
 			} else {
 				log.debug("Monde {} à jour",  account.getWorldId());
 
-				Settings forceStats = this.settingDAO.getOne("force_stats");
+				StatsSettings forceStats = this.settingDAO.getOne("force_stats");
 
 				if (Integer.parseInt(forceStats.getValue()) == 1){
 					log.info("Force stats for account {} on world {}", account.getUser(), account.getWorldId());
@@ -206,7 +206,7 @@ public class StatsService {
 	 * @throws BatchException
 	 * @param Account account to use
 	 */
-	public void statsJobForWorld(Account account, boolean statsOnly) throws BatchException {
+	public void statsJobForWorld(StatsAccount account, boolean statsOnly) throws BatchException {
 		log.info("Start map batch of World : {}", account.getWorldId());
 
 		UserSession userSession = new UserSession(account.getUser(), account.getPass(), account.getWorldId(), 0, 0,
@@ -228,28 +228,28 @@ public class StatsService {
 			//Get players data
 
 			int maxRankingJoueur = Integer.valueOf(this.settingDAO.getOne("maxRankingJoueur").getValue());
-			List<Player> joueursListe = this.getPlayerData(userSession, maxRankingJoueur);
+			List<StatsPlayer> joueursListe = this.getPlayerData(userSession, maxRankingJoueur);
 
 			// Removing duplicates
 			joueursListe = joueursListe.stream()
 					.distinct()
 					.collect(Collectors.toList());
 
-			List<Base> basesList = this.extractBases(joueursListe);
+			List<StatsBase> basesList = this.extractBases(joueursListe);
 
 			this.playerDAO.saveAll(joueursListe);
 			this.baseDAO.saveAll(basesList);
 
 			//get POI and Alliances
 			int maxRankingAlliance = Integer.valueOf(this.settingDAO.getOne("maxRankingAlliance").getValue());
-			List<Alliance> alliancesListe = this.getAlliancesData(userSession, maxRankingAlliance);
+			List<StatsAlliance> alliancesListe = this.getAlliancesData(userSession, maxRankingAlliance);
 
 			//Removing duplicates
 			alliancesListe = alliancesListe.stream()
 					.distinct()
 					.collect(Collectors.toList());
 
-			List<Poi> poisList = this.extractPois( alliancesListe);
+			List<StatsPoi> poisList = this.extractPois( alliancesListe);
 
 			//We look for free POI in cncmap DB
 			DBContext.setDatasource("cncmap");
@@ -257,7 +257,7 @@ public class StatsService {
 
 			//Since we have no id we create one with coords
 			poisList = allPOIList.stream()
-					.map(poiMap -> new Poi(new Long(poiMap.getCoords().getX()*1000 + poiMap.getCoords().getY()),
+					.map(poiMap -> new StatsPoi(new Long(poiMap.getCoords().getX()*1000 + poiMap.getCoords().getY()),
 														poiMap.getCoords().getX(), poiMap.getCoords().getY(), poiMap.getAllianceId(),
 														poiMap.getLevel(), poiMap.getType()))
 					.distinct()
@@ -267,7 +267,7 @@ public class StatsService {
 			
 
 			//We add "no alliance" as Alliance with Id 0
-			Alliance noAlliance = new Alliance();
+			StatsAlliance noAlliance = new StatsAlliance();
 			noAlliance.setId(new Long(0));
 			alliancesListe.add(noAlliance);
 
@@ -283,7 +283,7 @@ public class StatsService {
 			this.allianceDAO.archive(dt.toDate());
 			this.poiDAO.archive(dt.toDate());
 
-			this.settingDAO.save(new Settings("date_last_update", formatter.print(dt)));
+			this.settingDAO.save(new StatsSettings("date_last_update", formatter.print(dt)));
 			this.accountDAO.updateCounts(account, joueursListe.size(), alliancesListe.size());
 		}  
 
@@ -336,11 +336,11 @@ public class StatsService {
 				        .collect(Collectors.toList()); 
 				
 				log.debug("Start get alliances");
-				List<Alliance> listeIdAlliances = this.playerDAO.findAlliancesOfPlayers(playersId);
+				List<StatsAlliance> listeIdAlliances = this.playerDAO.findAlliancesOfPlayers(playersId);
 				log.debug("End get alliances");
 				
 				//For each alliance
-				for (Alliance alliance : listeIdAlliances){
+				for (StatsAlliance alliance : listeIdAlliances){
 					//Pour chaque stat
 					log.debug("Process stats alliance {}", alliance);
 					for (StatsList stat : statsListAlliance) {
@@ -367,7 +367,7 @@ public class StatsService {
 	 * @param maxRanking
 	 * @return
 	 */
-	public List<Alliance> getAlliancesData(UserSession userSession, int maxRanking) {
+	public List<StatsAlliance> getAlliancesData(UserSession userSession, int maxRanking) {
 
 		log.info("Get alliances data");
 		int countAlliances = this.gameService.getRankingCount(userSession, 1, 0);
@@ -406,16 +406,16 @@ public class StatsService {
 		} while (currentIndex < maxRanking - 1 && currentIndex < countAlliances - 1); 
 
 
-		List<Alliance> alliancesList = new ArrayList<>();
+		List<StatsAlliance> alliancesList = new ArrayList<>();
 
 		try {
-			List<CompletableFuture<Alliance>> futures = new ArrayList<CompletableFuture<Alliance>>();
+			List<CompletableFuture<StatsAlliance>> futures = new ArrayList<CompletableFuture<StatsAlliance>>();
 			for (A a : rankingData.getA()) {
-				CompletableFuture<Alliance> future = this.getAlliancePublicInfos(userSession, a);          
+				CompletableFuture<StatsAlliance> future = this.getAlliancePublicInfos(userSession, a);          
 				futures.add(future);
 			}
 
-			for (CompletableFuture<Alliance> future : futures) {
+			for (CompletableFuture<StatsAlliance> future : futures) {
 				alliancesList.add(future.get());
 			}
 		} catch (InterruptedException | ExecutionException e) {
@@ -432,7 +432,7 @@ public class StatsService {
 	 * @param maxRanking
 	 * @return
 	 */
-	public List<Player> getPlayerData(UserSession userSession, int maxRanking) {
+	public List<StatsPlayer> getPlayerData(UserSession userSession, int maxRanking) {
 		log.info("Get players data");
 		int countPlayers = this.gameService.getRankingCount(userSession, 0, 0);
 
@@ -473,16 +473,16 @@ public class StatsService {
 			//Tant qu'on a pas fait tous les joueurs ou atteint la limite
 		} while (currentIndex < maxRanking - 1 && currentIndex < countPlayers - 1); 
 
-		List<Player> playerList = new ArrayList<>();
+		List<StatsPlayer> playerList = new ArrayList<>();
 
 		try {
-			List<CompletableFuture<Player>> futures = new ArrayList<CompletableFuture<Player>>();
+			List<CompletableFuture<StatsPlayer>> futures = new ArrayList<CompletableFuture<StatsPlayer>>();
 			for (P p : rankingData.getP()) {
-				CompletableFuture<Player> future = this.getPlayerPublicInfos(userSession, p);          
+				CompletableFuture<StatsPlayer> future = this.getPlayerPublicInfos(userSession, p);          
 				futures.add(future);
 			}
 
-			for (CompletableFuture<Player> future : futures) {
+			for (CompletableFuture<StatsPlayer> future : futures) {
 				playerList.add(future.get());
 			}
 		} catch (InterruptedException | ExecutionException e) {
@@ -501,14 +501,14 @@ public class StatsService {
 	 * @throws InterruptedException
 	 */
 	@Async
-	public CompletableFuture<Player> getPlayerPublicInfos(UserSession userSession, P rankingDataP) throws InterruptedException {
+	public CompletableFuture<StatsPlayer> getPlayerPublicInfos(UserSession userSession, P rankingDataP) throws InterruptedException {
 
 		PublicPlayerInfoResponse playerInfo = this.gameService.getPublicPlayerInfoRequest(userSession, rankingDataP.getP());
-		List<Base> basesList = new ArrayList<Base>();
+		List<StatsBase> basesList = new ArrayList<StatsBase>();
 
 		//get bases of player
 		for (C base : playerInfo.getC()){
-			Base baseTmp = new Base(base.getI(), base.getX(), base.getY(), rankingDataP.getP(), base.getN(), base.getP());
+			StatsBase baseTmp = new StatsBase(base.getI(), base.getX(), base.getY(), rankingDataP.getP(), base.getN(), base.getP());
 			basesList.add(baseTmp);
 		}
 
@@ -521,7 +521,7 @@ public class StatsService {
 			}
 		}
 
-		Player playerTmp = new Player(rankingDataP.getP(), playerInfo.getBde(), playerInfo.getBd(), Integer.valueOf((int) Math.round(playerInfo.getDccc())),
+		StatsPlayer playerTmp = new StatsPlayer(rankingDataP.getP(), playerInfo.getBde(), playerInfo.getBd(), Integer.valueOf((int) Math.round(playerInfo.getDccc())),
 				rankingDataP.getF(), rankingDataP.getA(), ewFirstRank.size(), rankingDataP.getPn(), rankingDataP.getR(),
 				rankingDataP.getS(), playerInfo.getBde() + playerInfo.getBd(), basesList);
 
@@ -535,8 +535,8 @@ public class StatsService {
 	 * @return
 	 */
 	@Async
-	public CompletableFuture<Alliance> getAlliancePublicInfos(UserSession userSession, A rankingDataA) {
-		List<Alliance> result = new ArrayList<Alliance>(); // this is some custom bean holding your result
+	public CompletableFuture<StatsAlliance> getAlliancePublicInfos(UserSession userSession, A rankingDataA) {
+		List<StatsAlliance> result = new ArrayList<StatsAlliance>(); // this is some custom bean holding your result
 
 		PublicAllianceInfoResponse allianceInfo = this.gameService.getPublicAllianceInfoRequest(userSession, rankingDataA.getA());
 
@@ -551,15 +551,15 @@ public class StatsService {
 			indexTmp++;
 		}
 
-		List<Poi> listePois = new ArrayList<Poi>();
+		List<StatsPoi> listePois = new ArrayList<StatsPoi>();
 
 		//Get alliance Poi
 		for (Opoi poi : allianceInfo.getOpois()) {
-			Poi poiTmp = new Poi(new Long(poi.getI()), poi.getX(), poi.getY(), rankingDataA.getA(), poi.getL(), poi.getT()-1);
+			StatsPoi poiTmp = new StatsPoi(new Long(poi.getI()), poi.getX(), poi.getY(), rankingDataA.getA(), poi.getL(), poi.getT()-1);
 			listePois.add(poiTmp);
 		}
-		Alliance allianceTmp = 
-				new Alliance(new Long(rankingDataA.getA()), allianceInfo.getD(), rankingDataA.getSa(), allianceInfo.getBdp(),
+		StatsAlliance allianceTmp = 
+				new StatsAlliance(new Long(rankingDataA.getA()), allianceInfo.getD(), rankingDataA.getSa(), allianceInfo.getBdp(),
 						allianceInfo.getBde(), allianceInfo.getBd(), 0, 
 						allianceInfo.getPoi(), rankingDataA.getAn(), rankingDataA.getBc(), rankingDataA.getPc(), rankingDataA.getR(),
 						rangsPoi[1], rangsPoi[2], rangsPoi[3], rangsPoi[4], rangsPoi[5],
@@ -577,9 +577,9 @@ public class StatsService {
 	 * @param playersListe
 	 * @return
 	 */
-	public List<Base> extractBases(List<Player> playersListe) {
-		List<Base> bases = new ArrayList<Base>();
-		for (Player player : playersListe) {
+	public List<StatsBase> extractBases(List<StatsPlayer> playersListe) {
+		List<StatsBase> bases = new ArrayList<StatsBase>();
+		for (StatsPlayer player : playersListe) {
 			bases.addAll(player.getBases());
 		}
 		return bases;
@@ -591,9 +591,9 @@ public class StatsService {
 	 * @param alliancesListe
 	 * @return
 	 */
-	public List<Poi> extractPois(List<Alliance> alliancesListe) {
-		List<Poi> pois = new ArrayList<Poi>();
-		for (Alliance alliance : alliancesListe) {
+	public List<StatsPoi> extractPois(List<StatsAlliance> alliancesListe) {
+		List<StatsPoi> pois = new ArrayList<StatsPoi>();
+		for (StatsAlliance alliance : alliancesListe) {
 			pois.addAll(alliance.getPoiList());
 		}
 		return pois;
