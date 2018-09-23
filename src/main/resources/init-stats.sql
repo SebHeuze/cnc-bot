@@ -1,8 +1,8 @@
 create schema if not exists scripting;
 
-CREATE TABLE scripting.liste_comptes (
+CREATE TABLE if not exists  scripting.stats_liste_comptes (
     id integer NOT NULL,
-    "user" character varying(255),
+    user character varying(255),
     pass character varying(255),
     monde integer,
     active boolean DEFAULT false,
@@ -11,7 +11,7 @@ CREATE TABLE scripting.liste_comptes (
     nb_alliances integer
 );
 
-CREATE SEQUENCE scripting.liste_comptes_id_seq
+CREATE SEQUENCE if not exists scripting.stats_liste_comptes_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -19,38 +19,25 @@ CREATE SEQUENCE scripting.liste_comptes_id_seq
     CACHE 1;
 
 
-ALTER TABLE ONLY scripting.liste_comptes ALTER COLUMN id SET DEFAULT nextval('scripting.liste_comptes_id_seq'::regclass);
-
-ALTER TABLE ONLY scripting.liste_comptes
-    ADD CONSTRAINT id_pk PRIMARY KEY (id);
-    
 create schema if not exists monde373;
 
 
 
-CREATE SEQUENCE monde373.alliance_hist_id_hist_seq
+CREATE SEQUENCE if not exists monde373.stats_alliance_hist_id_hist_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
 
-CREATE SEQUENCE monde373.alliance_id_seq
+CREATE SEQUENCE if not exists monde373.stats_alliance_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
 
-CREATE SEQUENCE monde373.base_hist_id_hist_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-CREATE SEQUENCE monde373.base_id_seq
+CREATE SEQUENCE if not exists monde373.stats_base_hist_id_hist_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -58,28 +45,7 @@ CREATE SEQUENCE monde373.base_id_seq
     CACHE 1;
 
 
-CREATE SEQUENCE monde373.joueur_hist_id_hist_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-CREATE SEQUENCE monde373.joueur_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-CREATE SEQUENCE monde373.poi_hist_id_hist_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-CREATE SEQUENCE monde373.poi_id_seq
+CREATE SEQUENCE if not exists monde373.stats_base_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -87,8 +53,28 @@ CREATE SEQUENCE monde373.poi_id_seq
     CACHE 1;
 
 
+CREATE SEQUENCE if not exists monde373.stats_joueur_hist_id_hist_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
-CREATE SEQUENCE monde373.stats_id_seq
+CREATE SEQUENCE if not exists monde373.stats_joueur_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+CREATE SEQUENCE if not exists monde373.stats_poi_hist_id_hist_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+CREATE SEQUENCE if not exists monde373.stats_poi_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -96,8 +82,17 @@ CREATE SEQUENCE monde373.stats_id_seq
     CACHE 1;
 
 
-CREATE TABLE monde373.alliance (
-    id integer DEFAULT nextval('monde373.alliance_id_seq'::regclass) NOT NULL,
+
+CREATE SEQUENCE if not exists monde373.stats_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+CREATE TABLE if not exists  monde373.stats_alliance (
+    id integer DEFAULT monde373.stats_alliance_id_seq.nextval NOT NULL,
     nom_alliance character varying(100) NOT NULL,
     nombre_bases integer NOT NULL,
     nombre_joueurs integer NOT NULL,
@@ -128,8 +123,8 @@ CREATE TABLE monde373.alliance (
 );
 
 
-CREATE TABLE monde373.alliance_hist (
-    id_hist integer DEFAULT nextval('monde373.alliance_hist_id_hist_seq'::regclass) NOT NULL,
+CREATE TABLE if not exists  monde373.stats_alliance_hist (
+    id_hist integer DEFAULT monde373.stats_alliance_hist_id_hist_seq.nextval NOT NULL,
     id integer NOT NULL,
     nom_alliance character varying(100) NOT NULL,
     nombre_bases integer NOT NULL,
@@ -162,8 +157,8 @@ CREATE TABLE monde373.alliance_hist (
 );
 
 
-CREATE TABLE monde373.base (
-    id integer DEFAULT nextval('monde373.base_id_seq'::regclass) NOT NULL,
+CREATE TABLE if not exists  monde373.stats_base (
+    id integer DEFAULT monde373.stats_base_id_seq.nextval NOT NULL,
     id_joueur integer NOT NULL,
     nom_base character varying(100) NOT NULL,
     score_base integer NOT NULL,
@@ -173,21 +168,21 @@ CREATE TABLE monde373.base (
 
 
 
-CREATE TABLE monde373.base_hist (
+CREATE TABLE if not exists  monde373.stats_base_hist (
     id integer,
     id_joueur integer,
     nom_base character varying(100),
     score_base integer,
     coord_x integer,
     coord_y integer,
-    id_hist integer DEFAULT nextval('monde373.base_hist_id_hist_seq'::regclass) NOT NULL,
+    id_hist integer DEFAULT monde373.stats_base_hist_id_hist_seq.nextval NOT NULL,
     date date
 );
 
 
 
-CREATE TABLE monde373.joueur (
-    id integer DEFAULT nextval('monde373.joueur_id_seq'::regclass) NOT NULL,
+CREATE TABLE if not exists  monde373.stats_joueur (
+    id integer DEFAULT monde373.stats_joueur_id_seq.nextval NOT NULL,
     pseudo character varying(50) NOT NULL,
     faction integer NOT NULL,
     rang integer NOT NULL,
@@ -201,8 +196,8 @@ CREATE TABLE monde373.joueur (
 );
 
 
-CREATE TABLE monde373.joueur_hist (
-    id_hist integer DEFAULT nextval('monde373.joueur_hist_id_hist_seq'::regclass) NOT NULL,
+CREATE TABLE if not exists  monde373.stats_joueur_hist (
+    id_hist integer DEFAULT monde373.stats_joueur_hist_id_hist_seq.nextval NOT NULL,
     id integer NOT NULL,
     pseudo character varying(50) NOT NULL,
     faction integer NOT NULL,
@@ -218,8 +213,8 @@ CREATE TABLE monde373.joueur_hist (
 );
 
 
-CREATE TABLE monde373.poi (
-    id integer DEFAULT nextval('monde373.poi_id_seq'::regclass) NOT NULL,
+CREATE TABLE if not exists  monde373.stats_poi (
+    id integer DEFAULT monde373.stats_poi_id_seq.nextval NOT NULL,
     id_alliance integer NOT NULL,
     level integer NOT NULL,
     type integer NOT NULL,
@@ -229,62 +224,29 @@ CREATE TABLE monde373.poi (
 
 
 
-CREATE TABLE monde373.poi_hist (
+CREATE TABLE if not exists  monde373.stats_poi_hist (
     id integer,
     id_alliance integer,
     level integer,
     type integer,
     coord_x integer,
     coord_y integer,
-    id_hist integer DEFAULT nextval('monde373.poi_hist_id_hist_seq'::regclass) NOT NULL,
+    id_hist integer DEFAULT monde373.stats_poi_hist_id_hist_seq.nextval NOT NULL,
     date date
 );
 
 
 
-CREATE TABLE monde373.settings (
+CREATE TABLE if not exists  monde373.stats_settings (
     name character varying(50) NOT NULL,
     value character varying NOT NULL
 );
 
 
-CREATE TABLE monde373.stats (
-    id integer DEFAULT nextval('monde373.stats_id_seq'::regclass) NOT NULL,
-    nom_stat text NOT NULL,
-    donnees_stat text NOT NULL,
+CREATE TABLE if not exists  monde373.stats (
+    id integer DEFAULT monde373.stats_id_seq.nextval NOT NULL,
+    nom_stat CLOB NOT NULL,
+    donnees_stat CLOB NOT NULL,
     id_alliance integer DEFAULT 0
 );
-
-ALTER TABLE ONLY monde373.alliance_hist
-    ADD CONSTRAINT alliance_hist_pkey PRIMARY KEY (id_hist);
-
-
-
-ALTER TABLE ONLY monde373.alliance
-    ADD CONSTRAINT alliance_pkey PRIMARY KEY (id);
-
-
-ALTER TABLE ONLY monde373.base
-    ADD CONSTRAINT base_pkey PRIMARY KEY (id);
-
-
-ALTER TABLE ONLY monde373.joueur_hist
-    ADD CONSTRAINT joueur_hist_pkey PRIMARY KEY (id_hist);
-
-
-
-ALTER TABLE ONLY monde373.joueur
-    ADD CONSTRAINT joueur_pkey PRIMARY KEY (id);
-
-
-ALTER TABLE ONLY monde373.poi
-    ADD CONSTRAINT poi_pkey PRIMARY KEY (id);
-
-
-ALTER TABLE ONLY monde373.settings
-    ADD CONSTRAINT settings_pkey PRIMARY KEY (value, name);
-
-
-ALTER TABLE ONLY monde373.stats
-    ADD CONSTRAINT stats_pkey PRIMARY KEY (id);
 
