@@ -17,7 +17,7 @@ import lombok.Setter;
 
 
 /**
- * The persistent class for the base_hist database table.
+ * The persistent class for the poi_hist database table.
  * 
  */
 @Entity
@@ -25,32 +25,29 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="stats_base_hist")
-public class BaseHist implements Serializable {
+@Table(name="stats_poi_hist")
+public class StatsPoiHist implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	@Id
 	@Column(name="id_hist")
+	@Id
 	private Long idHist;
 
 	private Long id;
-
+	
 	@Column(name="coord_x")
 	private Integer coordX;
 
 	@Column(name="coord_y")
 	private Integer coordY;
 
-	@Column(name="id_joueur")
-	private Integer playerId;
+	@Column(name="id_alliance")
+	private Integer idAlliance;
 
-	@Column(name="nom_base")
-	private String name;
+	private Integer level;
 
-	@Column(name="score_base")
-	private Integer score;
+	private Integer type;
 
 	@Temporal(TemporalType.DATE)
 	private Date date;
-
 }

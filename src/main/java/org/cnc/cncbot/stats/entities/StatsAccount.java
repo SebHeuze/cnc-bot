@@ -18,7 +18,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Table(name = "stats_liste_comptes", schema = "scripting")
-public class Account {
+public class StatsAccount {
 	@Id
 	@GeneratedValue
 	private Integer id;

@@ -1,23 +1,23 @@
 package org.cnc.cncbot.stats.entities;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 
 /**
- * The persistent class for the alliance_hist database table.
+ * The persistent class for the alliance database table.
  * 
  */
 @Entity
@@ -25,21 +25,19 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="stats_alliance_hist")
-public class AllianceHist implements Serializable {
+@ToString
+@Table(name="stats_alliance")
+public class StatsAlliance implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	@Column(name="id_hist")
-	private Long idHist;
-
 	private Long id;
 
 	@Column(name="alliance_description")
 	private String allianceDescription;
 
 	@Column(name="average_score")
-	private Integer averageScore;
+	private Long averageScore;
 
 	@Column(name="bases_joueurs_detruites")
 	private Integer destroyedPlayersBases;
@@ -115,7 +113,7 @@ public class AllianceHist implements Serializable {
 	@Column(name="top_score")
 	private Long topScore;
 	
-	@Temporal(TemporalType.DATE)
-	private Date date;
+	@OneToMany
+	private List<StatsPoi> poiList;
 
 }

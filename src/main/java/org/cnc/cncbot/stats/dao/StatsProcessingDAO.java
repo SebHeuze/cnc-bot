@@ -12,7 +12,7 @@ import java.util.Map.Entry;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
-import org.cnc.cncbot.stats.entities.Alliance;
+import org.cnc.cncbot.stats.entities.StatsAlliance;
 import org.cnc.cncbot.stats.entities.StatsList;
 import org.hibernate.query.internal.NativeQueryImpl;
 import org.hibernate.transform.AliasToEntityMapResultTransformer;
@@ -47,7 +47,7 @@ public class StatsProcessingDAO {
 	 * @param query
 	 * @return
 	 */
-	public JsonArray excecuteStat(StatsList stat, Alliance alliance) {
+	public JsonArray excecuteStat(StatsList stat, StatsAlliance alliance) {
 
 		String sqlQuery = alliance != null ? stat.getRequest().replace(VAR_ID_ALLIANCE, String.valueOf(alliance.getId())) : stat.getRequest();
 		

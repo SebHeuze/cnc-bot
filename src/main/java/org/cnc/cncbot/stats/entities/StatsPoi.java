@@ -14,7 +14,7 @@ import lombok.Setter;
 
 
 /**
- * The persistent class for the base database table.
+ * The persistent class for the poi database table.
  * 
  */
 @Entity
@@ -22,26 +22,24 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="stats_base")
-public class Base implements Serializable {
+@Table(name="stats_poi")
+public class StatsPoi implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	private Integer id;
-	
+	private Long id;
+
 	@Column(name="coord_x")
 	private Integer coordX;
 
 	@Column(name="coord_y")
 	private Integer coordY;
 
-	@Column(name="id_joueur")
-	private Integer playerId;
+	@Column(name="id_alliance")
+	private Integer idAlliance;
 
-	@Column(name="nom_base")
-	private String name;
+	private Integer level;
 
-	@Column(name="score_base")
-	private Integer score;
+	private Integer type;
 
 }
