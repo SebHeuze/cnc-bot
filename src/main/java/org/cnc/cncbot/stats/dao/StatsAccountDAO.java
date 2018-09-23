@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
  *
  */
 @Repository
-public interface AccountDAO extends JpaRepository<StatsAccount, Integer> {
+public interface StatsAccountDAO extends JpaRepository<StatsAccount, Integer> {
 
 	public List<StatsAccount> findAll();
 

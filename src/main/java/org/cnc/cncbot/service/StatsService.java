@@ -27,13 +27,13 @@ import org.cnc.cncbot.exception.BatchException;
 import org.cnc.cncbot.map.dao.DAOConstants;
 import org.cnc.cncbot.service.retrofit.CctaStatsService;
 import org.cnc.cncbot.service.retrofit.ServiceGenerator;
-import org.cnc.cncbot.stats.dao.AccountDAO;
-import org.cnc.cncbot.stats.dao.AllianceDAO;
-import org.cnc.cncbot.stats.dao.BaseDAO;
-import org.cnc.cncbot.stats.dao.BatchLogDAO;
-import org.cnc.cncbot.stats.dao.PlayerDAO;
-import org.cnc.cncbot.stats.dao.PoiDAO;
-import org.cnc.cncbot.stats.dao.SettingsDAO;
+import org.cnc.cncbot.stats.dao.StatsAccountDAO;
+import org.cnc.cncbot.stats.dao.StatsAllianceDAO;
+import org.cnc.cncbot.stats.dao.StatsBaseDAO;
+import org.cnc.cncbot.stats.dao.StatsBatchLogDAO;
+import org.cnc.cncbot.stats.dao.StatsPlayerDAO;
+import org.cnc.cncbot.stats.dao.StatsPoiDAO;
+import org.cnc.cncbot.stats.dao.StatsSettingsDAO;
 import org.cnc.cncbot.stats.dao.StatsDAO;
 import org.cnc.cncbot.stats.dao.StatsListDAO;
 import org.cnc.cncbot.stats.dao.StatsLogDAO;
@@ -76,19 +76,19 @@ public class StatsService {
 
 	private final GameService gameService;
 
-	private final AccountDAO accountDAO;
-	private final BatchLogDAO batchLogDAO;
+	private final StatsAccountDAO accountDAO;
+	private final StatsBatchLogDAO batchLogDAO;
 	private final StatsListDAO statsListDAO;
 	private final StatsLogDAO statsLogDAO;
 	
 	private final StatsProcessingDAO statsProcessingDAO;
 	
-	private final SettingsDAO settingDAO;
+	private final StatsSettingsDAO settingDAO;
 	private final StatsDAO statsDAO;
-	private final AllianceDAO allianceDAO;
-	private final PlayerDAO playerDAO;
-	private final BaseDAO baseDAO;
-	private final PoiDAO poiDAO;
+	private final StatsAllianceDAO allianceDAO;
+	private final StatsPlayerDAO playerDAO;
+	private final StatsBaseDAO baseDAO;
+	private final StatsPoiDAO poiDAO;
 	private final org.cnc.cncbot.map.dao.PoiDAO poiDAOMap;
 
 	private final CctaStatsService cctaStatsService;
@@ -111,9 +111,9 @@ public class StatsService {
 	DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd");
 
 	@Autowired
-	public StatsService(GameService gameService, AccountDAO accountDAO, BatchLogDAO batchLogDAO, SettingsDAO settingDAO,
+	public StatsService(GameService gameService, StatsAccountDAO accountDAO, StatsBatchLogDAO batchLogDAO, StatsSettingsDAO settingDAO,
 			StatsListDAO statsListDAO, StatsProcessingDAO statsProcessingDAO, StatsLogDAO statsLogDAO,
-			StatsDAO statsDAO, AllianceDAO allianceDAO, PlayerDAO playerDAO, BaseDAO baseDAO, PoiDAO poiDAO, org.cnc.cncbot.map.dao.PoiDAO poiDAOMap) {
+			StatsDAO statsDAO, StatsAllianceDAO allianceDAO, StatsPlayerDAO playerDAO, StatsBaseDAO baseDAO, StatsPoiDAO poiDAO, org.cnc.cncbot.map.dao.PoiDAO poiDAOMap) {
 		this.gameService = gameService;
 		this.accountDAO = accountDAO;
 		this.batchLogDAO = batchLogDAO;
