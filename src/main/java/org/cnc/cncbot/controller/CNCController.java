@@ -32,7 +32,7 @@ public class CNCController {
   private final String key;
   
   @Autowired
-  public CNCController(WebService webService,  @Value("${org.cnc.cncbot.api-key}") String key) {
+  public CNCController(WebService webService,  @Value("${cncbot.api-key}") String key) {
 	  this.webService = webService;
 	  this.key = key;
   }

@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.cnc.cncbot.dto.OriginAccountInfo;
-import org.cnc.cncbot.dto2.ResponseType;
+import org.cnc.cncbot.dto.ResponseType;
 import org.cnc.cncbot.service.retrofit.AccountsEAService;
 import org.cnc.cncbot.service.retrofit.GameCDNOriginService;
 import org.cnc.cncbot.service.retrofit.ServiceGenerator;

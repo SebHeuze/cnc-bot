@@ -102,7 +102,7 @@ public class StatsService {
 	/**
 	 * Url CCTA Stats
 	 */
-	@Value("${org.cnc.cncbot.cctastats.host}")
+	@Value("${cncbot.stats.host}")
 	private String cctaStatsHost;
 
 	/**

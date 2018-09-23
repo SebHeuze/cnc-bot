@@ -19,10 +19,10 @@ public interface CctaStatsService {
 	static final String BASE_URL = "http://www.ccta-stats.com/";
 	 
 
-	@GET("${org.cnc.cncbot.cctastats.playersregistered.endpoint}")
+	@GET("${cncbot.stats.front.playersregistered.endpoint}")
 	Call<List<JoueursRegistered>> getPlayersRegistered(@Query("monde") int idMonde);
 	
 
-	@GET("${org.cnc.cncbot.cctastats.clearcache.endpoint}")
+	@GET("${cncbot.stats.front.clearcache.endpoint}")
 	Call<List<JoueursRegistered>> clearCache(@Query("monde") int idMonde);
 }
