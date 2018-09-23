@@ -36,31 +36,31 @@ public class ScheduledTasks {
     @Scheduled(fixedRateString = "${cncbot.map.batch1.fixedRate}")
     public void batch1() {
         log.info("Map batch num 1 started at {}", new Date());
-        this.mapService.mapDataJob(1);
+        //this.mapService.mapDataJob(1);
     }
     
     @Scheduled(fixedRateString = "${cncbot.map.batch5.fixedRate}")
     public void batch5() {
         log.info("Map batch num 5 started at {}", new Date());
-        this.mapService.mapDataJob(5);
+        //this.mapService.mapDataJob(5);
     }
 
     @Scheduled(fixedRateString = "${cncbot.map.batch10.fixedRate}")
     public void batch10() {
         log.info("Map batch num 10 started at {}", new Date());
-        this.mapService.mapDataJob(10);
+        //this.mapService.mapDataJob(10);
     }
 
     @Scheduled(fixedRateString = "${cncbot.map.batch20.fixedRate}")
     public void batch20() {
         log.info("Map batch num 20 started at {}", new Date());
-        this.mapService.mapDataJob(20);
+        //this.mapService.mapDataJob(20);
     }
 
     @Scheduled(fixedRateString = "${cncbot.map.batch60.fixedRate}")
     public void batch60() {
         log.info("Map batch num 60 started at {}", new Date());
-        this.mapService.mapDataJob(60);
+        //this.mapService.mapDataJob(60);
     }
     
     /**
