@@ -25,7 +25,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "batch_log", schema = "scripting")
+@Table(name = "stats_batch_log", schema = "scripting")
 public class BatchLog {
 	@Id
 	@GeneratedValue

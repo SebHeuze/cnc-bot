@@ -17,7 +17,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@Table(name = "liste_comptes", schema = "scripting")
+@Table(name = "stats_liste_comptes", schema = "scripting")
 public class Account {
 	@Id
 	@GeneratedValue

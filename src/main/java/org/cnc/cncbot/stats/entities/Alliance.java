@@ -26,7 +26,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-@Table(name="alliance")
+@Table(name="stats_alliance")
 public class Alliance implements Serializable {
 	private static final long serialVersionUID = 1L;
 
