@@ -18,6 +18,6 @@ public interface AccountDAO  extends JpaRepository<Account, Integer> {
 
 	public List<Account> findByNumbatchAndActiveTrue(Integer numbatch);
 	
-	public Account findByMondeAndActiveTrue(Integer monde);
+	public Account findByWorldIdAndActiveTrue(Integer monde);
 
 }
