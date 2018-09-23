@@ -37,7 +37,7 @@ public class WebService {
 
 		DBContext.setDatasource("cncmap");
 		
-		Account account = this.accountDAO.findByMondeAndActiveTrue(unMessage.getMonde());
+		Account account = this.accountDAO.findByWorldIdAndActiveTrue(unMessage.getMonde());
 		if (account == null){
 			throw new BatchException("No account for world "+ unMessage.getMonde());
 		}
