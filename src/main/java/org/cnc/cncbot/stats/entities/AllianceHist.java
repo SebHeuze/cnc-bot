@@ -25,7 +25,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="alliance_hist")
+@Table(name="stats_alliance_hist")
 public class AllianceHist implements Serializable {
 	private static final long serialVersionUID = 1L;
 

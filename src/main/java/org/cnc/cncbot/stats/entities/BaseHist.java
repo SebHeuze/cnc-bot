@@ -25,7 +25,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="base_hist")
+@Table(name="stats_base_hist")
 public class BaseHist implements Serializable {
 	private static final long serialVersionUID = 1L;
 

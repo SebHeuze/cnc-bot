@@ -22,7 +22,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="base")
+@Table(name="stats_base")
 public class Base implements Serializable {
 	private static final long serialVersionUID = 1L;
 

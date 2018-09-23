@@ -24,7 +24,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="joueur")
+@Table(name="stats_joueur")
 public class Player implements Serializable {
 	private static final long serialVersionUID = 1L;
 
