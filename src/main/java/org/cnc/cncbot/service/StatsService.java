@@ -102,7 +102,6 @@ public class StatsService {
 	/**
 	 * Url CCTA Stats
 	 */
-	@Value("${cncbot.stats.host}")
 	private String cctaStatsHost;
 
 	/**
@@ -111,9 +110,13 @@ public class StatsService {
 	DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd");
 
 	@Autowired
-	public StatsService(GameService gameService, StatsAccountDAO accountDAO, StatsBatchLogDAO batchLogDAO, StatsSettingsDAO settingDAO,
+	public StatsService(
+			@Value("${cncbot.stats.host}") String cctaStatsHost,
+			GameService gameService, StatsAccountDAO accountDAO, StatsBatchLogDAO batchLogDAO, StatsSettingsDAO settingDAO,
 			StatsListDAO statsListDAO, StatsProcessingDAO statsProcessingDAO, StatsLogDAO statsLogDAO,
 			StatsDAO statsDAO, StatsAllianceDAO allianceDAO, StatsPlayerDAO playerDAO, StatsBaseDAO baseDAO, StatsPoiDAO poiDAO, org.cnc.cncbot.map.dao.PoiDAO poiDAOMap) {
+		this.cctaStatsHost = cctaStatsHost;
+		
 		this.gameService = gameService;
 		this.accountDAO = accountDAO;
 		this.batchLogDAO = batchLogDAO;
