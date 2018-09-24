@@ -3,6 +3,7 @@ package org.cnc.cncbot.stats.entities;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -24,7 +25,7 @@ import lombok.Setter;
 @Table(name = "stats_list", schema = "scripting")
 public class StatsList {
 	@Id
-	@GeneratedValue
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
 	@Column(name = "nom")
