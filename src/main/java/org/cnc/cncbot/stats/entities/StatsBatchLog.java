@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -29,24 +30,29 @@ import lombok.Setter;
 @Table(name = "stats_batch_log", schema = "scripting")
 public class StatsBatchLog {
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@SequenceGenerator (name = "stats_batch_log_id", sequenceName = "stats_batch_log_id_seq", allocationSize = 1)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "stats_batch_log_id")
 	private Long id;
 	
+	@Column(name="num_batch")
 	private Integer numBatch;
 	
-	@Column(columnDefinition= "TIMESTAMP WITHOUT TIME ZONE")
+	@Column(name="date_debut", columnDefinition= "TIMESTAMP WITHOUT TIME ZONE")
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date dateDebut;
 	
-	@Column(columnDefinition= "TIMESTAMP WITHOUT TIME ZONE")
+	@Column(name="date_fin", columnDefinition= "TIMESTAMP WITHOUT TIME ZONE")
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date dateFin;
 	
 	private Long duree;
-	
+
+	@Column(name="nb_worlds")
 	private Integer nbWorlds;
-	
+
+	@Column(name="nb_worlds_fails")
 	private Integer nbWorldsFails;
-	
+
+	@Column(name="fail_list")
 	private String failList;
 }

@@ -18,6 +18,29 @@ CREATE SEQUENCE if not exists scripting.stats_liste_comptes_id_seq
     NO MAXVALUE
     CACHE 1;
 
+CREATE SEQUENCE if not exists  scripting.stats_batch_log_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+    
+CREATE TABLE if not exists scripting.stats_batch_log (
+    id bigint  DEFAULT scripting.stats_batch_log_id_seq.nextval NOT NULL,
+    num_batch integer,
+    date_debut timestamp without time zone,
+    date_fin timestamp without time zone,
+    duree integer,
+    nb_worlds integer,
+    nb_worlds_fails integer,
+    fail_list character varying(255)
+);
+
+MERGE INTO scripting.stats_liste_comptes 
+  KEY(ID) 
+VALUES 
+  (2, 'xxx@yahoo.fr', 'xxxx', 373, true, 'Europe/Paris',  0,0);
+  
 
 create schema if not exists monde373;
 

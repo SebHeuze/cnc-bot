@@ -7,6 +7,14 @@ CREATE TABLE if not exists scripting.liste_comptes (
     active boolean DEFAULT false,
     numbatch integer
 );
+
+MERGE INTO scripting.liste_comptes 
+  KEY(ID) 
+VALUES (1, 'test@gmail.com', 'pass1', 7, false, 60),
+  (2, 'xxx@yahoo.fr', 'xxxx', 373, true, 5),
+  (3, 'test3@outlook.fr', 'pass3', 255, false, 10);
+  
+  
 create schema if not exists monde373;
 CREATE TABLE if not exists monde373.poi (
     x integer,
