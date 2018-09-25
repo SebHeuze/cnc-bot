@@ -8,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -33,7 +34,8 @@ public class StatsPoiHist implements Serializable {
 
 	@Column(name="id_hist")
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@SequenceGenerator (name = "stats_poi_hist_id_hist", sequenceName = "stats_poi_hist_id_hist_seq", allocationSize = 1)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "stats_poi_hist_id_hist")
 	private Long idHist;
 
 	private Long id;
