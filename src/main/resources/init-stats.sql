@@ -127,13 +127,6 @@ CREATE SEQUENCE if not exists monde373.stats_alliance_hist_id_hist_seq
     NO MAXVALUE
     CACHE 1;
 
-CREATE SEQUENCE if not exists monde373.stats_alliance_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
 CREATE SEQUENCE if not exists monde373.stats_base_hist_id_hist_seq
     START WITH 1
     INCREMENT BY 1
@@ -141,23 +134,7 @@ CREATE SEQUENCE if not exists monde373.stats_base_hist_id_hist_seq
     NO MAXVALUE
     CACHE 1;
 
-
-CREATE SEQUENCE if not exists monde373.stats_base_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
 CREATE SEQUENCE if not exists monde373.stats_joueur_hist_id_hist_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-CREATE SEQUENCE if not exists monde373.stats_joueur_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -171,12 +148,7 @@ CREATE SEQUENCE if not exists monde373.stats_poi_hist_id_hist_seq
     NO MAXVALUE
     CACHE 1;
 
-CREATE SEQUENCE if not exists monde373.stats_poi_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+
 
 
 
@@ -189,7 +161,7 @@ CREATE SEQUENCE if not exists monde373.stats_id_seq
 
 
 CREATE TABLE if not exists  monde373.stats_alliance (
-    id integer DEFAULT monde373.stats_alliance_id_seq.nextval NOT NULL,
+    id integer NOT NULL,
     nom_alliance character varying(100) NOT NULL,
     nombre_bases integer NOT NULL,
     nombre_joueurs integer NOT NULL,
@@ -255,7 +227,7 @@ CREATE TABLE if not exists  monde373.stats_alliance_hist (
 
 
 CREATE TABLE if not exists  monde373.stats_base (
-    id integer DEFAULT monde373.stats_base_id_seq.nextval NOT NULL,
+    id integer NOT NULL,
     id_joueur integer NOT NULL,
     nom_base character varying(100) NOT NULL,
     score_base integer NOT NULL,
@@ -279,7 +251,7 @@ CREATE TABLE if not exists  monde373.stats_base_hist (
 
 
 CREATE TABLE if not exists  monde373.stats_joueur (
-    id integer DEFAULT monde373.stats_joueur_id_seq.nextval NOT NULL,
+    id integer NOT NULL,
     pseudo character varying(50) NOT NULL,
     faction integer NOT NULL,
     rang integer NOT NULL,
@@ -311,7 +283,7 @@ CREATE TABLE if not exists  monde373.stats_joueur_hist (
 
 
 CREATE TABLE if not exists  monde373.stats_poi (
-    id integer DEFAULT monde373.stats_poi_id_seq.nextval NOT NULL,
+    id integer NOT NULL,
     id_alliance integer NOT NULL,
     level integer NOT NULL,
     type integer NOT NULL,
