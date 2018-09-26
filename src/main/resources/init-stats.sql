@@ -98,7 +98,26 @@ VALUES (10, 'record_poi_nb', 'SELECT
 			order by nb_poi desc
 			limit 1', 1);
   
-  
+			
+CREATE SEQUENCE scripting.stats_log_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+    
+    
+CREATE TABLE scripting.stats_log (
+    id integer DEFAULT scripting.stats_log_id_seq.nextval NOT NULL,
+    id_stat integer,
+    duree integer,
+    date timestamp without time zone,
+    monde integer,
+    alliance integer DEFAULT 0
+);
+
+
+
 create schema if not exists monde373;
 
 CREATE SEQUENCE if not exists monde373.stats_alliance_hist_id_hist_seq
