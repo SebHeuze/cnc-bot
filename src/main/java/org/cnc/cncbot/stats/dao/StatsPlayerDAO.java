@@ -30,6 +30,6 @@ public interface StatsPlayerDAO extends JpaRepository<StatsPlayer, Long> {
 	@Modifying
 	public void archive(Date dateArchive);
 	
-	@Query(value = "SELECT DISTINCT idAlliance FROM StatsPlayer  WHERE id IN ?1 AND idAlliance<>0")
+	@Query(value = "SELECT DISTINCT new StatsAlliance(idAlliance) FROM StatsPlayer  WHERE id IN ?1 AND idAlliance<>0")
 	public List<StatsAlliance> findAlliancesOfPlayers(List<Integer> playerIds);
 }

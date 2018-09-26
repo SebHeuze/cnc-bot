@@ -30,7 +30,7 @@ import lombok.Setter;
 @Table(name = "stats_log", schema = "scripting")
 public class StatsLog {
 	@Id
-	@SequenceGenerator (name = "stats_log_id", sequenceName = "stats_log_id_seq", allocationSize = 1)
+	@SequenceGenerator (name = "stats_log_id", sequenceName = "scripting.stats_log_id_seq", allocationSize = 1)
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "stats_log_id")
 	private Long id;
 

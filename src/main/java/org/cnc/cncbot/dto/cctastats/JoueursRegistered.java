@@ -1,5 +1,7 @@
 package org.cnc.cncbot.dto.cctastats;
 
+import com.google.gson.annotations.SerializedName;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,8 +10,10 @@ import lombok.Setter;
 @Setter
 public class JoueursRegistered {
 
-private Integer idJoueur;
+	@SerializedName("id_joueur")
+	private Integer idJoueur;
 
-private Integer _0;
+	@SerializedName("0")	
+	private Integer _0;
 
 }

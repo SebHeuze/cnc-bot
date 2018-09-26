@@ -344,7 +344,7 @@ public class StatsService {
 		}
 
 		//Get Stats by Alliance
-		List<StatsList> statsListAlliance = this.statsListDAO.findAllByType(0);
+		List<StatsList> statsListAlliance = this.statsListDAO.findAllByType(1);
 
 		try {
 			log.debug("Find Players that are registered on ccta stats");
