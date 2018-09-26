@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
+import org.cnc.cncbot.dto.UserSession;
 import org.cnc.cncbot.stats.entities.StatsAlliance;
 import org.cnc.cncbot.stats.entities.StatsList;
 import org.hibernate.query.internal.NativeQueryImpl;
@@ -38,6 +39,7 @@ public class StatsProcessingDAO {
 	 * Id alliance to replace in query.
 	 */
 	private final String VAR_ID_ALLIANCE = ":id_alliance";
+	
 
 	@Autowired
 	EntityManager em;
@@ -47,20 +49,22 @@ public class StatsProcessingDAO {
 	 * @param query
 	 * @return
 	 */
-	public JsonArray excecuteStat(StatsList stat, StatsAlliance alliance) {
+	public JsonArray excecuteStat(UserSession session, StatsList stat, StatsAlliance alliance) {
 
 		String sqlQuery = alliance != null ? stat.getRequest().replace(VAR_ID_ALLIANCE, String.valueOf(alliance.getId())) : stat.getRequest();
 		
 		Query query =  em.createNativeQuery(sqlQuery);
-		NativeQueryImpl nativeQuery = (NativeQueryImpl) query;
-		nativeQuery.setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
-		List<Map<String,Object>> results = query.getResultList();
+	
+		List<Map<String,Object>> results = query
+											.unwrap(org.hibernate.query.Query.class)
+											.setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE)
+											.getResultList();
 
 		final List<JsonObject> jsonList = new ArrayList<>();
 		results.forEach(result -> 
 		{
 			try {
-				this.mapRow(result);
+				jsonList.add(this.mapRow(result));
 			} catch (SQLException se) {
 				log.error("Error during excecuteGlobalStat stat " + stat.getName(), se);
 			}

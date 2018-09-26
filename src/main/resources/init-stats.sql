@@ -57,7 +57,7 @@ VALUES (10, 'record_poi_nb', 'SELECT
 			nom_alliance,
 			nb_poi
 			from
-			monde{idmonde}.alliance
+			stats_alliance
 			order by nb_poi desc
 			limit 1', 0),
 		(12, 'record_base_score', 'SELECT 
@@ -67,25 +67,25 @@ VALUES (10, 'record_poi_nb', 'SELECT
 			nom_alliance,
 			score_base
 			from
-			monde{idmonde}.joueur, monde{idmonde}.base, monde{idmonde}.alliance
-			where base.id_joueur=joueur.id
-			and joueur.id_alliance=alliance.id
+			stats_joueur, stats_base, stats_alliance
+			where stats_base.id_joueur=stats_joueur.id
+			and stats_joueur.id_alliance=stats_alliance.id
 			order by score_base desc
 			limit 1', 0),
 		(17, '_top_joueur_bo', 'SELECT 
 			joueur_hist_today.id,
 			joueur_hist_today.pseudo,
-			alliance.nom_alliance,
+			stats_alliance.nom_alliance,
 			(joueur_hist_today.bases_oublies_detruites - joueur_hist_yest.bases_oublies_detruites) as BO_detruites
 			from
-			monde{idmonde}.alliance,
-			monde{idmonde}.joueur_hist joueur_hist_today
-			inner join monde{idmonde}.joueur_hist joueur_hist_yest on
+			stats_alliance,
+			stats_joueur_hist joueur_hist_today
+			inner join stats_joueur_hist joueur_hist_yest on
 			joueur_hist_today.id = joueur_hist_yest.id
-			and date(joueur_hist_yest.date)  = CAST((SELECT value from monde{idmonde}.settings WHERE name=''date_last_update'' limit 1) AS DATE) - INTERVAL ''1 DAY''
-			and date(joueur_hist_today.date) = CAST((SELECT value from monde{idmonde}.settings WHERE name=''date_last_update'' limit 1) AS DATE)
-			where alliance.id = joueur_hist_today.id_alliance
-			AND alliance.id = :id_alliance
+			and date(joueur_hist_yest.date)  = CAST((SELECT value from stats_settings WHERE name=''date_last_update'' limit 1) AS DATE) - INTERVAL ''1 DAY''
+			and date(joueur_hist_today.date) = CAST((SELECT value from stats_settings WHERE name=''date_last_update'' limit 1) AS DATE)
+			where stats_alliance.id = joueur_hist_today.id_alliance
+			AND stats_alliance.id = :id_alliance
 			order by BO_detruites desc
  			limit 10', 1),
 	 	(24, '_record_poi_nb', 'SELECT 
@@ -93,8 +93,8 @@ VALUES (10, 'record_poi_nb', 'SELECT
 			nom_alliance,
 			nb_poi
 			from
-			monde{idmonde}.alliance
-			where alliance.id= :id_alliance
+			stats_alliance
+			where stats_alliance.id= :id_alliance
 			order by nb_poi desc
 			limit 1', 1);
   
