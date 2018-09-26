@@ -21,9 +21,9 @@ private Integer bdp;
 
 private String d;
 
-private Integer egwr;
+private Long egwr;
 
-private Integer egws;
+private Long egws;
 
 private String f;
 
@@ -37,9 +37,9 @@ private List<M> m = new ArrayList<M>();
 
 private Integer mc;
 
-private Integer ms;
+private Long ms;
 
-private Integer ms4;
+private Long ms4;
 
 private String n;
 

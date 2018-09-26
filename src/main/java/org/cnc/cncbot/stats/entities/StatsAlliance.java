@@ -3,14 +3,18 @@ package org.cnc.cncbot.stats.entities;
 import java.io.Serializable;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+
+import org.springframework.data.domain.Persistable;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -30,13 +34,11 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString
 @Table(name="stats_alliance")
-public class StatsAlliance implements Serializable {
+public class StatsAlliance implements Serializable, Persistable<Integer>  {
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	@SequenceGenerator (name = "stats_alliance_id", sequenceName = "stats_alliance_id_seq", allocationSize = 1)
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "stats_alliance_id")
-	private Long id;
+	private Integer id;
 
 	@Column(name="alliance_description")
 	private String allianceDescription;
@@ -118,7 +120,16 @@ public class StatsAlliance implements Serializable {
 	@Column(name="top_score")
 	private Long topScore;
 	
-	@OneToMany
+	@OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+	@JoinColumn(name="id_alliance")
 	private List<StatsPoi> poiList;
-
+	
+	/**
+	 * We are doing to stop hibernate from doing select to check if exist before insert
+	 * Perfomance improvement since we delete all result before insert
+	 */
+	@Override
+	public boolean isNew() {
+		return true;
+	}
 }

@@ -165,13 +165,14 @@ public class StatsService {
 			
 			if (!updateDateSetting.isPresent()) {
 				log.error("Error : no update date setting, end of stats batch for World {}", account.getWorldId());
+				break;
 			} 
 			
 			DateTimeZone zone = DateTimeZone.forID(account.getTimezone());
 			DateTime dt = new DateTime(zone);
 			String currentDateTimezone = formatter.print(dt);
 
-			if (!updateDateSetting.isPresent() || !currentDateTimezone.equals(updateDateSetting.get().getValue())){
+			if (!currentDateTimezone.equals(updateDateSetting.get().getValue())){
 				log.info("Launch stats for account {} on world {}", account.getUser(), account.getWorldId());
 				try {
 					this.statsJobForWorld(account, false);
@@ -183,9 +184,14 @@ public class StatsService {
 			} else {
 				log.debug("Monde {} à jour",  account.getWorldId());
 
-				StatsSettings forceStats = this.settingDAO.getOne("force_stats");
+				Optional<StatsSettings> forceStatsSetting = this.settingDAO.findById("force_stats");
 
-				if (Integer.parseInt(forceStats.getValue()) == 1){
+				if (!forceStatsSetting.isPresent()) {
+					log.error("Error : no force_stats setting, end of stats batch for World {}", account.getWorldId());
+					break;
+				} 
+				
+				if (Integer.parseInt(forceStatsSetting.get().getValue()) == 1){
 					log.info("Force stats for account {} on world {}", account.getUser(), account.getWorldId());
 					try {
 						this.statsJobForWorld(account, true);
@@ -235,8 +241,13 @@ public class StatsService {
 
 			//Get players data
 
-			int maxRankingJoueur = Integer.valueOf(this.settingDAO.getOne("maxRankingJoueur").getValue());
-			List<StatsPlayer> joueursListe = this.getPlayerData(userSession, maxRankingJoueur);
+			Optional<StatsSettings> maxRankingJoueurSetting = this.settingDAO.findById("max_ranking_player");
+			
+			if (!maxRankingJoueurSetting.isPresent()) {
+				throw new BatchException("max_ranking_player Setting is not present, abort");
+			}
+			
+			List<StatsPlayer> joueursListe = this.getPlayerData(userSession, Integer.valueOf(maxRankingJoueurSetting.get().getValue()));
 
 			// Removing duplicates
 			joueursListe = joueursListe.stream()
@@ -249,8 +260,13 @@ public class StatsService {
 			this.baseDAO.saveAll(basesList);
 
 			//get POI and Alliances
-			int maxRankingAlliance = Integer.valueOf(this.settingDAO.getOne("maxRankingAlliance").getValue());
-			List<StatsAlliance> alliancesListe = this.getAlliancesData(userSession, maxRankingAlliance);
+			Optional<StatsSettings> maxRankingAllianceSetting = this.settingDAO.findById("max_ranking_alliance");
+			
+			if (!maxRankingAllianceSetting.isPresent()) {
+				throw new BatchException("max_ranking_alliance Setting is not present, abort");
+			}
+			
+			List<StatsAlliance> alliancesListe = this.getAlliancesData(userSession, Integer.valueOf(maxRankingAllianceSetting.get().getValue()));
 
 			//Removing duplicates
 			alliancesListe = alliancesListe.stream()
@@ -264,19 +280,18 @@ public class StatsService {
 			List<org.cnc.cncbot.map.entities.Poi> allPOIList = this.poiDAOMap.findAll();
 
 			//Since we have no id we create one with coords
-			poisList = allPOIList.stream()
-					.map(poiMap -> new StatsPoi(new Long(poiMap.getCoords().getX()*1000 + poiMap.getCoords().getY()),
+			poisList.addAll(allPOIList.stream()
+					.map(poiMap -> new StatsPoi(poiMap.getCoords().getX()*1000 + poiMap.getCoords().getY(),
 														poiMap.getCoords().getX(), poiMap.getCoords().getY(), poiMap.getAllianceId(),
 														poiMap.getLevel(), poiMap.getType()))
 					.distinct()
-	        		.collect(Collectors.toList()); 
+	        		.collect(Collectors.toList())); 
 			
 			DBContext.setDatasource("cctastats");
 			
 
 			//We add "no alliance" as Alliance with Id 0
-			StatsAlliance noAlliance = new StatsAlliance();
-			noAlliance.setId(new Long(0));
+			StatsAlliance noAlliance = new StatsAlliance(0, "", new Long(0), 0, 0, 0, 9999, 0, "No alliance", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, new Long(0), 0, 0, 0, 0, 0, 0, 0, new Long(0), null);
 			alliancesListe.add(noAlliance);
 
 			this.allianceDAO.saveAll(alliancesListe);
@@ -325,7 +340,7 @@ public class StatsService {
 		    long endTime = System.currentTimeMillis();
 		    Long duree = endTime -startTime;
 		    
-		    this.statsLogDAO.save(new StatsLog(null, stat.getId(), duree.intValue(), new Date(), userSession.getWorldId(), new Long(0)));
+		    this.statsLogDAO.save(new StatsLog(null, stat.getId(), duree.intValue(), new Date(), userSession.getWorldId(), 0));
 		}
 
 		//Get Stats by Alliance
@@ -563,11 +578,11 @@ public class StatsService {
 
 		//Get alliance Poi
 		for (Opoi poi : allianceInfo.getOpois()) {
-			StatsPoi poiTmp = new StatsPoi(new Long(poi.getI()), poi.getX(), poi.getY(), rankingDataA.getA(), poi.getL(), poi.getT()-1);
+			StatsPoi poiTmp = new StatsPoi(poi.getI(), poi.getX(), poi.getY(), rankingDataA.getA(), poi.getL(), poi.getT()-1);
 			listePois.add(poiTmp);
 		}
 		StatsAlliance allianceTmp = 
-				new StatsAlliance(new Long(rankingDataA.getA()), allianceInfo.getD(), rankingDataA.getSa(), allianceInfo.getBdp(),
+				new StatsAlliance(rankingDataA.getA(), allianceInfo.getD(), rankingDataA.getSa(), allianceInfo.getBdp(),
 						allianceInfo.getBde(), allianceInfo.getBd(), 0, 
 						allianceInfo.getPoi(), rankingDataA.getAn(), rankingDataA.getBc(), rankingDataA.getPc(), rankingDataA.getR(),
 						rangsPoi[1], rangsPoi[2], rangsPoi[3], rangsPoi[4], rangsPoi[5],
@@ -589,6 +604,8 @@ public class StatsService {
 		List<StatsBase> bases = new ArrayList<StatsBase>();
 		for (StatsPlayer player : playersListe) {
 			bases.addAll(player.getBases());
+			//We delete bases from player objet to insert them later (performance issue fix)
+			player.setBases(null);
 		}
 		return bases;
 	}
@@ -603,6 +620,8 @@ public class StatsService {
 		List<StatsPoi> pois = new ArrayList<StatsPoi>();
 		for (StatsAlliance alliance : alliancesListe) {
 			pois.addAll(alliance.getPoiList());
+			//We delete pois from alliance objet to insert them later (performance issue fix)
+			alliance.setPoiList(null);
 		}
 		return pois;
 	}

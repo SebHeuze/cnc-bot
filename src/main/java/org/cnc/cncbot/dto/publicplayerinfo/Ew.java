@@ -18,6 +18,6 @@ private String n;
 
 private Integer r;
 
-private Integer ws;
+private Long ws;
 
 }
