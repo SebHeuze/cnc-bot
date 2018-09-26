@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -160,13 +161,17 @@ public class StatsService {
 		String failList = "";
 		for (StatsAccount account : accountList) {
 			DBContext.setSchema(DAOConstants.SCHEMA_PREFIX + account.getWorldId()); 
-			StatsSettings updateDate = this.settingDAO.getOne("date_last_update");
-
+			Optional<StatsSettings> updateDateSetting = this.settingDAO.findById("date_last_update");
+			
+			if (!updateDateSetting.isPresent()) {
+				log.error("Error : no update date setting, end of stats batch for World {}", account.getWorldId());
+			} 
+			
 			DateTimeZone zone = DateTimeZone.forID(account.getTimezone());
 			DateTime dt = new DateTime(zone);
 			String currentDateTimezone = formatter.print(dt);
 
-			if (!currentDateTimezone.equals(updateDate.getValue())){
+			if (!updateDateSetting.isPresent() || !currentDateTimezone.equals(updateDateSetting.get().getValue())){
 				log.info("Launch stats for account {} on world {}", account.getUser(), account.getWorldId());
 				try {
 					this.statsJobForWorld(account, false);
