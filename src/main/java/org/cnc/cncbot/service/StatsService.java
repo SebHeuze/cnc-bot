@@ -14,48 +14,41 @@ import org.cnc.cncbot.config.DBContext;
 import org.cnc.cncbot.dto.ResponseType;
 import org.cnc.cncbot.dto.UserSession;
 import org.cnc.cncbot.dto.cctastats.JoueursRegistered;
-import org.cnc.cncbot.dto.publicallianceinfo.Opoi;
-import org.cnc.cncbot.dto.publicallianceinfo.PublicAllianceInfoResponse;
-import org.cnc.cncbot.dto.publicallianceinfo.Rpoi;
-import org.cnc.cncbot.dto.publicplayerinfo.C;
-import org.cnc.cncbot.dto.publicplayerinfo.Ew;
-import org.cnc.cncbot.dto.publicplayerinfo.PublicPlayerInfoResponse;
 import org.cnc.cncbot.dto.rankingdata.A;
 import org.cnc.cncbot.dto.rankingdata.P;
 import org.cnc.cncbot.dto.rankingdata.RankingDataResponse;
-import org.cnc.cncbot.dto.serverinfos.ServerInfoResponse;
 import org.cnc.cncbot.exception.BatchException;
 import org.cnc.cncbot.map.dao.DAOConstants;
 import org.cnc.cncbot.service.retrofit.CctaStatsService;
 import org.cnc.cncbot.service.retrofit.ServiceGenerator;
+import org.cnc.cncbot.stats.async.StatsAsyncTasks;
 import org.cnc.cncbot.stats.dao.StatsAccountDAO;
 import org.cnc.cncbot.stats.dao.StatsAllianceDAO;
 import org.cnc.cncbot.stats.dao.StatsBaseDAO;
 import org.cnc.cncbot.stats.dao.StatsBatchLogDAO;
-import org.cnc.cncbot.stats.dao.StatsPlayerDAO;
-import org.cnc.cncbot.stats.dao.StatsPoiDAO;
-import org.cnc.cncbot.stats.dao.StatsSettingsDAO;
 import org.cnc.cncbot.stats.dao.StatsDAO;
 import org.cnc.cncbot.stats.dao.StatsListDAO;
 import org.cnc.cncbot.stats.dao.StatsLogDAO;
+import org.cnc.cncbot.stats.dao.StatsPlayerDAO;
+import org.cnc.cncbot.stats.dao.StatsPoiDAO;
 import org.cnc.cncbot.stats.dao.StatsProcessingDAO;
+import org.cnc.cncbot.stats.dao.StatsSettingsDAO;
+import org.cnc.cncbot.stats.entities.Stat;
 import org.cnc.cncbot.stats.entities.StatsAccount;
 import org.cnc.cncbot.stats.entities.StatsAlliance;
 import org.cnc.cncbot.stats.entities.StatsBase;
 import org.cnc.cncbot.stats.entities.StatsBatchLog;
+import org.cnc.cncbot.stats.entities.StatsList;
+import org.cnc.cncbot.stats.entities.StatsLog;
 import org.cnc.cncbot.stats.entities.StatsPlayer;
 import org.cnc.cncbot.stats.entities.StatsPoi;
 import org.cnc.cncbot.stats.entities.StatsSettings;
-import org.cnc.cncbot.stats.entities.Stat;
-import org.cnc.cncbot.stats.entities.StatsList;
-import org.cnc.cncbot.stats.entities.StatsLog;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.JsonArray;
@@ -75,6 +68,8 @@ import retrofit2.Response;
 @Slf4j
 public class StatsService {
 
+	private final StatsAsyncTasks asyncTasks;
+	
 	private final GameService gameService;
 
 	private final StatsAccountDAO accountDAO;
@@ -113,11 +108,13 @@ public class StatsService {
 	@Autowired
 	public StatsService(
 			@Value("${cncbot.stats.host}") String cctaStatsHost,
+			StatsAsyncTasks asyncTasks,
 			GameService gameService, StatsAccountDAO accountDAO, StatsBatchLogDAO batchLogDAO, StatsSettingsDAO settingDAO,
 			StatsListDAO statsListDAO, StatsProcessingDAO statsProcessingDAO, StatsLogDAO statsLogDAO,
 			StatsDAO statsDAO, StatsAllianceDAO allianceDAO, StatsPlayerDAO playerDAO, StatsBaseDAO baseDAO, StatsPoiDAO poiDAO, org.cnc.cncbot.map.dao.PoiDAO poiDAOMap) {
 		this.cctaStatsHost = cctaStatsHost;
 		
+		this.asyncTasks = asyncTasks;
 		this.gameService = gameService;
 		this.accountDAO = accountDAO;
 		this.batchLogDAO = batchLogDAO;
@@ -229,7 +226,8 @@ public class StatsService {
 
 		//@TODO call player endpoint to get username in launchWorld
 		String gameSessionId = this.gameService.launchWorld(userSession);
-
+		this.asyncTasks.setGameService(this.gameService);
+		
 		userSession.setGameSessionId(gameSessionId);
 		
 		if(!statsOnly){
@@ -434,11 +432,12 @@ public class StatsService {
 		try {
 			List<CompletableFuture<StatsAlliance>> futures = new ArrayList<CompletableFuture<StatsAlliance>>();
 			for (A a : rankingData.getA()) {
-				CompletableFuture<StatsAlliance> future = this.getAlliancePublicInfos(userSession, a);          
+				CompletableFuture<StatsAlliance> future = this.asyncTasks.getAlliancePublicInfos(userSession, a);          
 				futures.add(future);
 			}
-
+			
 			for (CompletableFuture<StatsAlliance> future : futures) {
+				CompletableFuture.allOf(future);
 				alliancesList.add(future.get());
 			}
 		} catch (InterruptedException | ExecutionException e) {
@@ -501,14 +500,16 @@ public class StatsService {
 		try {
 			List<CompletableFuture<StatsPlayer>> futures = new ArrayList<CompletableFuture<StatsPlayer>>();
 			for (P p : rankingData.getP()) {
-				CompletableFuture<StatsPlayer> future = this.getPlayerPublicInfos(userSession, p);          
+				CompletableFuture<StatsPlayer> future = this.asyncTasks.getPlayerPublicInfos(userSession, p);          
 				futures.add(future);
 			}
 
 			for (CompletableFuture<StatsPlayer> future : futures) {
+				CompletableFuture.allOf(future);
 				playerList.add(future.get());
 			}
 		} catch (InterruptedException | ExecutionException e) {
+			log.error("Error while trying to get future data", e);
 			throw new BatchException("Error while trying to get future data");
 		}
 
@@ -516,84 +517,7 @@ public class StatsService {
 	}
 
 
-	/**
-	 * Get Player public detailled infos
-	 * @param userSession
-	 * @param rankingDataP
-	 * @return
-	 * @throws InterruptedException
-	 */
-	@Async
-	public CompletableFuture<StatsPlayer> getPlayerPublicInfos(UserSession userSession, P rankingDataP) throws InterruptedException {
-
-		PublicPlayerInfoResponse playerInfo = this.gameService.getPublicPlayerInfoRequest(userSession, rankingDataP.getP());
-		List<StatsBase> basesList = new ArrayList<StatsBase>();
-
-		//get bases of player
-		for (C base : playerInfo.getC()){
-			StatsBase baseTmp = new StatsBase(base.getI(), base.getX(), base.getY(), rankingDataP.getP(), base.getN(), base.getP());
-			basesList.add(baseTmp);
-		}
-
-		List<Ew> ewFirstRank = new ArrayList<Ew>();
-		if (playerInfo.getEw() != null){
-			for (Ew serverWon : playerInfo.getEw()) {
-				if (serverWon.getR() == 1) {
-					ewFirstRank.add(serverWon);
-				}
-			}
-		}
-
-		StatsPlayer playerTmp = new StatsPlayer(rankingDataP.getP(), playerInfo.getBde(), playerInfo.getBd(), Integer.valueOf((int) Math.round(playerInfo.getDccc())),
-				rankingDataP.getF(), rankingDataP.getA(), ewFirstRank.size(), rankingDataP.getPn(), rankingDataP.getR(),
-				rankingDataP.getS(), playerInfo.getBde() + playerInfo.getBd(), basesList);
-
-
-		return CompletableFuture.completedFuture(playerTmp);
-	}
-
-	/**
-	 * Get public alliance infos
-	 * @param rankingDataA
-	 * @return
-	 */
-	@Async
-	public CompletableFuture<StatsAlliance> getAlliancePublicInfos(UserSession userSession, A rankingDataA) {
-		List<StatsAlliance> result = new ArrayList<StatsAlliance>(); // this is some custom bean holding your result
-
-		PublicAllianceInfoResponse allianceInfo = this.gameService.getPublicAllianceInfoRequest(userSession, rankingDataA.getA());
-
-		//We get rank and POI Score
-		List<Rpoi> listeInfosPois = allianceInfo.getRpois();
-		int[] rangsPoi = new int[8];
-		int[] scoresPoi = new int[8];
-		int indexTmp = 1;
-		for (Rpoi poiInfo : listeInfosPois) {
-			rangsPoi[indexTmp] = poiInfo.getR();
-			scoresPoi[indexTmp] = poiInfo.getS();
-			indexTmp++;
-		}
-
-		List<StatsPoi> listePois = new ArrayList<StatsPoi>();
-
-		//Get alliance Poi
-		for (Opoi poi : allianceInfo.getOpois()) {
-			StatsPoi poiTmp = new StatsPoi(poi.getI(), poi.getX(), poi.getY(), rankingDataA.getA(), poi.getL(), poi.getT()-1);
-			listePois.add(poiTmp);
-		}
-		StatsAlliance allianceTmp = 
-				new StatsAlliance(rankingDataA.getA(), allianceInfo.getD(), rankingDataA.getSa(), allianceInfo.getBdp(),
-						allianceInfo.getBde(), allianceInfo.getBd(), 0, 
-						allianceInfo.getPoi(), rankingDataA.getAn(), rankingDataA.getBc(), rankingDataA.getPc(), rankingDataA.getR(),
-						rangsPoi[1], rangsPoi[2], rangsPoi[3], rangsPoi[4], rangsPoi[5],
-						rangsPoi[6], rangsPoi[7], rankingDataA.getSc(), scoresPoi[1], scoresPoi[2],
-						scoresPoi[3], scoresPoi[4], scoresPoi[5], scoresPoi[6], scoresPoi[7],
-						rankingDataA.getS(), listePois);
-
-		result.add(allianceTmp);
-
-		return CompletableFuture.completedFuture(allianceTmp);
-	}
+	
 
 	/**
 	 * Extract all bases from players

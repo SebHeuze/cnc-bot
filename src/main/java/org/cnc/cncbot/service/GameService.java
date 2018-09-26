@@ -163,7 +163,7 @@ public class GameService {
      * @param id l'id du joueur
      * @return requete
      */
-	PublicPlayerInfoResponse getPublicPlayerInfoRequest(UserSession userSession, int id) {
+	public PublicPlayerInfoResponse getPublicPlayerInfoRequest(UserSession userSession, int id) {
 		try {
 			log.debug("getPublicPlayerInfoRequest id {}", id);
 			Call<PublicPlayerInfoResponse> getRankingCountCall  = this.cncGameService.getPublicPlayerInfo(
@@ -181,7 +181,7 @@ public class GameService {
      * @param id l'id du joueur
      * @return requete
      */
-	PublicAllianceInfoResponse getPublicAllianceInfoRequest(UserSession userSession, int id) {
+	public PublicAllianceInfoResponse getPublicAllianceInfoRequest(UserSession userSession, int id) {
 		try {
 			Call<PublicAllianceInfoResponse> getPublicAllianceInfoCall  = this.cncGameService.getPublicAllianceInfo(
 					PublicAllianceInfoRequest.builder().id(id).session(userSession.getGameSessionId())
