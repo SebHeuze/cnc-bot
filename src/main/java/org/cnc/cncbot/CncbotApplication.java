@@ -31,7 +31,7 @@ public class CncbotApplication {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(2);
         executor.setMaxPoolSize(40);
-        executor.setQueueCapacity(500);
+        executor.setQueueCapacity(30000);
         executor.setThreadNamePrefix("CncBot-");
         executor.initialize();
         return executor;
