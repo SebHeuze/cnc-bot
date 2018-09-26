@@ -17,12 +17,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface StatsPoiDAO extends JpaRepository<StatsPoi, Long> {
 
-	@Query(value = "TRUNCATE TABLE poi", nativeQuery = true)
+	@Query(value = "TRUNCATE TABLE stats_poi", nativeQuery = true)
 	@Transactional
 	@Modifying
 	public void truncateTable();
 	
-	@Query(value = "INSERT INTO poi_hist (id,id_alliance,level,type,coord_x,coord_y,date) SELECT poi.*, ?1 FROM poi", nativeQuery = true)
+	@Query(value = "INSERT INTO stats_poi_hist (id,id_alliance,level,type,coord_x,coord_y,date) SELECT stats_poi.*, ?1 FROM stats_poi", nativeQuery = true)
 	@Transactional
 	@Modifying
 	public void archive(Date dateArchive);
