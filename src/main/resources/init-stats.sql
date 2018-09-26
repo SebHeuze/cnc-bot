@@ -39,12 +39,67 @@ CREATE TABLE if not exists scripting.stats_batch_log (
 MERGE INTO scripting.stats_liste_comptes 
   KEY(ID) 
 VALUES 
-  (2, 'xxx@yahoo.fr', 'xxxx', 373, true, 'Europe/Paris',  0,0);
+  (2, '***REMOVED***', '***REMOVED***', 373, true, 'Europe/Paris',  0,0);
   
 
+
+CREATE TABLE scripting.stats_list (
+    id integer NOT NULL,
+    nom character varying(50),
+    requete text,
+    type smallint
+);
+
+MERGE INTO scripting.stats_list 
+  KEY(id) 
+VALUES (10, 'record_poi_nb', 'SELECT 
+			id,
+			nom_alliance,
+			nb_poi
+			from
+			monde{idmonde}.alliance
+			order by nb_poi desc
+			limit 1', 0),
+		(12, 'record_base_score', 'SELECT 
+			id_joueur,
+			pseudo,
+			nom_base,
+			nom_alliance,
+			score_base
+			from
+			monde{idmonde}.joueur, monde{idmonde}.base, monde{idmonde}.alliance
+			where base.id_joueur=joueur.id
+			and joueur.id_alliance=alliance.id
+			order by score_base desc
+			limit 1', 0),
+		(17, '_top_joueur_bo', 'SELECT 
+			joueur_hist_today.id,
+			joueur_hist_today.pseudo,
+			alliance.nom_alliance,
+			(joueur_hist_today.bases_oublies_detruites - joueur_hist_yest.bases_oublies_detruites) as BO_detruites
+			from
+			monde{idmonde}.alliance,
+			monde{idmonde}.joueur_hist joueur_hist_today
+			inner join monde{idmonde}.joueur_hist joueur_hist_yest on
+			joueur_hist_today.id = joueur_hist_yest.id
+			and date(joueur_hist_yest.date)  = CAST((SELECT value from monde{idmonde}.settings WHERE name=''date_last_update'' limit 1) AS DATE) - INTERVAL ''1 DAY''
+			and date(joueur_hist_today.date) = CAST((SELECT value from monde{idmonde}.settings WHERE name=''date_last_update'' limit 1) AS DATE)
+			where alliance.id = joueur_hist_today.id_alliance
+			AND alliance.id = :id_alliance
+			order by BO_detruites desc
+ 			limit 10', 1),
+	 	(24, '_record_poi_nb', 'SELECT 
+			id,
+			nom_alliance,
+			nb_poi
+			from
+			monde{idmonde}.alliance
+			where alliance.id= :id_alliance
+			order by nb_poi desc
+			limit 1', 1);
+  
+  
 create schema if not exists monde373;
-
-
 
 CREATE SEQUENCE if not exists monde373.stats_alliance_hist_id_hist_seq
     START WITH 1
@@ -265,6 +320,16 @@ CREATE TABLE if not exists  monde373.stats_settings (
     value character varying NOT NULL
 );
 
+MERGE INTO monde373.stats_settings 
+  KEY(name) 
+VALUES 
+  ('max_ranking_alliance', '100'),
+  ('max_ranking_player', '100'),
+  ('date_last_update', '2018-09-25'),
+  ('force_stats','0');
+  
+
+
 
 CREATE TABLE if not exists  monde373.stats (
     id integer DEFAULT monde373.stats_id_seq.nextval NOT NULL,
@@ -272,4 +337,5 @@ CREATE TABLE if not exists  monde373.stats (
     donnees_stat CLOB NOT NULL,
     id_alliance integer DEFAULT 0
 );
+
 

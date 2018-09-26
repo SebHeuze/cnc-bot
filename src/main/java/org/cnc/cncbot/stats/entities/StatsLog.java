@@ -46,6 +46,6 @@ public class StatsLog {
 	private Integer world;
 	
 	@Column(name = "alliance")
-	private Long alliance;
+	private Integer alliance;
 	
 }

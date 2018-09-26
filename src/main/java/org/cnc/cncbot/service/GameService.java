@@ -165,6 +165,7 @@ public class GameService {
      */
 	PublicPlayerInfoResponse getPublicPlayerInfoRequest(UserSession userSession, int id) {
 		try {
+			log.debug("getPublicPlayerInfoRequest id {}", id);
 			Call<PublicPlayerInfoResponse> getRankingCountCall  = this.cncGameService.getPublicPlayerInfo(
 					PublicPlayerInfoRequest.builder().id(id).session(userSession.getGameSessionId())
 					.build());
@@ -206,7 +207,7 @@ public class GameService {
 			int firstIndex, int lastIndex, int sortColumn, boolean ascending) {
 		try {
 			Call<RankingDataResponse> getRankingCountCall  = this.cncGameService.rankingGetData(
-					RankingDataRequest.builder().view(0)
+					RankingDataRequest.builder().view(view)
 					.firstIndex(firstIndex)
 					.lastIndex(lastIndex)
 					.sortColumn(sortColumn)

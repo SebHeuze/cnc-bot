@@ -10,6 +10,8 @@ import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
+import org.springframework.data.domain.Persistable;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,13 +28,11 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name="stats_poi")
-public class StatsPoi implements Serializable {
+public class StatsPoi implements Serializable, Persistable<Integer> {
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	@SequenceGenerator (name = "stats_poi_id", sequenceName = "stats_poi_id_seq", allocationSize = 1)
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "stats_poi_id")
-	private Long id;
+	private Integer id;
 
 	@Column(name="coord_x")
 	private Integer coordX;
@@ -46,5 +46,14 @@ public class StatsPoi implements Serializable {
 	private Integer level;
 
 	private Integer type;
-
+	
+	/**
+	 * We are doing to stop hibernate from doing select to check if exist before insert
+	 * Perfomance improvement since we delete all result before insert
+	 */
+	@Override
+	public boolean isNew() {
+		return true;
+	}
+	
 }
