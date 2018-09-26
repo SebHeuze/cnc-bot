@@ -124,6 +124,10 @@ public class StatsAlliance implements Serializable, Persistable<Integer>  {
 	@JoinColumn(name="id_alliance")
 	private List<StatsPoi> poiList;
 	
+	public StatsAlliance(int id) {
+		this.id = id;
+	}
+	
 	/**
 	 * We are doing to stop hibernate from doing select to check if exist before insert
 	 * Perfomance improvement since we delete all result before insert

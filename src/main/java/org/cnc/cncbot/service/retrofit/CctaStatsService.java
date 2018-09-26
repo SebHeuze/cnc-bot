@@ -18,11 +18,10 @@ import retrofit2.http.Query;
 public interface CctaStatsService {
 	static final String BASE_URL = "http://www.ccta-stats.com/";
 	 
-
-	@GET("${cncbot.stats.front.playersregistered.endpoint}")
+	@GET("index.php?a=getJoueurs")
 	Call<List<JoueursRegistered>> getPlayersRegistered(@Query("monde") int idMonde);
 	
 
-	@GET("${cncbot.stats.front.clearcache.endpoint}")
+	@GET("index.php?a=cacheclear")
 	Call<List<JoueursRegistered>> clearCache(@Query("monde") int idMonde);
 }
