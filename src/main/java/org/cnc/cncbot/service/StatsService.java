@@ -438,10 +438,12 @@ public class StatsService {
 				futures.add(future);
 			}
 			CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
+			
 			for (CompletableFuture<StatsAlliance> future : futures) {
 				alliancesList.add(future.get());
 			}
 		} catch (InterruptedException | ExecutionException e) {
+			log.error("Error while trying to get future data", e);
 			throw new BatchException("Error while trying to get future data");
 		}
 

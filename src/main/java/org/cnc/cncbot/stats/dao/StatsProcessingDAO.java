@@ -2,6 +2,7 @@ package org.cnc.cncbot.stats.dao;
 
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -103,7 +104,7 @@ public class StatsProcessingDAO {
 				objectNode.addProperty(column, (Boolean) value);           
 			} else if (value instanceof Date) {
 				objectNode.addProperty(column, ((Date) value).getTime());                
-			} else if (value instanceof Long) {
+			} else if (value instanceof Long || value instanceof BigInteger) {
 				objectNode.addProperty(column, (Long) value);                
 			} else if (value instanceof Double) {
 				objectNode.addProperty(column, (Double) value);                
