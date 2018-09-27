@@ -19,21 +19,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @SpringBootApplication(
 		exclude = { DataSourceAutoConfiguration.class } //, HibernateJpaAutoConfiguration.class
 		)
-@EnableAsync
 public class CncbotApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(CncbotApplication.class, args);
 	}
 	
-	@Bean
-    public Executor asyncExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(2);
-        executor.setMaxPoolSize(40);
-        executor.setQueueCapacity(30000);
-        executor.setThreadNamePrefix("CncBot-");
-        executor.initialize();
-        return executor;
-    }
 }
