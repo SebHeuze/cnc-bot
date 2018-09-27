@@ -144,7 +144,7 @@ public class StatsService {
 
 		log.info("Launch of stats batch");
 
-		List<StatsAccount> accountList = this.accountDAO.findAll();
+		List<StatsAccount> accountList = this.accountDAO.findByActiveTrue();
 
 		StatsBatchLog batchLog = new StatsBatchLog();
 		batchLog.setDateDebut(new Date());

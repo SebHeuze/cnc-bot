@@ -17,8 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface StatsAccountDAO extends JpaRepository<StatsAccount, Integer> {
 
-	public List<StatsAccount> findAll();
 
+	public List<StatsAccount> findByActiveTrue();
+	
 	@Modifying
 	@Transactional
 	@Query("UPDATE StatsAccount a set a.playersCount = ?2, a.alliancesCount = ?3 WHERE a = ?1")
