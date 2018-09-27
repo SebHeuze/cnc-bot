@@ -230,12 +230,15 @@ public class GameService {
 	public JsonArray poll(int mapX, int maxY, UserSession userSession) {
 
 		try {
-			Call<JsonArray> pollCall  = this.cncGameService.poll(
-					PollRequest.builder()
-					.session(userSession.getGameSessionId())
-					.requests(CncUtils.buildPollRequest(mapX,maxY))
-					.sequenceid(userSession.useSequenceId())
-					.requestid(userSession.useRequestId()).build());
+			Call<JsonArray> pollCall;
+			synchronized(this){
+					pollCall  = this.cncGameService.poll(
+						PollRequest.builder()
+						.session(userSession.getGameSessionId())
+						.requests(CncUtils.buildPollRequest(mapX,maxY))
+						.sequenceid(userSession.useSequenceId())
+						.requestid(userSession.useRequestId()).build());
+			}
 			return pollCall.execute().body();
 		} catch (IOException e) {
 			log.error("Error with request poll", e);
