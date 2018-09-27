@@ -15,8 +15,8 @@ public class AsyncConfig implements AsyncConfigurer {
     @Override
     public Executor getAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(2);
-        executor.setMaxPoolSize(20);
+        executor.setCorePoolSize(20);
+        executor.setMaxPoolSize(40);
         executor.setQueueCapacity(50000);
         executor.setThreadNamePrefix("CncBotExecutor-");
         executor.initialize();
