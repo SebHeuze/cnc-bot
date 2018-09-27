@@ -78,4 +78,15 @@ public class StatsPlayer implements Serializable, Persistable<Integer> {
 		return true;
 	}
 	
+	@Override
+    public boolean equals(Object obj) {
+		StatsPlayer other = (StatsPlayer) obj;
+      return this.id.equals(other.id);
+    }
+
+    @Override
+    public int hashCode() {
+       return this.id.hashCode();
+    }
+	
 }

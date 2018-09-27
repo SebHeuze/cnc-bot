@@ -128,6 +128,18 @@ public class StatsAlliance implements Serializable, Persistable<Integer>  {
 		this.id = id;
 	}
 	
+	
+	@Override
+    public boolean equals(Object obj) {
+		StatsAlliance other = (StatsAlliance) obj;
+      return this.id.equals(other.id);
+    }
+
+    @Override
+    public int hashCode() {
+       return this.id.hashCode();
+    }
+    
 	/**
 	 * We are doing to stop hibernate from doing select to check if exist before insert
 	 * Perfomance improvement since we delete all result before insert
