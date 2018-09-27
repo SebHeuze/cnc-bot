@@ -52,7 +52,7 @@ public class CNCController {
       message.setTitre(messageRequest.getTitre());
      
       //replace = Temp fix for spycnc
-      message.setMessage(messageRequest.getMessage().replaceAll("\\\\", "\\"));
+      message.setMessage(messageRequest.getMessage().replace("\\\\", "\\"));
       message.setPseudo(messageRequest.getJoueur());
       message.setMonde(messageRequest.getMonde());
       webService.sendMessage(message);
