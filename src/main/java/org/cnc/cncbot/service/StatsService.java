@@ -10,6 +10,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import javax.transaction.Transactional;
+
 import org.cnc.cncbot.config.DBContext;
 import org.cnc.cncbot.dto.ResponseType;
 import org.cnc.cncbot.dto.UserSession;
@@ -217,6 +219,7 @@ public class StatsService {
 	 * @throws BatchException
 	 * @param Account account to use
 	 */
+	@Transactional
 	public void statsJobForWorld(StatsAccount account, boolean statsOnly) throws BatchException {
 		log.info("Start map batch of World : {}", account.getWorldId());
 
