@@ -104,8 +104,10 @@ public class StatsProcessingDAO {
 				objectNode.addProperty(column, (Boolean) value);           
 			} else if (value instanceof Date) {
 				objectNode.addProperty(column, ((Date) value).getTime());                
-			} else if (value instanceof Long || value instanceof BigInteger) {
+			} else if (value instanceof Long) {
 				objectNode.addProperty(column, (Long) value);                
+			} else if (value instanceof BigInteger) {
+				objectNode.addProperty(column, (BigInteger) value);                
 			} else if (value instanceof Double) {
 				objectNode.addProperty(column, (Double) value);                
 			} else if (value instanceof Float) {
