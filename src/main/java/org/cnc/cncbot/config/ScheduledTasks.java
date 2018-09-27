@@ -31,44 +31,44 @@ public class ScheduledTasks {
 
 
     /**
+     * STATS SHEDULER
+     */
+    @Scheduled(initialDelayString = "${cncbot.stats.batch.initialDelay}",  fixedRateString = "${cncbot.stats.batch.fixedRate}")
+    public void statsScheduler() {
+        log.info("Stats batch started at {}", new Date());
+        this.statsService.statsJob();
+    }
+    /**
      * MAP SCHEDULER
      */
-    @Scheduled(fixedRateString = "${cncbot.map.batch1.fixedRate}")
+    @Scheduled(initialDelayString = "${cncbot.map.batch1.initialDelay}" ,fixedDelayString = "${cncbot.map.batch1.fixedDelay}")
     public void batch1() {
         log.info("Map batch num 1 started at {}", new Date());
         this.mapService.mapDataJob(1);
     }
     
-    @Scheduled(fixedRateString = "${cncbot.map.batch5.fixedRate}")
+    @Scheduled(initialDelayString = "${cncbot.map.batch5.initialDelay}" ,fixedDelayString = "${cncbot.map.batch5.fixedDelay}")
     public void batch5() {
         log.info("Map batch num 5 started at {}", new Date());
         this.mapService.mapDataJob(5);
     }
 
-    @Scheduled(fixedRateString = "${cncbot.map.batch10.fixedRate}")
+    @Scheduled(initialDelayString = "${cncbot.map.batch10.initialDelay}" ,fixedDelayString = "${cncbot.map.batch10.fixedDelay}")
     public void batch10() {
         log.info("Map batch num 10 started at {}", new Date());
         this.mapService.mapDataJob(10);
     }
 
-    @Scheduled(fixedRateString = "${cncbot.map.batch20.fixedRate}")
+    @Scheduled(initialDelayString = "${cncbot.map.batch20.initialDelay}" ,fixedDelayString = "${cncbot.map.batch20.fixedDelay}")
     public void batch20() {
         log.info("Map batch num 20 started at {}", new Date());
         this.mapService.mapDataJob(20);
     }
 
-    @Scheduled(fixedRateString = "${cncbot.map.batch60.fixedRate}")
+    @Scheduled(initialDelayString = "${cncbot.map.batch60.initialDelay}" ,fixedDelayString = "${cncbot.map.batch60.fixedDelay}")
     public void batch60() {
         log.info("Map batch num 60 started at {}", new Date());
         this.mapService.mapDataJob(60);
     }
     
-    /**
-     * STATS SHEDULER
-     */
-    @Scheduled(fixedRateString = "${cncbot.stats.batch.fixedRate}")
-    public void statsScheduler() {
-        log.info("Stats batch started at {}", new Date());
-        this.statsService.statsJob();
-    }
 }
