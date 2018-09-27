@@ -437,9 +437,8 @@ public class StatsService {
 				CompletableFuture<StatsAlliance> future = this.asyncTasks.getAlliancePublicInfos(userSession, a);          
 				futures.add(future);
 			}
-			
+			CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
 			for (CompletableFuture<StatsAlliance> future : futures) {
-				CompletableFuture.allOf(future);
 				alliancesList.add(future.get());
 			}
 		} catch (InterruptedException | ExecutionException e) {
@@ -506,6 +505,8 @@ public class StatsService {
 				futures.add(future);
 			}
 
+			CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
+			
 			for (CompletableFuture<StatsPlayer> future : futures) {
 				CompletableFuture.allOf(future);
 				playerList.add(future.get());

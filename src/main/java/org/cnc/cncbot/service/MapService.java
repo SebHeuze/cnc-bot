@@ -148,9 +148,9 @@ public class MapService {
 				CompletableFuture<MapData> future = this.asyncTasks.getMapDataTile(x, serverInfos, userSession);          
 				futures.add(future);
 			}
-			
+
+			CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
 			for (CompletableFuture<MapData> future : futures) {
-				CompletableFuture.allOf(future);
 				alliancesListTotal.addAll(new ArrayList<Alliance>(future.get().getAlliancesList()));
 				playersListTotal.addAll(new ArrayList<Player>(future.get().getPlayersList()));
 				listeObjectMap.addAll(future.get().getObjectsList());
