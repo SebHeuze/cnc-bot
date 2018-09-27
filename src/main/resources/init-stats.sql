@@ -72,22 +72,6 @@ VALUES (10, 'record_poi_nb', 'SELECT
 			and stats_joueur.id_alliance=stats_alliance.id
 			order by score_base desc
 			limit 1', 0),
-		(17, '_top_joueur_bo', 'SELECT 
-			joueur_hist_today.id,
-			joueur_hist_today.pseudo,
-			stats_alliance.nom_alliance,
-			(joueur_hist_today.bases_oublies_detruites - joueur_hist_yest.bases_oublies_detruites) as BO_detruites
-			from
-			stats_alliance,
-			stats_joueur_hist joueur_hist_today
-			inner join stats_joueur_hist joueur_hist_yest on
-			joueur_hist_today.id = joueur_hist_yest.id
-			and date(joueur_hist_yest.date)  = CAST((SELECT value from stats_settings WHERE name=''date_last_update'' limit 1) AS DATE) - INTERVAL ''1 DAY''
-			and date(joueur_hist_today.date) = CAST((SELECT value from stats_settings WHERE name=''date_last_update'' limit 1) AS DATE)
-			where stats_alliance.id = joueur_hist_today.id_alliance
-			AND stats_alliance.id = :id_alliance
-			order by BO_detruites desc
- 			limit 10', 1),
 	 	(24, '_record_poi_nb', 'SELECT 
 			id,
 			nom_alliance,

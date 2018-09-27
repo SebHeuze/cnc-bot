@@ -366,7 +366,9 @@ public class StatsService {
 					log.debug("Process stats alliance {}", alliance);
 					for (StatsList stat : statsListAlliance) {
 						long startTime = System.currentTimeMillis();
-						this.statsProcessingDAO.excecuteStat(userSession, stat, alliance); 
+						JsonArray jsonResult = this.statsProcessingDAO.excecuteStat(userSession, stat, alliance);
+						this.statsDAO.save(new Stat(null, jsonResult.toString(), alliance.getId(), stat.getName()));
+						
 						long endTime = System.currentTimeMillis();
 					    Long duree = endTime - startTime;
 					    this.statsLogDAO.save(new StatsLog(null, stat.getId(), duree.intValue(), new Date(), userSession.getWorldId(), alliance.getId()));
