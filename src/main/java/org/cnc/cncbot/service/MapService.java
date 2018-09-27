@@ -130,6 +130,9 @@ public class MapService {
 		String gameSessionId = this.gameService.launchWorld(userSession);
 		userSession.setGameSessionId(gameSessionId);
 		
+
+		this.asyncTasks.setGameService(this.gameService);
+		
 		
 		ServerInfoResponse serverInfos = this.gameService.getServerInfos(userSession);
 		Set<Alliance> alliancesListTotal = new HashSet<Alliance>();
@@ -153,6 +156,7 @@ public class MapService {
 				listeObjectMap.addAll(future.get().getObjectsList());
 			}
 		} catch (InterruptedException | ExecutionException e) {
+			log.error("Error while trying to get future data", e);
 			throw new BatchException("Error while trying to get future data");
 		}
 

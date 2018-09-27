@@ -57,7 +57,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MapAsyncTasks {
 	
-	private final GameService gameService; 
+	private GameService gameService; 
 
 	/**
 	 * Tag for WORLD data.
@@ -73,11 +73,6 @@ public class MapAsyncTasks {
 	 * Tag for ENDGAME data.
 	 */
 	public static final String TAG_ENDGAME = "ENDGAME";
-	
-	@Autowired
-	public MapAsyncTasks(GameService gameService) {
-		this.gameService = gameService;
-	}
 	
 	/**
 	 * Get map data for tile X

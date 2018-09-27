@@ -1,5 +1,6 @@
 package org.cnc.cncbot.map.entities;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -23,6 +24,8 @@ public class Account {
 	private Integer id;
 	private String user;
 	private String  pass;
+	
+	@Column(name="monde")
 	private Integer worldId;
 	private Boolean active;
 	private Integer numbatch;
