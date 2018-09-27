@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Poi entity
+ * Settings entity
  * @author heuze
  *
  */

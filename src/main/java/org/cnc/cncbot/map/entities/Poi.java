@@ -4,8 +4,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
-import org.springframework.data.domain.Persistable;
-
 import lombok.Getter;
 import lombok.Setter;
 

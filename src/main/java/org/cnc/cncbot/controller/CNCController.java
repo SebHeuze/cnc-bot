@@ -1,28 +1,22 @@
 package org.cnc.cncbot.controller;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.cnc.cncbot.dto.sendmessage.Message;
 import org.cnc.cncbot.dto.sendmessage.MessageRequest;
 import org.cnc.cncbot.dto.sendmessage.Result;
 import org.cnc.cncbot.exception.BatchException;
-import org.cnc.cncbot.map.service.GameService;
-import org.cnc.cncbot.map.service.WebService;
+import org.cnc.cncbot.service.WebService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Controller
-@RequestMapping("/")
+@RequestMapping("/cncmap")
 @Slf4j
 public class CNCController {
 
@@ -38,7 +32,7 @@ public class CNCController {
   private final String key;
   
   @Autowired
-  public CNCController(WebService webService,  @Value("${org.cnc.cncbot.api-key}") String key) {
+  public CNCController(WebService webService,  @Value("${cncbot.api-key}") String key) {
 	  this.webService = webService;
 	  this.key = key;
   }
@@ -56,7 +50,9 @@ public class CNCController {
       try {
       Message message = new Message();
       message.setTitre(messageRequest.getTitre());
-      message.setMessage(messageRequest.getMessage());
+     
+      //replace = Temp fix for spycnc
+      message.setMessage(messageRequest.getMessage().replaceAll("\\\\", "\\"));
       message.setPseudo(messageRequest.getJoueur());
       message.setMonde(messageRequest.getMonde());
       webService.sendMessage(message);
