@@ -100,13 +100,13 @@ public class StatsAsyncTasks {
 			listePois.add(poiTmp);
 		}
 		StatsAlliance allianceTmp = 
-				new StatsAlliance(rankingDataA.getA(), allianceInfo.getD(), rankingDataA.getSa(), allianceInfo.getBdp(),
-						allianceInfo.getBde(), allianceInfo.getBd(), 0, 
-						allianceInfo.getPoi(), rankingDataA.getAn(), rankingDataA.getBc(), rankingDataA.getPc(), rankingDataA.getR(),
+				new StatsAlliance(rankingDataA.getA(), allianceInfo.getD(), rankingDataA.getSa() == null ? 0 : rankingDataA.getSa(),
+						allianceInfo.getBdp(), allianceInfo.getBde(), allianceInfo.getBd(), 0, 
+						allianceInfo.getPoi(), rankingDataA.getAn(), rankingDataA.getBc() == null ? 0 : rankingDataA.getBc(), rankingDataA.getPc(), rankingDataA.getR(),
 						rangsPoi[1], rangsPoi[2], rangsPoi[3], rangsPoi[4], rangsPoi[5],
-						rangsPoi[6], rangsPoi[7], rankingDataA.getSc(), scoresPoi[1], scoresPoi[2],
+						rangsPoi[6], rangsPoi[7], rankingDataA.getSc() == null ? 0 : rankingDataA.getSc(), scoresPoi[1], scoresPoi[2],
 						scoresPoi[3], scoresPoi[4], scoresPoi[5], scoresPoi[6], scoresPoi[7],
-						rankingDataA.getS(), listePois);
+						rankingDataA.getS() == null ? 0 : rankingDataA.getS(), listePois);
 
 		result.add(allianceTmp);
 
