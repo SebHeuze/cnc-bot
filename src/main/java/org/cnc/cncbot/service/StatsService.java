@@ -256,10 +256,15 @@ public class StatsService {
 					.collect(Collectors.toList());
 
 			List<StatsBase> basesList = this.extractBases(joueursListe);
-
+			//Removing duplicates
+			basesList = basesList.stream()
+					.distinct()
+					.collect(Collectors.toList());
+			
 			this.playerDAO.saveAll(joueursListe);
 			this.baseDAO.saveAll(basesList);
 
+			
 			//get POI and Alliances
 			Optional<StatsSettings> maxRankingAllianceSetting = this.settingDAO.findById("max_ranking_alliance");
 			
@@ -275,7 +280,12 @@ public class StatsService {
 					.collect(Collectors.toList());
 
 			List<StatsPoi> poisList = this.extractPois( alliancesListe);
-
+			
+			//Removing duplicates
+			poisList = poisList.stream()
+					.distinct()
+					.collect(Collectors.toList());
+			
 			//We look for free POI in cncmap DB
 			DBContext.setDatasource("cncmap");
 			List<org.cnc.cncbot.map.entities.Poi> allPOIList = this.poiDAOMap.findAll();
