@@ -14,6 +14,6 @@ private Integer ps;
 
 private Integer r;
 
-private Integer s;
+private Long s;
 
 }

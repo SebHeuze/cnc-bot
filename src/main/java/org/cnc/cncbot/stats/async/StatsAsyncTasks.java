@@ -84,7 +84,7 @@ public class StatsAsyncTasks {
 		//We get rank and POI Score
 		List<Rpoi> listeInfosPois = allianceInfo.getRpois();
 		int[] rangsPoi = new int[8];
-		int[] scoresPoi = new int[8];
+		long[] scoresPoi = new long[8];
 		int indexTmp = 1;
 		for (Rpoi poiInfo : listeInfosPois) {
 			rangsPoi[indexTmp] = poiInfo.getR();

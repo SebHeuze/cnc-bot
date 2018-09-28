@@ -97,25 +97,25 @@ public class StatsAlliance implements Serializable, Persistable<Integer>  {
 	private Long score;
 
 	@Column(name="score_poi_1")
-	private Integer scorePoi1;
+	private Long scorePoi1;
 
 	@Column(name="score_poi_2")
-	private Integer scorePoi2;
+	private Long scorePoi2;
 
 	@Column(name="score_poi_3")
-	private Integer scorePoi3;
+	private Long scorePoi3;
 
 	@Column(name="score_poi_4")
-	private Integer scorePoi4;
+	private Long scorePoi4;
 
 	@Column(name="score_poi_5")
-	private Integer scorePoi5;
+	private Long scorePoi5;
 
 	@Column(name="score_poi_6")
-	private Integer scorePoi6;
+	private Long scorePoi6;
 
 	@Column(name="score_poi_7")
-	private Integer scorePoi7;
+	private Long scorePoi7;
 
 	@Column(name="top_score")
 	private Long topScore;
