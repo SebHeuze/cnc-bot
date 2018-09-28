@@ -256,11 +256,7 @@ public class StatsService {
 					.collect(Collectors.toList());
 
 			List<StatsBase> basesList = this.extractBases(joueursListe);
-			//Removing duplicates
-			basesList = basesList.stream()
-					.distinct()
-					.collect(Collectors.toList());
-			
+		
 			this.playerDAO.saveAll(joueursListe);
 			this.baseDAO.saveAll(basesList);
 
@@ -280,12 +276,7 @@ public class StatsService {
 					.collect(Collectors.toList());
 
 			List<StatsPoi> poisList = this.extractPois( alliancesListe);
-			
-			//Removing duplicates
-			poisList = poisList.stream()
-					.distinct()
-					.collect(Collectors.toList());
-			
+						
 			//We look for free POI in cncmap DB
 			DBContext.setDatasource("cncmap");
 			List<org.cnc.cncbot.map.entities.Poi> allPOIList = this.poiDAOMap.findAll();
@@ -300,7 +291,11 @@ public class StatsService {
 			
 			DBContext.setDatasource("cctastats");
 			
-
+			//Removing duplicates
+			poisList = poisList.stream()
+					.distinct()
+					.collect(Collectors.toList());
+			
 			//We add "no alliance" as Alliance with Id 0
 			StatsAlliance noAlliance = new StatsAlliance(0, "", new Long(0), 0, 0, 0, 9999, 0, "No alliance", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, new Long(0), new Long(0), new Long(0), new Long(0), new Long(0), new Long(0), new Long(0), new Long(0), new Long(0), null);
 			alliancesListe.add(noAlliance);
