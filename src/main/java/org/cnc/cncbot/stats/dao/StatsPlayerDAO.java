@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -20,13 +21,13 @@ import org.springframework.transaction.annotation.Transactional;
 public interface StatsPlayerDAO extends JpaRepository<StatsPlayer, Long> {
 
 	@Query(value = "TRUNCATE TABLE stats_joueur", nativeQuery = true)
-	@Transactional
+	@Transactional(propagation=Propagation.REQUIRED)
 	@Modifying
 	public void truncateTable();
 	
 
 	@Query(value = "INSERT INTO stats_joueur_hist (id,pseudo,faction,rang,score,id_alliance,total_bases_detruites,bases_oublies_detruites,bases_joueurs_detruites,distance_centre,nb_tacitus,date) SELECT stats_joueur.*, ?1 FROM stats_joueur", nativeQuery = true)
-	@Transactional
+	@Transactional(propagation=Propagation.REQUIRED)
 	@Modifying
 	public void archive(Date dateArchive);
 	

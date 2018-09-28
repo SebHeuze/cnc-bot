@@ -1,20 +1,14 @@
 package org.cnc.cncbot.service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-import javax.transaction.Transactional;
-
 import org.cnc.cncbot.config.DBContext;
-import org.cnc.cncbot.dto.PollWorld;
-import org.cnc.cncbot.dto.S;
 import org.cnc.cncbot.dto.UserSession;
 import org.cnc.cncbot.dto.serverinfos.ServerInfoResponse;
 import org.cnc.cncbot.exception.AuthException;
@@ -28,27 +22,19 @@ import org.cnc.cncbot.map.dao.EndGameDAO;
 import org.cnc.cncbot.map.dao.PlayerDAO;
 import org.cnc.cncbot.map.dao.PoiDAO;
 import org.cnc.cncbot.map.dao.SettingsDAO;
-import org.cnc.cncbot.map.dto.DecryptResult;
 import org.cnc.cncbot.map.dto.MapData;
 import org.cnc.cncbot.map.entities.Account;
 import org.cnc.cncbot.map.entities.Alliance;
 import org.cnc.cncbot.map.entities.Base;
-import org.cnc.cncbot.map.entities.Coords;
 import org.cnc.cncbot.map.entities.EndGame;
 import org.cnc.cncbot.map.entities.MapObject;
 import org.cnc.cncbot.map.entities.Player;
 import org.cnc.cncbot.map.entities.Poi;
 import org.cnc.cncbot.map.entities.Settings;
-import org.cnc.cncbot.utils.CryptoUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -120,7 +106,7 @@ public class MapService {
 	 * Retrieve map data for account
 	 * @param account
 	 */
-	@Transactional
+	@Transactional(propagation=Propagation.REQUIRES_NEW)
 	public void mapForAccount(Account account) {
 		log.info("Start map batch of World : {}", account.getWorldId());
 

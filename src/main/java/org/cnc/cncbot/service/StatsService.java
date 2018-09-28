@@ -10,8 +10,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-import javax.transaction.Transactional;
-
 import org.cnc.cncbot.config.DBContext;
 import org.cnc.cncbot.dto.ResponseType;
 import org.cnc.cncbot.dto.UserSession;
@@ -52,6 +50,8 @@ import org.joda.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.google.gson.JsonArray;
 
@@ -219,7 +219,7 @@ public class StatsService {
 	 * @throws BatchException
 	 * @param Account account to use
 	 */
-	@Transactional
+	@Transactional(propagation=Propagation.REQUIRES_NEW)
 	public void statsJobForWorld(StatsAccount account, boolean statsOnly) throws BatchException {
 		log.info("Start map batch of World : {}", account.getWorldId());
 
