@@ -22,7 +22,7 @@ public interface StatsAccountDAO extends JpaRepository<StatsAccount, Integer> {
 	public List<StatsAccount> findByActiveTrue();
 	
 	@Modifying
-	@Transactional(propagation=Propagation.REQUIRED)
+	@Transactional(propagation=Propagation.MANDATORY)
 	@Query("UPDATE StatsAccount a set a.playersCount = ?2, a.alliancesCount = ?3 WHERE a = ?1")
 	void updateCounts(StatsAccount account, int playersCount, int alliancesCount);
 }

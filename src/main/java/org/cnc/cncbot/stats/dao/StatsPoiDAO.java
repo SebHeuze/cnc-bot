@@ -19,12 +19,12 @@ import org.springframework.transaction.annotation.Transactional;
 public interface StatsPoiDAO extends JpaRepository<StatsPoi, Long> {
 
 	@Query(value = "TRUNCATE TABLE stats_poi", nativeQuery = true)
-	@Transactional(propagation=Propagation.REQUIRED)
+	@Transactional(propagation=Propagation.MANDATORY)
 	@Modifying
 	public void truncateTable();
 	
 	@Query(value = "INSERT INTO stats_poi_hist (id,id_alliance,level,type,coord_x,coord_y,date) SELECT stats_poi.*, ?1 FROM stats_poi", nativeQuery = true)
-	@Transactional(propagation=Propagation.REQUIRED)
+	@Transactional(propagation=Propagation.MANDATORY)
 	@Modifying
 	public void archive(Date dateArchive);
 }

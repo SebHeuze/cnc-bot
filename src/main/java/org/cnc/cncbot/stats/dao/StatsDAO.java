@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 public interface StatsDAO extends JpaRepository<Stat, Long> {
 
 	@Query(value = "TRUNCATE TABLE stats", nativeQuery = true)
-	@Transactional(propagation=Propagation.REQUIRED)
+	@Transactional(propagation=Propagation.MANDATORY)
 	@Modifying
 	public void truncateTable();
 }

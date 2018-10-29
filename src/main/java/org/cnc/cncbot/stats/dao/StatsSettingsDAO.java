@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 public interface StatsSettingsDAO  extends JpaRepository<StatsSettings, String> {
 
 	@Modifying
-	@Transactional(propagation=Propagation.REQUIRED)
+	@Transactional(propagation=Propagation.MANDATORY)
 	@Query("UPDATE StatsSettings s set s.value = ?2 WHERE s.name = ?1")
 	public void updateSetting(String name, String value);
 }

@@ -21,13 +21,13 @@ import org.springframework.transaction.annotation.Transactional;
 public interface StatsPlayerDAO extends JpaRepository<StatsPlayer, Long> {
 
 	@Query(value = "TRUNCATE TABLE stats_joueur", nativeQuery = true)
-	@Transactional(propagation=Propagation.REQUIRED)
+	@Transactional(propagation=Propagation.MANDATORY)
 	@Modifying
 	public void truncateTable();
 	
 
 	@Query(value = "INSERT INTO stats_joueur_hist (id,pseudo,faction,rang,score,id_alliance,total_bases_detruites,bases_oublies_detruites,bases_joueurs_detruites,distance_centre,nb_tacitus,date) SELECT stats_joueur.*, ?1 FROM stats_joueur", nativeQuery = true)
-	@Transactional(propagation=Propagation.REQUIRED)
+	@Transactional(propagation=Propagation.MANDATORY)
 	@Modifying
 	public void archive(Date dateArchive);
 	
