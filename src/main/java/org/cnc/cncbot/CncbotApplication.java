@@ -19,6 +19,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @SpringBootApplication(
 		exclude = { DataSourceAutoConfiguration.class } //, HibernateJpaAutoConfiguration.class
 		)
+//@EnableTransactionManagement(mode=AdviceMode.ASPECTJ)
 public class CncbotApplication {
 
 	public static void main(String[] args) {

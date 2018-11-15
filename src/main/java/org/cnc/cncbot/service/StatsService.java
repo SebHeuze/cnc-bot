@@ -10,6 +10,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
+
 import org.cnc.cncbot.config.DBContext;
 import org.cnc.cncbot.dto.ResponseType;
 import org.cnc.cncbot.dto.UserSession;
@@ -49,6 +51,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -88,6 +91,13 @@ public class StatsService {
 	private final StatsBaseDAO baseDAO;
 	private final StatsPoiDAO poiDAO;
 	private final org.cnc.cncbot.map.dao.PoiDAO poiDAOMap;
+	
+	private final ApplicationContext applicationContext;
+	
+	/**
+	 * Used for transactions with Spring that use proxy to work
+	 */
+	private StatsService self;
 
 	private final CctaStatsService cctaStatsService;
 
@@ -97,6 +107,8 @@ public class StatsService {
 	@Value("${cncbot.stats.ranking_interval}")
 	private int rankingInterval; 
 
+
+	
 	/**
 	 * Url CCTA Stats
 	 */
@@ -110,13 +122,14 @@ public class StatsService {
 	@Autowired
 	public StatsService(
 			@Value("${cncbot.stats.host}") String cctaStatsHost,
+			ApplicationContext applicationContext,
 			StatsAsyncTasks asyncTasks,
 			GameService gameService, StatsAccountDAO accountDAO, StatsBatchLogDAO batchLogDAO, StatsSettingsDAO settingDAO,
 			StatsListDAO statsListDAO, StatsProcessingDAO statsProcessingDAO, StatsLogDAO statsLogDAO,
 			StatsDAO statsDAO, StatsAllianceDAO allianceDAO, StatsPlayerDAO playerDAO, StatsBaseDAO baseDAO, StatsPoiDAO poiDAO, org.cnc.cncbot.map.dao.PoiDAO poiDAOMap) {
 		this.cctaStatsHost = cctaStatsHost;
-		
 		this.asyncTasks = asyncTasks;
+		this.applicationContext = applicationContext;
 		this.gameService = gameService;
 		this.accountDAO = accountDAO;
 		this.batchLogDAO = batchLogDAO;
@@ -137,6 +150,11 @@ public class StatsService {
 		this.cctaStatsService = ServiceGenerator.createService(CctaStatsService.class, this.cctaStatsHost, ResponseType.JSON);
 	}
 
+	@PostConstruct
+	public void postContruct(){
+	    self = this.applicationContext.getBean(StatsService.class);
+	}
+	
 	/**
 	 * Main method for Stats Batch
 	 * @throws BatchException
@@ -174,7 +192,7 @@ public class StatsService {
 			if (!currentDateTimezone.equals(updateDateSetting.get().getValue())){
 				log.info("Launch stats for account {} on world {}", account.getUser(), account.getWorldId());
 				try {
-					this.statsJobForWorld(account, false);
+					self.statsJobForWorld(account, false);
 				} catch (BatchException e){
 					log.error("Error, end of stats batch for World {}", account.getWorldId(), e);
 					nbFails++;
@@ -193,7 +211,7 @@ public class StatsService {
 				if (Integer.parseInt(forceStatsSetting.get().getValue()) == 1){
 					log.info("Force stats for account {} on world {}", account.getUser(), account.getWorldId());
 					try {
-						this.statsJobForWorld(account, true);
+						self.statsJobForWorld(account, true);
 					} catch (BatchException e){
 						log.error("Error, end of stats batch for World {}", account.getWorldId(), e);
 						nbFails++;
