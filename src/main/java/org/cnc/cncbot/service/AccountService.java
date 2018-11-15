@@ -13,6 +13,7 @@ import org.cnc.cncbot.dto.OriginAccountInfo;
 import org.cnc.cncbot.dto.ResponseType;
 import org.cnc.cncbot.dto.UserSession;
 import org.cnc.cncbot.exception.AuthException;
+import org.cnc.cncbot.exception.EAAuthException;
 import org.cnc.cncbot.service.retrofit.AccountsEAService;
 import org.cnc.cncbot.service.retrofit.GameCDNOriginService;
 import org.cnc.cncbot.service.retrofit.ServiceGenerator;
@@ -273,7 +274,7 @@ public class AccountService {
 
 		} catch (IOException ioe) {
 			log.error("Error during authentification of account {}", userSession.getUser(), ioe);
-			throw new AuthException("Error during authentification");
+			throw new EAAuthException("Error during EA authentification");
 		}
 	}
 
@@ -292,6 +293,7 @@ public class AccountService {
 			OriginAccountInfo result = originAccountResponse.body();
 			if (result.getServers() == null) {
 				log.error(originAccountResponse.toString());
+				this.logout(userSession);
 				throw new AuthException("Error while getting account info on account " + userSession.getUser() + " World " + userSession.getWorldId());
 			}
 			return result;

@@ -19,7 +19,9 @@ import org.cnc.cncbot.dto.cctastats.JoueursRegistered;
 import org.cnc.cncbot.dto.rankingdata.A;
 import org.cnc.cncbot.dto.rankingdata.P;
 import org.cnc.cncbot.dto.rankingdata.RankingDataResponse;
+import org.cnc.cncbot.exception.AuthException;
 import org.cnc.cncbot.exception.BatchException;
+import org.cnc.cncbot.exception.EAAuthException;
 import org.cnc.cncbot.map.dao.DAOConstants;
 import org.cnc.cncbot.service.retrofit.CctaStatsService;
 import org.cnc.cncbot.service.retrofit.ServiceGenerator;
@@ -194,10 +196,14 @@ public class StatsService {
 				log.info("Launch stats for account {} on world {}", account.getUser(), account.getWorldId());
 				try {
 					self.statsJobForWorld(account, false);
-				} catch (BatchException e){
+				} catch (AuthException | BatchException e){
 					log.error("Error, end of stats batch for World {}", account.getWorldId(), e);
 					nbFails++;
 					failList += account.getWorldId() + ",";
+				} catch (EAAuthException ae) {
+					//Disable account by setting active to null (to be able to distinguish from manually disabled accounts)
+					account.setActive(null);
+					this.accountDAO.save(account);
 				}
 			} else {
 				log.info("Monde {} à jour",  account.getWorldId());

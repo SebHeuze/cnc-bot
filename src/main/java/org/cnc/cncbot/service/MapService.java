@@ -13,6 +13,7 @@ import org.cnc.cncbot.dto.UserSession;
 import org.cnc.cncbot.dto.serverinfos.ServerInfoResponse;
 import org.cnc.cncbot.exception.AuthException;
 import org.cnc.cncbot.exception.BatchException;
+import org.cnc.cncbot.exception.EAAuthException;
 import org.cnc.cncbot.map.async.MapAsyncTasks;
 import org.cnc.cncbot.map.dao.AccountDAO;
 import org.cnc.cncbot.map.dao.AllianceDAO;
@@ -93,7 +94,7 @@ public class MapService {
 				this.mapForAccount(account);
 			} catch (AuthException ae){
 				log.error("Error during auth step with account {}", account.getUser(), ae);
-				
+			} catch (EAAuthException ae) {
 				//Disable account by setting active to null (to be able to distinguish from manually disabled accounts)
 				account.setActive(null);
 				this.accountDAO.save(account);
