@@ -188,7 +188,8 @@ public class StatsService {
 			DateTimeZone zone = DateTimeZone.forID(account.getTimezone());
 			DateTime dt = new DateTime(zone);
 			String currentDateTimezone = formatter.print(dt);
-
+			
+			log.info("last update date : {}, actual date with timezone : {}", updateDateSetting.get().getValue(), currentDateTimezone);
 			if (!currentDateTimezone.equals(updateDateSetting.get().getValue())){
 				log.info("Launch stats for account {} on world {}", account.getUser(), account.getWorldId());
 				try {
