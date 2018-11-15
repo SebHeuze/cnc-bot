@@ -57,19 +57,19 @@ public class CNCController {
       message.setMonde(messageRequest.getMonde());
       webService.sendMessage(message);
       
-      result.setMessage("Message envoyé avec succès");
+      result.setMessage("Success");
       result.setResult("OK");
       } catch (BatchException be){
-        log.error("Erreur lors de l'envoi du message",be);
+        log.error("Error during message sending",be);
         result.setMessage(be.getMessage());
         result.setResult("KO");
       }  catch (Exception e){
-        log.error("Erreur lors de l'envoi du message",e);
+        log.error("Error during message sending",e);
         result.setMessage("Erreur technique");
         result.setResult("KO");
       }
     } else {
-      result.setMessage("Clé invalide");
+      result.setMessage("Invalid KEY");
       result.setResult("KO");
     }
     
