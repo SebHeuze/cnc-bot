@@ -22,6 +22,8 @@ public class Account {
 	@Id
 	@GeneratedValue
 	private Integer id;
+	
+	@Column(name="`user`")
 	private String user;
 	private String  pass;
 	
