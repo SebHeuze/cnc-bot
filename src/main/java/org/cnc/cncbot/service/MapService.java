@@ -110,6 +110,7 @@ public class MapService {
 	public void mapForAccount(Account account) {
 		log.info("Start map batch of World : {}", account.getWorldId());
 
+		//TODO: FIX username
 		UserSession userSession = new UserSession(account.getUser(), account.getPass(), account.getWorldId(), 0, 0,
 				null, "World42Dummy", null);
 

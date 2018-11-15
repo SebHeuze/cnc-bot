@@ -241,7 +241,7 @@ public class StatsService {
 	@Transactional(propagation=Propagation.REQUIRES_NEW)
 	public void statsJobForWorld(StatsAccount account, boolean statsOnly) throws BatchException {
 		log.info("Start map batch of World : {}", account.getWorldId());
-
+		//TODO: FIX username
 		UserSession userSession = new UserSession(account.getUser(), account.getPass(), account.getWorldId(), 0, 0,
 				null, "World42Dummy", null);
 

@@ -41,7 +41,7 @@ public class WebService {
 		if (account == null){
 			throw new BatchException("No account for world "+ unMessage.getMonde());
 		}
-	
+		//TODO: FIX username
 		UserSession userSession = new UserSession(account.getUser(), account.getPass(), account.getWorldId(), 0, 0,
 				null, "World42Dummy", null);
 		String gameSessionId = this.gameService.launchWorld(userSession);
