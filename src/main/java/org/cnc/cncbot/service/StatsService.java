@@ -200,7 +200,7 @@ public class StatsService {
 					failList += account.getWorldId() + ",";
 				}
 			} else {
-				log.debug("Monde {} à jour",  account.getWorldId());
+				log.info("Monde {} à jour",  account.getWorldId());
 
 				Optional<StatsSettings> forceStatsSetting = this.settingDAO.findById("force_stats");
 
