@@ -14,7 +14,7 @@ import lombok.Setter;
 
 /**
  * BatchLog entity
- * @author heuze
+ * @author SebHeuze
  *
  */
 @Entity

@@ -2,7 +2,7 @@ package org.cnc.cncbot.exception;
 
 /**
  * Auth Exception.
- * @author SEB
+ * @author SebHeuze
  *
  */
 public class AuthException extends RuntimeException {

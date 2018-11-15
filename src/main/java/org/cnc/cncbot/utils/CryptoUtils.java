@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Helper pour crypter décrypter le base 91.
- * @author SEB
+ * @author SebHeuze
  *
  */
 @Slf4j

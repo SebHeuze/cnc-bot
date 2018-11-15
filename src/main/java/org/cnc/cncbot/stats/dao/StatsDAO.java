@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * DAO Class for Stat
- * @author heuze
+ * @author SebHeuze
  *
  */
 @Repository

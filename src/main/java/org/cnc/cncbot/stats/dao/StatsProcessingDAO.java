@@ -28,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * DAO Class for StatsList
- * @author heuze
+ * @author SebHeuze
  *
  */
 @Slf4j

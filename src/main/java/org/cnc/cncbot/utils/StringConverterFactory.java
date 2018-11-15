@@ -13,7 +13,7 @@ import retrofit2.Retrofit;
 
 /**
  * String converter used by Retrofit
- * @author sheuze
+ * @author SebHeuze
  *
  */
 public final class StringConverterFactory extends Converter.Factory {

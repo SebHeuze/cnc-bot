@@ -42,7 +42,7 @@ import retrofit2.Call;
 /**
  * Account service
  * Used to manage TiberiumAlliance/EA sessions
- * @author sheuze
+ * @author SebHeuze
  *
  */
 @Service

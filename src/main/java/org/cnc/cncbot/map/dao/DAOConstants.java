@@ -2,7 +2,7 @@ package org.cnc.cncbot.map.dao;
 
 /**
  * Constants DAO class.
- * @author SEB
+ * @author SebHeuze
  *
  */
 public final class DAOConstants {

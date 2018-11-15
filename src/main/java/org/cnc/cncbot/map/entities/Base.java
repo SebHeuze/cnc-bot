@@ -9,7 +9,7 @@ import lombok.Setter;
 
 /**
  * Player base entity
- * @author heuze
+ * @author SebHeuze
  *
  */
 @Entity

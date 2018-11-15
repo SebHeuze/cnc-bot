@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * DAO Class for POI
- * @author heuze
+ * @author SebHeuze
  *
  */
 @Repository

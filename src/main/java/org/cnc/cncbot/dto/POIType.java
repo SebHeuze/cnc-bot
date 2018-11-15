@@ -2,7 +2,7 @@ package org.cnc.cncbot.dto;
 
 /**
  * POI Types.
- * @author SEB
+ * @author SebHeuze
  *
  */
 public enum POIType {

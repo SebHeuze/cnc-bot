@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 
 /**
  * DAO Class for Account
- * @author heuze
+ * @author SebHeuze
  *
  */
 @Repository

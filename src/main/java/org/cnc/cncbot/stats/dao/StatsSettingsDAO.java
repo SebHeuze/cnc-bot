@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * DAO Class for Settings
- * @author heuze
+ * @author SebHeuze
  *
  */
 @Repository

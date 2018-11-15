@@ -8,7 +8,7 @@ import lombok.Setter;
 
 /**
  * Endgame entity
- * @author heuze
+ * @author SebHeuze
  *
  */
 @Entity

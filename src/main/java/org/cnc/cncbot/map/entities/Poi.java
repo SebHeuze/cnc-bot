@@ -9,7 +9,7 @@ import lombok.Setter;
 
 /**
  * Poi entity
- * @author heuze
+ * @author SebHeuze
  *
  */
 @Entity

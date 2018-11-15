@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * DAO Class for Poi
- * @author heuze
+ * @author SebHeuze
  *
  */
 @Repository

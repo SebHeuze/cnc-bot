@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Map service
- * @author sheuze
+ * @author SebHeuze
  *
  */
 @Service

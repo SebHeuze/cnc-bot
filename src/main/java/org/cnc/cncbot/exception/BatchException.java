@@ -2,7 +2,7 @@ package org.cnc.cncbot.exception;
 
 /**
  * Batch Exception.
- * @author SEB
+ * @author SebHeuze
  *
  */
 public class BatchException extends RuntimeException {

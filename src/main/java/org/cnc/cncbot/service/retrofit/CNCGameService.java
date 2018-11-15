@@ -25,7 +25,7 @@ import retrofit2.http.POST;
 
 /**
  * Game CDN Origin services class
- * @author sheuze
+ * @author SebHeuze
  *
  */
 @Service

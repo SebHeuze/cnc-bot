@@ -13,7 +13,7 @@ import lombok.Setter;
 
 /**
  * Account entity
- * @author heuze
+ * @author SebHeuze
  *
  */
 @Entity

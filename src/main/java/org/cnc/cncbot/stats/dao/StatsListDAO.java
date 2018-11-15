@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 
 /**
  * DAO Class for StatsList
- * @author heuze
+ * @author SebHeuze
  *
  */
 @Repository

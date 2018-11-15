@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Class of utils for HTTP calls
- * @author sheuze
+ * @author SebHeuze
  *
  */
 @Slf4j

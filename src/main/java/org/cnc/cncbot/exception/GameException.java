@@ -2,7 +2,7 @@ package org.cnc.cncbot.exception;
 
 /**
  * Game Exception.
- * @author SEB
+ * @author SebHeuze
  *
  */
 public class GameException extends RuntimeException {

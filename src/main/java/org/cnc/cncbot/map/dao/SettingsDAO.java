@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 /**
  * DAO Class for Settings
- * @author heuze
+ * @author SebHeuze
  *
  */
 @Repository

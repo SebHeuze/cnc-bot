@@ -10,7 +10,7 @@ import lombok.ToString;
 
 /**
  * Objet Message.
- * @author SEB
+ * @author SebHeuze
  *
  */
 @ToString

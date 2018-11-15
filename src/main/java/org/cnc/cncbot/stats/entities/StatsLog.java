@@ -19,7 +19,7 @@ import lombok.Setter;
 
 /**
  * StatLog entity
- * @author heuze
+ * @author SebHeuze
  *
  */
 @Entity

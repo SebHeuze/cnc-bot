@@ -2,7 +2,7 @@ package org.cnc.cncbot.dto;
 
 /**
  * EndGame types.
- * @author SEB
+ * @author SebHeuze
  *
  */
 public enum EndGameType {

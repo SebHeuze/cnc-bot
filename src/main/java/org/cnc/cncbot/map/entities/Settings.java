@@ -11,7 +11,7 @@ import lombok.Setter;
 
 /**
  * Settings entity
- * @author heuze
+ * @author SebHeuze
  *
  */
 @Entity

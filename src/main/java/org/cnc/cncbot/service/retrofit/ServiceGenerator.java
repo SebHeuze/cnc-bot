@@ -11,7 +11,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
  * Retrofit service generator
- * @author sheuze
+ * @author SebHeuze
  *
  */
 public final class ServiceGenerator {

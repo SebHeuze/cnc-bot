@@ -14,7 +14,7 @@ import lombok.Setter;
 
 /**
  * Alliance entity
- * @author heuze
+ * @author SebHeuze
  *
  */
 @Entity

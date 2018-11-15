@@ -15,7 +15,7 @@ import lombok.ToString;
 
 /**
  * Object MapData
- * @author SEB
+ * @author SebHeuze
  *
  */
 @ToString

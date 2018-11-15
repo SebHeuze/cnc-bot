@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 /**
  * DAO Class for BatchLog
- * @author heuze
+ * @author SebHeuze
  *
  */
 @Repository

@@ -31,7 +31,7 @@ import retrofit2.Response;
 /**
  * Account service
  * Used to manage TiberiumAlliance/EA sessions
- * @author sheuze
+ * @author SebHeuze
  *
  */
 @Service

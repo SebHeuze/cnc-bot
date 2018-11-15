@@ -7,7 +7,7 @@ import lombok.ToString;
 
 /**
  * Résulat crypt.
- * @author SEB
+ * @author SebHeuze
  *
  */
 @ToString

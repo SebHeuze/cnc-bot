@@ -65,7 +65,7 @@ import retrofit2.Response;
 
 /**
  * Map service
- * @author sheuze
+ * @author SebHeuze
  *
  */
 @Service

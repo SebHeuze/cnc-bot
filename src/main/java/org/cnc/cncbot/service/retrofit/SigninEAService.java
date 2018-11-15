@@ -12,7 +12,7 @@ import retrofit2.http.Query;
 
 /**
  * EA services class
- * @author sheuze
+ * @author SebHeuze
  *
  */
 @Service

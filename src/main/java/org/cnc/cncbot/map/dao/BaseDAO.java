@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * DAO Class for Base
- * @author heuze
+ * @author SebHeuze
  *
  */
 @Repository

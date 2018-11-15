@@ -12,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Class for Scheduled batchs
- * @author sheuze
+ * @author SebHeuze
  *
  */
 @Component

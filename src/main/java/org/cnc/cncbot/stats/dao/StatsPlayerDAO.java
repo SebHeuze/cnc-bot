@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * DAO Class for Player
- * @author heuze
+ * @author SebHeuze
  *
  */
 @Repository

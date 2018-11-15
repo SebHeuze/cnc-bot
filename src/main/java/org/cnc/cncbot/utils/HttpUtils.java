@@ -6,7 +6,7 @@ import java.util.Map;
 
 /**
  * Class of utils for HTTP calls
- * @author sheuze
+ * @author SebHeuze
  *
  */
 public class HttpUtils {

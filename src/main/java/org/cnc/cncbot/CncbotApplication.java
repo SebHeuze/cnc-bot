@@ -12,7 +12,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 /**
  * Main Class of CNCBOT
- * @author sheuze
+ * @author SebHeuze
  *
  */
 @EnableScheduling
