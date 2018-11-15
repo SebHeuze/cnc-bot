@@ -65,7 +65,7 @@ public class GameService {
 	/**
 	 * Max RETRY for Auth
 	 */
-	public static final int MAX_RETRY = 3;
+	public static final int MAX_RETRY = 5;
 
 
 	@Autowired
@@ -113,9 +113,9 @@ public class GameService {
 		if (gameSessionId.equals(EXPIRED_GAME_SESSIONID)) {
 			log.info("Session expirée pour le compte {}", userSession.getUser());
 			if (retryCount >= MAX_RETRY) {
+				this.accountService.logout(userSession);
 				throw new AuthException("Can't log on account " + userSession.getUser() + " World " + userSession.getWorldId());
 			}
-			this.accountService.logout(userSession);
 			return this.launchWorld(userSession, ++retryCount);
 		}
 
