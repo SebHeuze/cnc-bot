@@ -99,6 +99,7 @@ public class GameService {
 		userSession.setSessionId(this.accountService.getSessionId(userSession));
 
 		OriginAccountInfo accountInfos = this.accountService.getAccountInfo(userSession);
+		
 		Optional<Server> server = accountInfos.getServers()
 				.stream()
 				.filter(item -> item.getId().equals(userSession.getWorldId()))
@@ -111,8 +112,9 @@ public class GameService {
 		String gameSessionId = this.openGameSession(userSession);
 
 		if (gameSessionId.equals(EXPIRED_GAME_SESSIONID)) {
-			log.info("Session expirée pour le compte {}", userSession.getUser());
+			log.info("Can't get session, retry n {} account {}", retryCount + 1, userSession.getUser());
 			if (retryCount >= MAX_RETRY) {
+				log.info("Session expirée pour le compte {}", userSession.getUser());
 				this.accountService.logout(userSession);
 				throw new AuthException("Can't log on account " + userSession.getUser() + " World " + userSession.getWorldId());
 			}
