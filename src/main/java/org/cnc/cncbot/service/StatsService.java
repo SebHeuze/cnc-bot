@@ -322,7 +322,7 @@ public class StatsService {
 					.collect(Collectors.toList());
 			
 			//We add "no alliance" as Alliance with Id 0
-			StatsAlliance noAlliance = new StatsAlliance(0, "", new Long(0), 0, 0, 0, 9999, 0, "No alliance", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, new Long(0), new Long(0), new Long(0), new Long(0), new Long(0), new Long(0), new Long(0), new Long(0), new Long(0), null);
+			StatsAlliance noAlliance = new StatsAlliance(0, "", new Long(0), 0, 0, 0, 9999, 0, "No alliance", 0, 0, 9999, 0, 0, 0, 0, 0, 0, 0, new Long(0), new Long(0), new Long(0), new Long(0), new Long(0), new Long(0), new Long(0), new Long(0), new Long(0), null);
 			alliancesListe.add(noAlliance);
 
 			this.allianceDAO.saveAll(alliancesListe);
