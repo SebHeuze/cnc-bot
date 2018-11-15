@@ -289,8 +289,12 @@ public class AccountService {
 			params.put("session", userSession.getSessionId());
 			Call<OriginAccountInfo> originAccountCall  = this.gameCDNService.getOriginAccountInfo(params);
 			Response<OriginAccountInfo> originAccountResponse = originAccountCall.execute();
-	
-			return originAccountResponse.body();
+			OriginAccountInfo result = originAccountResponse.body();
+			if (result.getServers() == null) {
+				log.error(originAccountResponse.message());
+				throw new AuthException("Error while getting account info on account " + userSession.getUser() + " World " + userSession.getWorldId());
+			}
+			return result;
 		} catch (IOException ioe) {
 			log.error("Error during refreshAccountInfo of account {}", userSession.getUser(), ioe);
 			throw new AuthException("Error during refreshAccountInfo of account " + userSession.getUser() );
