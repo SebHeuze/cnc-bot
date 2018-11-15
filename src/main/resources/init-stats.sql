@@ -39,7 +39,7 @@ CREATE TABLE if not exists scripting.stats_batch_log (
 MERGE INTO scripting.stats_liste_comptes 
   KEY(ID) 
 VALUES 
-  (2, '***REMOVED***', '***REMOVED***', 373, true, 'Europe/Paris',  0,0);
+  (2, 'USER', 'PASS', 373, true, 'Europe/Paris',  0,0);
   
 
 
