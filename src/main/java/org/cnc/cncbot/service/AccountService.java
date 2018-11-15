@@ -291,7 +291,7 @@ public class AccountService {
 			Response<OriginAccountInfo> originAccountResponse = originAccountCall.execute();
 			OriginAccountInfo result = originAccountResponse.body();
 			if (result.getServers() == null) {
-				log.error(originAccountResponse.message());
+				log.error(originAccountResponse.toString());
 				throw new AuthException("Error while getting account info on account " + userSession.getUser() + " World " + userSession.getWorldId());
 			}
 			return result;
