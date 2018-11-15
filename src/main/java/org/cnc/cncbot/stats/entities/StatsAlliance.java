@@ -131,8 +131,11 @@ public class StatsAlliance implements Serializable, Persistable<Integer>  {
 	
 	@Override
     public boolean equals(Object obj) {
-		StatsAlliance other = (StatsAlliance) obj;
-      return this.id.equals(other.id);
+		if (obj instanceof StatsAlliance) {
+			StatsAlliance other = (StatsAlliance) obj;
+		      return this.id.equals(other.id);
+		} 
+		return false;
     }
 
     @Override

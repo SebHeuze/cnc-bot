@@ -60,8 +60,11 @@ public class StatsBase implements Serializable, Persistable<Integer>  {
 	
 	@Override
     public boolean equals(Object obj) {
-		StatsBase other = (StatsBase) obj;
-      return this.id.equals(other.id);
+		if (obj instanceof StatsBase) {
+			StatsBase other = (StatsBase) obj;
+		      return this.id.equals(other.id);
+		} 
+		return false;
     }
 
     @Override

@@ -324,6 +324,7 @@ public class StatsService {
 			DateTimeZone zone = DateTimeZone.forID(account.getTimezone());
 			DateTime dt = new DateTime(zone);
 
+			log.info("Archiving world");
 			//Archive
 			this.playerDAO.archive(dt.toDate());
 			this.baseDAO.archive(dt.toDate());

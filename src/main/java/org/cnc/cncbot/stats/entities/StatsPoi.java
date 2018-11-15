@@ -58,8 +58,11 @@ public class StatsPoi implements Serializable, Persistable<Integer> {
 	
 	@Override
     public boolean equals(Object obj) {
-		StatsPoi other = (StatsPoi) obj;
-      return this.id.equals(other.id);
+		if (obj instanceof StatsPoi) {
+			StatsPoi other = (StatsPoi) obj;
+		      return this.id.equals(other.id);
+		} 
+		return false;
     }
 
     @Override
