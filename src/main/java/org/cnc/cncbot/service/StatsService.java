@@ -346,7 +346,12 @@ public class StatsService {
 		this.processStats(userSession);
 
 		//clearCache on ccta stats side
-		this.cctaStatsService.clearCache(userSession.getWorldId());
+		Call<Void> clearCache = this.cctaStatsService.clearCache(userSession.getWorldId());
+		try {
+			clearCache.execute();
+		} catch (IOException e) {
+			log.error("Clear cache error");
+		}
 	}
 
 	/**

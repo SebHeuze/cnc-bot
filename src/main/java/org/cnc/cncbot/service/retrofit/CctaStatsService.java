@@ -23,5 +23,5 @@ public interface CctaStatsService {
 	
 
 	@GET("index.php?a=cacheclear")
-	Call<List<JoueursRegistered>> clearCache(@Query("monde") int idMonde);
+	Call<Void> clearCache(@Query("monde") int idMonde);
 }
