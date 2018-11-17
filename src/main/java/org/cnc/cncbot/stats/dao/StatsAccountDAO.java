@@ -22,6 +22,8 @@ public interface StatsAccountDAO extends JpaRepository<StatsAccount, Integer> {
 	public List<StatsAccount> findByActiveTrue();
 	
 	public List<StatsAccount> findByActiveTrueOrderByWorldIdDesc();
+
+	public StatsAccount findByWorldIdAndActiveTrue(Integer monde);
 	
 	@Modifying
 	@Transactional(propagation=Propagation.MANDATORY)

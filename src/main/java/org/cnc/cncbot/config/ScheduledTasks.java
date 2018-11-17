@@ -71,4 +71,10 @@ public class ScheduledTasks {
         this.mapService.mapDataJob(60);
     }
     
+    @Scheduled(initialDelayString = "${cncbot.stats.batchmessages.initialDelay}" ,fixedDelayString = "${cncbot.stats.batchmessages.fixedDelay}")
+    public void batchMessages() {
+        log.info("Messages batch started at {}", new Date());
+        this.statsService.messagesJob();
+    }
+    
 }

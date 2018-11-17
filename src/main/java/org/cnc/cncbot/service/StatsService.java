@@ -19,13 +19,16 @@ import org.cnc.cncbot.dto.cctastats.JoueursRegistered;
 import org.cnc.cncbot.dto.rankingdata.A;
 import org.cnc.cncbot.dto.rankingdata.P;
 import org.cnc.cncbot.dto.rankingdata.RankingDataResponse;
+import org.cnc.cncbot.dto.sendmessage.SendMessageRequest;
 import org.cnc.cncbot.exception.AuthException;
 import org.cnc.cncbot.exception.BatchException;
 import org.cnc.cncbot.exception.EAAuthException;
+import org.cnc.cncbot.exception.GameException;
 import org.cnc.cncbot.map.dao.DAOConstants;
 import org.cnc.cncbot.service.retrofit.CctaStatsService;
 import org.cnc.cncbot.service.retrofit.ServiceGenerator;
 import org.cnc.cncbot.stats.async.StatsAsyncTasks;
+import org.cnc.cncbot.stats.dao.MessageDAO;
 import org.cnc.cncbot.stats.dao.StatsAccountDAO;
 import org.cnc.cncbot.stats.dao.StatsAllianceDAO;
 import org.cnc.cncbot.stats.dao.StatsBaseDAO;
@@ -37,6 +40,7 @@ import org.cnc.cncbot.stats.dao.StatsPlayerDAO;
 import org.cnc.cncbot.stats.dao.StatsPoiDAO;
 import org.cnc.cncbot.stats.dao.StatsProcessingDAO;
 import org.cnc.cncbot.stats.dao.StatsSettingsDAO;
+import org.cnc.cncbot.stats.entities.Message;
 import org.cnc.cncbot.stats.entities.Stat;
 import org.cnc.cncbot.stats.entities.StatsAccount;
 import org.cnc.cncbot.stats.entities.StatsAlliance;
@@ -76,16 +80,17 @@ import retrofit2.Response;
 public class StatsService {
 
 	private final StatsAsyncTasks asyncTasks;
-	
+
 	private final GameService gameService;
 
 	private final StatsAccountDAO accountDAO;
 	private final StatsBatchLogDAO batchLogDAO;
 	private final StatsListDAO statsListDAO;
 	private final StatsLogDAO statsLogDAO;
-	
+	private final MessageDAO messageDAO;
+
 	private final StatsProcessingDAO statsProcessingDAO;
-	
+
 	private final StatsSettingsDAO settingDAO;
 	private final StatsDAO statsDAO;
 	private final StatsAllianceDAO allianceDAO;
@@ -93,9 +98,9 @@ public class StatsService {
 	private final StatsBaseDAO baseDAO;
 	private final StatsPoiDAO poiDAO;
 	private final org.cnc.cncbot.map.dao.PoiDAO poiDAOMap;
-	
+
 	private final ApplicationContext applicationContext;
-	
+
 	/**
 	 * Used for transactions with Spring that use proxy to work
 	 */
@@ -110,7 +115,8 @@ public class StatsService {
 	private int rankingInterval; 
 
 
-	
+	private final int MAX_FAILS_MESSAGES = 5;
+
 	/**
 	 * Url CCTA Stats
 	 */
@@ -128,7 +134,8 @@ public class StatsService {
 			StatsAsyncTasks asyncTasks,
 			GameService gameService, StatsAccountDAO accountDAO, StatsBatchLogDAO batchLogDAO, StatsSettingsDAO settingDAO,
 			StatsListDAO statsListDAO, StatsProcessingDAO statsProcessingDAO, StatsLogDAO statsLogDAO,
-			StatsDAO statsDAO, StatsAllianceDAO allianceDAO, StatsPlayerDAO playerDAO, StatsBaseDAO baseDAO, StatsPoiDAO poiDAO, org.cnc.cncbot.map.dao.PoiDAO poiDAOMap) {
+			StatsDAO statsDAO, StatsAllianceDAO allianceDAO, StatsPlayerDAO playerDAO, StatsBaseDAO baseDAO,
+			StatsPoiDAO poiDAO, MessageDAO messageDAO, org.cnc.cncbot.map.dao.PoiDAO poiDAOMap) {
 		this.cctaStatsHost = cctaStatsHost;
 		this.asyncTasks = asyncTasks;
 		this.applicationContext = applicationContext;
@@ -138,7 +145,7 @@ public class StatsService {
 		this.settingDAO = settingDAO;
 		this.statsListDAO = statsListDAO;
 		this.statsLogDAO =  statsLogDAO;
-		
+
 		this.statsProcessingDAO = statsProcessingDAO;
 
 		this.statsDAO = statsDAO;
@@ -147,24 +154,64 @@ public class StatsService {
 		this.baseDAO = baseDAO;
 		this.poiDAO = poiDAO;
 		this.poiDAOMap = poiDAOMap;
-		
+		this.messageDAO = messageDAO;
 
 		this.cctaStatsService = ServiceGenerator.createService(CctaStatsService.class, this.cctaStatsHost, ResponseType.JSON);
 	}
 
 	@PostConstruct
 	public void postContruct(){
-	    self = this.applicationContext.getBean(StatsService.class);
+		self = this.applicationContext.getBean(StatsService.class);
 	}
-	
+
+	/**
+	 * Send confirmation messages for CNCStats 
+	 * @throws BatchException
+	 */
+	public void messagesJob() throws BatchException {
+		DBContext.setDatasource("cctastats");
+		DBContext.setSchema("scripting");
+		List<Message> messagesToSend = this.messageDAO.findByEnvoyeAndFailsLessThan(0, MAX_FAILS_MESSAGES);
+
+		log.info("Found  {} message !", messagesToSend.size());
+		for (Message message : messagesToSend) {
+			StatsAccount account = this.accountDAO.findByWorldIdAndActiveTrue(message.getMonde());
+			if (account == null){
+				throw new BatchException("No account for world "+ message.getMonde());
+			}
+			//TODO: FIX username
+			UserSession userSession = new UserSession(account.getUser(), account.getPass(), account.getWorldId(), 0, 0,
+					null, "World42Dummy", null);
+			String gameSessionId = this.gameService.launchWorld(userSession);
+			userSession.setGameSessionId(gameSessionId);
+			org.cnc.cncbot.dto.sendmessage.Message messageDTO = new org.cnc.cncbot.dto.sendmessage.Message();
+			messageDTO.setTitre(message.getTitre());
+
+			messageDTO.setMessage(message.getMessage());
+			messageDTO.setPseudo(message.getPseudo());
+			messageDTO.setMonde(message.getMonde());
+			
+			try {
+				this.gameService.sendMessage(messageDTO, userSession);
+				message.setDateEnvoye(new Date());
+				message.setEnvoye(1);
+				this.messageDAO.save(message);
+				log.info("Message sent !");
+			} catch (GameException | BatchException e){
+				message.setFails(message.getFails() + 1);
+				this.messageDAO.save(message);
+				log.error("Error while sending stats message {}", messageDTO, e);
+			}
+		}
+
+	}
+
 	/**
 	 * Main method for Stats Batch
 	 * @throws BatchException
 	 */
 	public void statsJob() throws BatchException {
 		DBContext.setDatasource("cctastats");
-
-		log.info("Launch of stats batch");
 
 		List<StatsAccount> accountList = this.accountDAO.findByActiveTrueOrderByWorldIdDesc();
 
@@ -181,16 +228,16 @@ public class StatsService {
 		for (StatsAccount account : accountList) {
 			DBContext.setSchema(DAOConstants.SCHEMA_PREFIX + account.getWorldId()); 
 			Optional<StatsSettings> updateDateSetting = this.settingDAO.findById("date_last_update");
-			
+
 			if (!updateDateSetting.isPresent()) {
 				log.error("Error : no update date setting, end of stats batch for World {}", account.getWorldId());
 				break;
 			} 
-			
+
 			DateTimeZone zone = DateTimeZone.forID(account.getTimezone());
 			DateTime dt = new DateTime(zone);
 			String currentDateTimezone = formatter.print(dt);
-			
+
 			log.info("last update date : {}, actual date with timezone : {}", updateDateSetting.get().getValue(), currentDateTimezone);
 			if (!currentDateTimezone.equals(updateDateSetting.get().getValue())){
 				log.info("Launch stats for account {} on world {}", account.getUser(), account.getWorldId());
@@ -214,7 +261,7 @@ public class StatsService {
 					log.error("Error : no force_stats setting, end of stats batch for World {}", account.getWorldId());
 					break;
 				} 
-				
+
 				if (Integer.parseInt(forceStatsSetting.get().getValue()) == 1){
 					log.info("Force stats for account {} on world {}", account.getUser(), account.getWorldId());
 					try {
@@ -255,9 +302,9 @@ public class StatsService {
 		//@TODO call player endpoint to get username in launchWorld
 		String gameSessionId = this.gameService.launchWorld(userSession);
 		this.asyncTasks.setGameService(this.gameService);
-		
+
 		userSession.setGameSessionId(gameSessionId);
-		
+
 		if(!statsOnly){
 			//Deleting existing data
 			this.playerDAO.truncateTable();
@@ -268,11 +315,11 @@ public class StatsService {
 			//Get players data
 
 			Optional<StatsSettings> maxRankingJoueurSetting = this.settingDAO.findById("max_ranking_player");
-			
+
 			if (!maxRankingJoueurSetting.isPresent()) {
 				throw new BatchException("max_ranking_player Setting is not present, abort");
 			}
-			
+
 			List<StatsPlayer> joueursListe = this.getPlayerData(userSession, Integer.valueOf(maxRankingJoueurSetting.get().getValue()));
 
 			// Removing duplicates
@@ -281,18 +328,18 @@ public class StatsService {
 					.collect(Collectors.toList());
 
 			List<StatsBase> basesList = this.extractBases(joueursListe);
-		
+
 			this.playerDAO.saveAll(joueursListe);
 			this.baseDAO.saveAll(basesList);
 
-			
+
 			//get POI and Alliances
 			Optional<StatsSettings> maxRankingAllianceSetting = this.settingDAO.findById("max_ranking_alliance");
-			
+
 			if (!maxRankingAllianceSetting.isPresent()) {
 				throw new BatchException("max_ranking_alliance Setting is not present, abort");
 			}
-			
+
 			List<StatsAlliance> alliancesListe = this.getAlliancesData(userSession, Integer.valueOf(maxRankingAllianceSetting.get().getValue()));
 
 			//Removing duplicates
@@ -301,7 +348,7 @@ public class StatsService {
 					.collect(Collectors.toList());
 
 			List<StatsPoi> poisList = this.extractPois( alliancesListe);
-						
+
 			//We look for free POI in cncmap DB
 			DBContext.setDatasource("cncmap");
 			List<org.cnc.cncbot.map.entities.Poi> allPOIList = this.poiDAOMap.findAll();
@@ -309,18 +356,18 @@ public class StatsService {
 			//Since we have no id we create one with coords
 			poisList.addAll(allPOIList.stream()
 					.map(poiMap -> new StatsPoi(poiMap.getCoords().getX()*1000 + poiMap.getCoords().getY(),
-														poiMap.getCoords().getX(), poiMap.getCoords().getY(), poiMap.getAllianceId(),
-														poiMap.getLevel(), poiMap.getType()))
+							poiMap.getCoords().getX(), poiMap.getCoords().getY(), poiMap.getAllianceId(),
+							poiMap.getLevel(), poiMap.getType()))
 					.distinct()
-	        		.collect(Collectors.toList())); 
-			
+					.collect(Collectors.toList())); 
+
 			DBContext.setDatasource("cctastats");
-			
+
 			//Removing duplicates
 			poisList = poisList.stream()
 					.distinct()
 					.collect(Collectors.toList());
-			
+
 			//We add "no alliance" as Alliance with Id 0
 			StatsAlliance noAlliance = new StatsAlliance(0, "", new Long(0), 0, 0, 0, 9999, 0, "No alliance", 0, 0, 9999, 0, 0, 0, 0, 0, 0, 0, new Long(0), new Long(0), new Long(0), new Long(0), new Long(0), new Long(0), new Long(0), new Long(0), new Long(0), null);
 			alliancesListe.add(noAlliance);
@@ -370,14 +417,14 @@ public class StatsService {
 		//For each stats
 		for (StatsList stat : statsListGlobal) {
 			long startTime = System.currentTimeMillis();
-			
+
 			JsonArray jsonResult = this.statsProcessingDAO.excecuteStat(userSession, stat, null);
 			this.statsDAO.save(new Stat(null, jsonResult.toString(), 0, stat.getName()));
-			
-		    long endTime = System.currentTimeMillis();
-		    Long duree = endTime -startTime;
-		    
-		    this.statsLogDAO.save(new StatsLog(null, stat.getId(), duree.intValue(), new Date(), userSession.getWorldId(), 0));
+
+			long endTime = System.currentTimeMillis();
+			Long duree = endTime -startTime;
+
+			this.statsLogDAO.save(new StatsLog(null, stat.getId(), duree.intValue(), new Date(), userSession.getWorldId(), 0));
 		}
 
 		//Get Stats by Alliance
@@ -388,17 +435,17 @@ public class StatsService {
 			Call<List<JoueursRegistered>> listeIdJoueursCall = this.cctaStatsService.getPlayersRegistered(userSession.getWorldId());
 			Response<List<JoueursRegistered>> listeIdJoueursResponse = listeIdJoueursCall.execute();			
 			log.debug("End of Player find");
-	
+
 			if (listeIdJoueursResponse.body().size() > 0){
 				List<Integer> playersId = listeIdJoueursResponse.body().stream()
-				        .filter(Objects::nonNull)
-				        .map(elt -> elt.getIdJoueur())
-				        .collect(Collectors.toList()); 
-				
+						.filter(Objects::nonNull)
+						.map(elt -> elt.getIdJoueur())
+						.collect(Collectors.toList()); 
+
 				log.debug("Start get alliances");
 				List<StatsAlliance> listeIdAlliances = this.playerDAO.findAlliancesOfPlayers(playersId);
 				log.debug("End get alliances");
-				
+
 				//For each alliance
 				for (StatsAlliance alliance : listeIdAlliances){
 					//Pour chaque stat
@@ -407,16 +454,16 @@ public class StatsService {
 						long startTime = System.currentTimeMillis();
 						JsonArray jsonResult = this.statsProcessingDAO.excecuteStat(userSession, stat, alliance);
 						this.statsDAO.save(new Stat(null, jsonResult.toString(), alliance.getId(), stat.getName()));
-						
+
 						long endTime = System.currentTimeMillis();
-					    Long duree = endTime - startTime;
-					    this.statsLogDAO.save(new StatsLog(null, stat.getId(), duree.intValue(), new Date(), userSession.getWorldId(), alliance.getId()));
+						Long duree = endTime - startTime;
+						this.statsLogDAO.save(new StatsLog(null, stat.getId(), duree.intValue(), new Date(), userSession.getWorldId(), alliance.getId()));
 					}
 				}
 			} else {
 				log.info("No alliance stats to process");
 			}
-	
+
 			this.settingDAO.updateSetting("force_stats", "0");
 		} catch (IOException e) {
 			log.error("Cannot access cctastats service to get Player list, stats processing stopped", e);
@@ -477,7 +524,7 @@ public class StatsService {
 				futures.add(future);
 			}
 			CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
-			
+
 			for (CompletableFuture<StatsAlliance> future : futures) {
 				alliancesList.add(future.get());
 			}
@@ -547,7 +594,7 @@ public class StatsService {
 			}
 
 			CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
-			
+
 			for (CompletableFuture<StatsPlayer> future : futures) {
 				CompletableFuture.allOf(future);
 				playerList.add(future.get());
@@ -561,7 +608,7 @@ public class StatsService {
 	}
 
 
-	
+
 
 	/**
 	 * Extract all bases from players
