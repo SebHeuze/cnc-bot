@@ -62,9 +62,9 @@ public class StatsAsyncTasks {
 			}
 		}
 
-		StatsPlayer playerTmp = new StatsPlayer(rankingDataP.getP(), playerInfo.getBde(), playerInfo.getBd(), Integer.valueOf((int) Math.round(playerInfo.getDccc())),
+		StatsPlayer playerTmp = new StatsPlayer(rankingDataP.getP(), playerInfo.getD(), playerInfo.getBde(), Integer.valueOf((int) Math.round(playerInfo.getDccc())),
 				rankingDataP.getF(), rankingDataP.getA(), ewFirstRank.size(), rankingDataP.getPn(), rankingDataP.getR(),
-				rankingDataP.getS() == null ? 0 : rankingDataP.getS(), playerInfo.getBde() + playerInfo.getBd(), basesList);
+				rankingDataP.getS() == null ? 0 : rankingDataP.getS(), playerInfo.getBd(), basesList);
 
 
 		return CompletableFuture.completedFuture(playerTmp);
