@@ -1,5 +1,7 @@
 package org.cnc.cncbot.service.retrofit;
 
+import java.util.concurrent.TimeUnit;
+
 import org.cnc.cncbot.dto.ResponseType;
 import org.cnc.cncbot.utils.StringConverterFactory;
 
@@ -32,7 +34,10 @@ public final class ServiceGenerator {
            httpClient.addInterceptor(logging);
 	   }
        Builder retrofitBuilder = new Retrofit.Builder()
-		   .client(httpClient.followRedirects(false).build())
+		   .client(httpClient
+			        .readTimeout(30, TimeUnit.SECONDS)
+			        .connectTimeout(30, TimeUnit.SECONDS)
+			        .followRedirects(false).build())
 	       .baseUrl(baseUrl);
        
        switch (responseType) {

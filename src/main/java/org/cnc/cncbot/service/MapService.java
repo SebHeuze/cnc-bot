@@ -94,8 +94,9 @@ public class MapService {
 				this.mapForAccount(account);
 			} catch (AuthException ae){
 				log.error("Error during auth step with account {}", account.getUser(), ae);
-			} catch (EAAuthException ae) {
+			} catch (EAAuthException eae) {
 				//Disable account by setting active to null (to be able to distinguish from manually disabled accounts)
+				log.error("Error while doing EA auth {}", eae);
 				account.setActive(null);
 				this.accountDAO.save(account);
 			}
