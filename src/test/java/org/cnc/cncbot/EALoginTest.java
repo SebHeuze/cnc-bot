@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import org.cnc.cncbot.dto.OriginAccountInfo;
 import org.cnc.cncbot.dto.ResponseType;
 import org.cnc.cncbot.service.retrofit.AccountsEAService;
+import org.cnc.cncbot.service.retrofit.CNCGameService;
 import org.cnc.cncbot.service.retrofit.GameCDNOriginService;
 import org.cnc.cncbot.service.retrofit.ServiceGenerator;
 import org.cnc.cncbot.service.retrofit.SigninEAService;
@@ -31,7 +32,6 @@ import retrofit2.Response;
 public class EALoginTest {
 
 	@Test
-	@Ignore
 	public void connectAuthTest() throws IOException {
 		AccountsEAService accountsEaService = ServiceGenerator.createService(AccountsEAService.class, AccountsEAService.BASE_URL, ResponseType.PLAIN_TEXT);
 		SigninEAService signinEaService = ServiceGenerator.createService(SigninEAService.class, SigninEAService.BASE_URL, ResponseType.PLAIN_TEXT);
@@ -80,7 +80,7 @@ public class EALoginTest {
 				response2.headers().get("Set-Cookie"),
 				HttpUtils.queryToMap(uri2.getQuery()).get("execution"),
 				URLDecoder.decode(HttpUtils.queryToMap(uri2.getQuery()).get("initref"), "UTF-8"),
-				"user","password","FR",null,null,"on","submit",null,"false",null);
+				"user","pass","FR",null,null,"on","submit",null,"false",null);
 		Response<Void> response4 = call4.execute();
 		log.info("Code retour 4 {}", response4.code());
 		log.info(response4.headers().get("Location"));
@@ -110,6 +110,7 @@ public class EALoginTest {
 				HttpUtils.queryToMap(uri4.getQuery()).get("fid"));
 		Response<String> response7 = call7.execute();
 		log.info(response7.headers().get("Location"));
+		log.info(String.join("; ", response7.headers().toMultimap().get("Set-Cookie")));
 		log.info("Code retour 7 {}", response7.code());
 		
 		
@@ -120,7 +121,8 @@ public class EALoginTest {
 		Response<String> response8 = call8.execute();
 		log.info(response8.headers().get("Location"));
 		log.info("Code retour 8 {}", response8.code());
-		
+
+		/*
 		Call<String> call9 = tiberiumAlliancesService.gameLaunch(
 				response8.headers().get("Set-Cookie"));
 		Response<String> response9 = call9.execute();
@@ -133,7 +135,24 @@ public class EALoginTest {
 	    	fail("sessionId non trouvée");
 	    }
 	    log.info(matcher.group(1));
+		*/
+		Call<String> call8bis = accountsEaService.connectAuthExpire(String.join(", ", response7.headers().toMultimap().get("Set-Cookie")), "ccta-web-server-game", "https://gamecdnorigin.alliances.commandandconquer.com/Farm/service.svc/ajaxEndpoint/ssoconsume","3599","code",state);
+		Response<String> response8bis = call8bis.execute();
+		log.info(response8bis.headers().get("Location"));
+		log.info("Code retour 8bis {}", response8bis.code());
+			
+		Call<String> call9 = gameCDNService.ssoConsume(
+				String.join(", ", response8bis.headers().toMultimap().get("Set-Cookie")),HttpUtils.queryToMap(response8bis.headers().get("Location")).get("code"),state);
+		Response<String> response9 = call9.execute();
+		log.info(response9.headers().get("Set-Cookie"));
+		log.info("Body {}", response9.body());
 		
+		Pattern pattern = Pattern.compile("sessionId=([^\"]*);", Pattern.MULTILINE);
+	    Matcher matcher = pattern.matcher(response2.headers().get("Set-Cookie"));
+	    if (!matcher.find()) {
+	    	fail("sessionId non trouvée");
+	    }
+	    log.info(matcher.group(1));
 	    Map<String,Object> params = new HashMap<>();
 	    params.put("session", matcher.group(1));
 	    Call<OriginAccountInfo> originAccountCall  = gameCDNService.getOriginAccountInfo(params);

@@ -21,6 +21,8 @@ import com.google.gson.JsonArray;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.GET;
+import retrofit2.http.Header;
 import retrofit2.http.POST;
 
 /**
@@ -30,29 +32,32 @@ import retrofit2.http.POST;
  */
 @Service
 public interface CNCGameService {
+
+	@GET("index.aspx")
+	Call<String> indexPage(@Header("Cookie") String cookie);
 	
-	@POST("OpenSession")
+	@POST("/Presentation/Service.svc/ajaxEndpoint/OpenSession")
 	Call<OpenSessionResponse> openSession(@Body OpenSessionRequest openSessionRequest);
 	
-	@POST("Poll")
+	@POST("/Presentation/Service.svc/ajaxEndpoint/Poll")
 	Call<JsonArray> poll(@Body PollRequest pollRequest);	
 	
-	@POST("GetServerInfo")
+	@POST("/Presentation/Service.svc/ajaxEndpoint/GetServerInfo")
 	Call<ServerInfoResponse> getServerInfo(@Body ServerInfoRequest getServerInfoRequest);
 
-	@POST("IGMBulkSendMsg")
+	@POST("/Presentation/Service.svc/ajaxEndpoint/IGMBulkSendMsg")
 	Call<ArrayList<Integer>> sendMessage(@Body SendMessageRequest sendMessageRequest);
 
-	@POST("RankingGetCount")
+	@POST("/Presentation/Service.svc/ajaxEndpoint/RankingGetCount")
 	Call<Integer> rankingGetCount(@Body RankingCountRequest rankingGetCountRequest);
 	
-	@POST("RankingGetData")
+	@POST("/Presentation/Service.svc/ajaxEndpoint/RankingGetData")
 	Call<RankingDataResponse> rankingGetData(@Body RankingDataRequest rankingGetDataRequest);
 	
-	@POST("GetPublicPlayerInfo")
+	@POST("/Presentation/Service.svc/ajaxEndpoint/GetPublicPlayerInfo")
 	Call<PublicPlayerInfoResponse> getPublicPlayerInfo(@Body PublicPlayerInfoRequest getPublicPlayerInfoRequest);
 	
-	@POST("GetPublicAllianceInfo")
+	@POST("/Presentation/Service.svc/ajaxEndpoint/GetPublicAllianceInfo")
 	Call<PublicAllianceInfoResponse> getPublicAllianceInfo(@Body PublicAllianceInfoRequest getPublicAllianceInfoRequest);
 	
 }
