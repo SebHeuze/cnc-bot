@@ -72,7 +72,7 @@ public class GameService {
 	}
 
 	public void init(Server server) {
-		this.cncGameService = ServiceGenerator.createService(CNCGameService.class, server.getUrl(), ResponseType.JSON);
+		this.cncGameService = ServiceGenerator.createService(CNCGameService.class, server.getUrl() + "/", ResponseType.JSON);
 	}
 
 	/**

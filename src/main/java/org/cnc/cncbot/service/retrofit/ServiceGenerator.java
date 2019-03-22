@@ -26,7 +26,7 @@ public final class ServiceGenerator {
     */
    private static HttpLoggingInterceptor logging
    = new HttpLoggingInterceptor()
-     .setLevel(HttpLoggingInterceptor.Level.BODY);
+     .setLevel(HttpLoggingInterceptor.Level.NONE);
    
    
    public static <S> S createService(Class<S> serviceClass, String baseUrl, ResponseType responseType) {
