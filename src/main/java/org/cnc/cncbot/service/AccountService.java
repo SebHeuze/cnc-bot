@@ -259,15 +259,20 @@ public class AccountService {
 					JessionIDTiberium ,code,state);
 			Response<String> loginCheckResponse = loginCheckCall.execute();
 
-			Call<String> gameLaunchCall = this.tiberiumAlliancesService.gameLaunch(
-					loginCheckResponse.headers().get(HEADER_SET_COOKIE));
-			Response<String> gameLaunchCallResponse = gameLaunchCall.execute();
-
-			Pattern pattern = Pattern.compile(SESSION_ID_REGEX, Pattern.MULTILINE);
-			Matcher matcher = pattern.matcher(gameLaunchCallResponse.body());
+			Call<String> connectAuthExpireCall = accountsEaService.connectAuthExpire(String.join("; ", secondAuthResponse.headers().toMultimap().get("Set-Cookie")), "ccta-web-server-game", "https://gamecdnorigin.alliances.commandandconquer.com/Farm/service.svc/ajaxEndpoint/ssoconsume","3599","code","0", "", "fr");
+			Response<String> connectAuthExpireResponse = connectAuthExpireCall.execute();
+				
+			URL connectAuthExpireUrl = new URL(connectAuthExpireResponse.headers().get("Location"));
+			Call<String> call9 = gameCDNService.ssoConsume("loginRedirectInternal=1",HttpUtils.queryToMap(connectAuthExpireUrl.getQuery()).get("code"),"0");
+			Response<String> response9 = call9.execute();
+			
+			Pattern pattern = Pattern.compile("sessionId=([^;]*);", Pattern.MULTILINE);
+			Matcher matcher = pattern.matcher(response9.headers().get("Set-Cookie"));
 
 			if (!matcher.find()) {
 				throw new AuthException("Can't get sessionId with regex");
+			} else {
+				log.info("Session found");
 			}
 
 			this.loggedAccounts.put(userSession.getUser(), matcher.group(1));

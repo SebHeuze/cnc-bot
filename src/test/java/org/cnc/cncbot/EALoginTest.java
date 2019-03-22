@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import org.cnc.cncbot.dto.OriginAccountInfo;
 import org.cnc.cncbot.dto.ResponseType;
 import org.cnc.cncbot.service.retrofit.AccountsEAService;
+import org.cnc.cncbot.service.retrofit.CNCGameService;
 import org.cnc.cncbot.service.retrofit.GameCDNOriginService;
 import org.cnc.cncbot.service.retrofit.ServiceGenerator;
 import org.cnc.cncbot.service.retrofit.SigninEAService;
@@ -110,6 +111,7 @@ public class EALoginTest {
 				HttpUtils.queryToMap(uri4.getQuery()).get("fid"));
 		Response<String> response7 = call7.execute();
 		log.info(response7.headers().get("Location"));
+		log.info(String.join("; ", response7.headers().toMultimap().get("Set-Cookie")));
 		log.info("Code retour 7 {}", response7.code());
 		
 		
@@ -120,7 +122,8 @@ public class EALoginTest {
 		Response<String> response8 = call8.execute();
 		log.info(response8.headers().get("Location"));
 		log.info("Code retour 8 {}", response8.code());
-		
+
+		/*
 		Call<String> call9 = tiberiumAlliancesService.gameLaunch(
 				response8.headers().get("Set-Cookie"));
 		Response<String> response9 = call9.execute();
@@ -133,7 +136,24 @@ public class EALoginTest {
 	    	fail("sessionId non trouvée");
 	    }
 	    log.info(matcher.group(1));
+		*/
+		Call<String> call8bis = accountsEaService.connectAuthExpire(String.join("; ", response7.headers().toMultimap().get("Set-Cookie")), "ccta-web-server-game", "https://gamecdnorigin.alliances.commandandconquer.com/Farm/service.svc/ajaxEndpoint/ssoconsume","3599","code","0", "", "fr");
+		Response<String> response8bis = call8bis.execute();
+		log.info(response8bis.headers().get("Location"));
+		log.info("Code retour 8bis {}", response8bis.code());
+			
+		URL uri8bis = new URL(response8bis.headers().get("Location"));
+		Call<String> call9 = gameCDNService.ssoConsume("loginRedirectInternal=1",HttpUtils.queryToMap(uri8bis.getQuery()).get("code"),"0");
+		Response<String> response9 = call9.execute();
+		log.info(response9.headers().get("Set-Cookie"));
+		log.info("Body {}", response9.body());
 		
+		Pattern pattern = Pattern.compile("sessionId=([^;]*);", Pattern.MULTILINE);
+	    Matcher matcher = pattern.matcher(response9.headers().get("Set-Cookie"));
+	    if (!matcher.find()) {
+	    	fail("sessionId non trouvée");
+	    }
+	    log.info(matcher.group(1));
 	    Map<String,Object> params = new HashMap<>();
 	    params.put("session", matcher.group(1));
 	    Call<OriginAccountInfo> originAccountCall  = gameCDNService.getOriginAccountInfo(params);

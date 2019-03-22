@@ -7,7 +7,10 @@ import org.springframework.stereotype.Service;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.GET;
+import retrofit2.http.Header;
 import retrofit2.http.POST;
+import retrofit2.http.Query;
 
 /**
  * Game CDN Origin services class
@@ -21,5 +24,10 @@ public interface GameCDNOriginService {
 
 	@POST("GetOriginAccountInfo")
 	Call<OriginAccountInfo> getOriginAccountInfo(@Body Map<String,Object> body);
+	
+	@GET("ssoconsume")
+	Call<String> ssoConsume(@Header("Cookie") String cookie,
+			                @Query("code") String code,
+			                @Query("state") String state);
 	
 }

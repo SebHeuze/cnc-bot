@@ -55,8 +55,6 @@ public class GameService {
 
 	public final AccountService accountService;
 
-	public final static String URL_PATH_API = "/Presentation/Service.svc/ajaxEndpoint/";
-
 	/**
 	 * Expired game session id
 	 */
@@ -74,7 +72,7 @@ public class GameService {
 	}
 
 	public void init(Server server) {
-		this.cncGameService = ServiceGenerator.createService(CNCGameService.class, server.getUrl() + URL_PATH_API, ResponseType.JSON);
+		this.cncGameService = ServiceGenerator.createService(CNCGameService.class, server.getUrl() + "/", ResponseType.JSON);
 	}
 
 	/**
