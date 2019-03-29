@@ -9,6 +9,8 @@ import org.cnc.cncbot.dto.OriginAccountInfo;
 import org.cnc.cncbot.dto.ResponseType;
 import org.cnc.cncbot.dto.Server;
 import org.cnc.cncbot.dto.UserSession;
+import org.cnc.cncbot.dto.getplayerinfo.PlayerInfoRequest;
+import org.cnc.cncbot.dto.getplayerinfo.PlayerInfoResponse;
 import org.cnc.cncbot.dto.opensession.OpenSessionRequest;
 import org.cnc.cncbot.dto.opensession.OpenSessionResponse;
 import org.cnc.cncbot.dto.poll.PollRequest;
@@ -97,7 +99,6 @@ public class GameService {
 		userSession.setSessionId(this.accountService.getSessionId(userSession));
 
 		OriginAccountInfo accountInfos = this.accountService.getAccountInfo(userSession);
-		
 		Optional<Server> server = accountInfos.getServers()
 				.stream()
 				.filter(item -> item.getId().equals(userSession.getWorldId()))
@@ -140,6 +141,24 @@ public class GameService {
 		}
 	}
 
+
+	/**
+	 * Get  players infos
+	 * @param sessionId
+	 * @return
+	 */
+	public PlayerInfoResponse getPlayerInfo(UserSession userSession) {
+
+		try {
+			Call<PlayerInfoResponse> getPlayerInfoCall  = this.cncGameService.getPlayerInfo(
+					PlayerInfoRequest.builder().session(userSession.getGameSessionId()).build());
+			return getPlayerInfoCall.execute().body();
+		} catch (IOException e) {
+			log.error("Error with request getPlayerInfo", e);
+			throw new GameException("Error with request getPlayerInfo");
+		}
+	}
+	
 	/**
 	 * Ranking Get Count Request.
 	 * @param view (Alliance = 1, player = 0)
@@ -267,7 +286,7 @@ public class GameService {
 			}
 			return true;
 		} catch (IOException e) {
-			log.error("Error with request sendMessage", e);
+			log.error("Error with request sendMessage Sender {}", userSession.getPlayerName(), e);
 			throw new GameException("Error with request sendMessage");
 		}
 	}

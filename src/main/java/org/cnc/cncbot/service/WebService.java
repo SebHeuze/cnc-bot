@@ -2,6 +2,7 @@ package org.cnc.cncbot.service;
 
 import org.cnc.cncbot.config.DBContext;
 import org.cnc.cncbot.dto.UserSession;
+import org.cnc.cncbot.dto.getplayerinfo.PlayerInfoResponse;
 import org.cnc.cncbot.dto.sendmessage.Message;
 import org.cnc.cncbot.exception.BatchException;
 import org.cnc.cncbot.map.dao.AccountDAO;
@@ -43,9 +44,12 @@ public class WebService {
 		}
 		//TODO: FIX username
 		UserSession userSession = new UserSession(account.getUser(), account.getPass(), account.getWorldId(), 0, 0,
-				null, "World42Dummy", null);
+				null, null, null);
 		String gameSessionId = this.gameService.launchWorld(userSession);
 		userSession.setGameSessionId(gameSessionId);
+		
+		PlayerInfoResponse playerInfos = this.gameService.getPlayerInfo(userSession);
+		userSession.setPlayerName(playerInfos.getName());
 		
 		this.gameService.sendMessage(unMessage, userSession);
 	}

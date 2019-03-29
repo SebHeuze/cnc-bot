@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 public class St {
 
-private Integer ll;
+private Long ll;
 
 private Integer sd;
 }

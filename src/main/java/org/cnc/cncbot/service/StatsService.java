@@ -184,6 +184,8 @@ public class StatsService {
 					null, "World42Dummy", null);
 			String gameSessionId = this.gameService.launchWorld(userSession);
 			userSession.setGameSessionId(gameSessionId);
+			
+			userSession.setPlayerName(this.gameService.getPlayerInfo(userSession).getName());
 			org.cnc.cncbot.dto.sendmessage.Message messageDTO = new org.cnc.cncbot.dto.sendmessage.Message();
 			messageDTO.setTitre(message.getTitre());
 
@@ -304,6 +306,8 @@ public class StatsService {
 		this.asyncTasks.setGameService(this.gameService);
 
 		userSession.setGameSessionId(gameSessionId);
+		
+		userSession.setPlayerName(this.gameService.getPlayerInfo(userSession).getName());
 
 		if(!statsOnly){
 			//Deleting existing data

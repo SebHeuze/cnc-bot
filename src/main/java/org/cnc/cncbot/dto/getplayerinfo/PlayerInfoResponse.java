@@ -2,12 +2,16 @@ package org.cnc.cncbot.dto.getplayerinfo;
 
 import java.util.List;
 
+import com.google.gson.annotations.SerializedName;
+
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
-public class PlayerInfo {
+@ToString
+public class PlayerInfoResponse {
 
 private Integer allianceId;
 
@@ -17,6 +21,7 @@ private List<City> cities = null;
 
 private Integer id;
 
+@SerializedName("Name")
 private String name;
 
 private List<Tech> techs = null;

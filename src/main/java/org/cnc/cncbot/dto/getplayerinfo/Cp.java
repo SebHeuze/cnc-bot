@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 public class Cp {
 
-private Integer b;
+private Double b;
 
 private Double d;
 

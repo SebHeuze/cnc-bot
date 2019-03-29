@@ -2,6 +2,8 @@ package org.cnc.cncbot.service.retrofit;
 
 import java.util.ArrayList;
 
+import org.cnc.cncbot.dto.getplayerinfo.PlayerInfoRequest;
+import org.cnc.cncbot.dto.getplayerinfo.PlayerInfoResponse;
 import org.cnc.cncbot.dto.opensession.OpenSessionRequest;
 import org.cnc.cncbot.dto.opensession.OpenSessionResponse;
 import org.cnc.cncbot.dto.poll.PollRequest;
@@ -44,6 +46,9 @@ public interface CNCGameService {
 	
 	@POST("Presentation/Service.svc/ajaxEndpoint/GetServerInfo")
 	Call<ServerInfoResponse> getServerInfo(@Body ServerInfoRequest getServerInfoRequest);
+
+	@POST("Presentation/Service.svc/ajaxEndpoint/GetPlayerInfo")
+	Call<PlayerInfoResponse> getPlayerInfo(@Body PlayerInfoRequest getPlayerInfoRequest);
 
 	@POST("Presentation/Service.svc/ajaxEndpoint/IGMBulkSendMsg")
 	Call<ArrayList<Integer>> sendMessage(@Body SendMessageRequest sendMessageRequest);

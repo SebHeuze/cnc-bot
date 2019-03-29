@@ -119,7 +119,7 @@ public class MapService {
 		String gameSessionId = this.gameService.launchWorld(userSession);
 		userSession.setGameSessionId(gameSessionId);
 		
-
+		userSession.setPlayerName(this.gameService.getPlayerInfo(userSession).getName());
 		this.asyncTasks.setGameService(this.gameService);
 		
 		
