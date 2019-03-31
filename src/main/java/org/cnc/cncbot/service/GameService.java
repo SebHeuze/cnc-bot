@@ -32,6 +32,7 @@ import org.cnc.cncbot.service.retrofit.CNCGameService;
 import org.cnc.cncbot.service.retrofit.ServiceGenerator;
 import org.cnc.cncbot.utils.CncUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
@@ -57,6 +58,9 @@ public class GameService {
 
 	public final AccountService accountService;
 
+	@Value("${cncbot.skipOnlineCheck:false}")
+	private boolean skipOnlineCheck;
+	 
 	/**
 	 * Expired game session id
 	 */
@@ -103,7 +107,7 @@ public class GameService {
 				.stream()
 				.filter(item -> item.getId().equals(userSession.getWorldId()))
 				.collect(Collectors.reducing((a, b) -> null));
-		if (!server.get().getOnline()) {
+		if (!server.get().getOnline() || this.skipOnlineCheck) {
 			throw new BatchException("World offline " + server.get().getId() + " User " + userSession.getUser());
 		}
 		this.init(server.get());
