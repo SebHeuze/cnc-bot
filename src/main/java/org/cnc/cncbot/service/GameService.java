@@ -107,7 +107,7 @@ public class GameService {
 				.stream()
 				.filter(item -> item.getId().equals(userSession.getWorldId()))
 				.collect(Collectors.reducing((a, b) -> null));
-		if (!server.get().getOnline() || this.skipOnlineCheck) {
+		if (!server.get().getOnline() && !this.skipOnlineCheck) {
 			throw new BatchException("World offline " + server.get().getId() + " User " + userSession.getUser());
 		}
 		this.init(server.get());

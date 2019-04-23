@@ -1,6 +1,7 @@
 package org.cnc.cncbot.service;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.HashMap;
@@ -277,6 +278,9 @@ public class AccountService {
 
 			this.loggedAccounts.put(userSession.getUser(), matcher.group(1));
 
+		} catch (SocketTimeoutException ste) {
+			log.error("Timeout during authentification of account {}", userSession.getUser(), ste);
+			throw new AuthException("Timeout during EA authentification");
 		} catch (IOException ioe) {
 			log.error("Error during authentification of account {}", userSession.getUser(), ioe);
 			throw new EAAuthException("Error during EA authentification");
