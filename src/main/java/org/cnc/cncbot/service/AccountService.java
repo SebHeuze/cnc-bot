@@ -16,6 +16,7 @@ import org.cnc.cncbot.dto.UserSession;
 import org.cnc.cncbot.exception.AuthException;
 import org.cnc.cncbot.exception.EAAuthException;
 import org.cnc.cncbot.service.retrofit.AccountsEAService;
+import org.cnc.cncbot.service.retrofit.EAService;
 import org.cnc.cncbot.service.retrofit.GameCDNOriginService;
 import org.cnc.cncbot.service.retrofit.ServiceGenerator;
 import org.cnc.cncbot.service.retrofit.SigninEAService;
@@ -46,7 +47,7 @@ public class AccountService {
 	 */
 	public final AccountsEAService accountsEaService;
 	public final SigninEAService signinEaService;
-	public final TiberiumAlliancesService tiberiumAlliancesService;
+	public final EAService eaService;
 	public final GameCDNOriginService gameCDNService;
 
 	/**
@@ -73,8 +74,8 @@ public class AccountService {
 	/**
 	 * OAUTH Config
 	 */
-	public final static String OAUTH_CLIENT_ID = "ccta-web-server";
-	public final static String OAUTH_REDIRECT_URI = "https://www.tiberiumalliances.com/login_check";
+	public final static String OAUTH_CLIENT_ID = "EADOTCOM-WEB-SERVER";
+	public final static String OAUTH_REDIRECT_URI = "https://www.ea.com/login_check";
 	public final static String OAUTH_LOCALE = "fr_FR";
 	public final static String OAUTH_RESPONSE_TYPE = "code";
 
@@ -84,7 +85,7 @@ public class AccountService {
 	public AccountService() {
 		this.accountsEaService = ServiceGenerator.createService(AccountsEAService.class, AccountsEAService.BASE_URL, ResponseType.PLAIN_TEXT);
 		this.signinEaService = ServiceGenerator.createService(SigninEAService.class, SigninEAService.BASE_URL, ResponseType.PLAIN_TEXT);
-		this.tiberiumAlliancesService = ServiceGenerator.createService(TiberiumAlliancesService.class, TiberiumAlliancesService.BASE_URL, ResponseType.PLAIN_TEXT);
+		this.eaService = ServiceGenerator.createService(EAService.class, EAService.BASE_URL, ResponseType.PLAIN_TEXT);
 		this.gameCDNService = ServiceGenerator.createService(GameCDNOriginService.class, GameCDNOriginService.BASE_URL, ResponseType.JSON);
 	}
 
@@ -127,15 +128,15 @@ public class AccountService {
 			/*
 			 * Initial Call to get Tiberium Alliance Cookies and state param
 			 */
-			Call<Void> initialAuthCall = this.tiberiumAlliancesService.loginAuth();
+			Call<Void> initialAuthCall = this.eaService.launch();
 			Response<Void> initialAuthResponse = initialAuthCall.execute();
 
 			log.info("Set-Cookie Header call 1/6 " + initialAuthResponse.headers().values(HEADER_SET_COOKIE));
 
-			String JessionIDTiberium = initialAuthResponse.headers().values("Set-Cookie").stream().filter(it -> it.contains("JSESSIONID")).collect(Collectors.toList()).get(0);
+			String playSessionIDTiberium = initialAuthResponse.headers().values("Set-Cookie").stream().filter(it -> it.contains("PLAY_SESSION")).collect(Collectors.toList()).get(0);
 
-			if (StringUtils.isEmpty(JessionIDTiberium)) {
-				throw new AuthException("Can't retrieve JSESSIONID on auth call 1");
+			if (StringUtils.isEmpty(playSessionIDTiberium)) {
+				throw new AuthException("Can't retrieve PLAY_SESSION on auth call 1");
 			}
 
 			URL redirectUri = new URL(initialAuthResponse.headers().get(HEADER_LOCATION));
@@ -203,7 +204,7 @@ public class AccountService {
 					eaCookies,
 					execution,
 					initref,
-					userSession.getUser(),userSession.getPassword(),"FR",null,null,"on","submit",null,"false",null);
+					userSession.getUser(),userSession.getPassword(),"FR",null,null,"on", "on","submit",null,"false",null);
 			Response<Void> secondLoginResponse = secondLoginCall.execute();
 			log.info(secondLoginResponse.headers().get(HEADER_LOCATION));
 
@@ -256,8 +257,8 @@ public class AccountService {
 			/*
 			 * Login check
 			 */
-			Call<String> loginCheckCall = this.tiberiumAlliancesService.loginCheck(
-					JessionIDTiberium ,code,state);
+			Call<String> loginCheckCall = this.eaService.loginCheck(
+					playSessionIDTiberium ,code,state);
 			Response<String> loginCheckResponse = loginCheckCall.execute();
 
 			Call<String> connectAuthExpireCall = accountsEaService.connectAuthExpire(String.join("; ", secondAuthResponse.headers().toMultimap().get("Set-Cookie")), "ccta-web-server-game", "https://gamecdnorigin.alliances.commandandconquer.com/Farm/service.svc/ajaxEndpoint/ssoconsume","3599","code","0", "", "fr");

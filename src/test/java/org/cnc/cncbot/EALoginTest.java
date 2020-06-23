@@ -15,11 +15,10 @@ import java.util.stream.Collectors;
 import org.cnc.cncbot.dto.OriginAccountInfo;
 import org.cnc.cncbot.dto.ResponseType;
 import org.cnc.cncbot.service.retrofit.AccountsEAService;
-import org.cnc.cncbot.service.retrofit.CNCGameService;
+import org.cnc.cncbot.service.retrofit.EAService;
 import org.cnc.cncbot.service.retrofit.GameCDNOriginService;
 import org.cnc.cncbot.service.retrofit.ServiceGenerator;
 import org.cnc.cncbot.service.retrofit.SigninEAService;
-import org.cnc.cncbot.service.retrofit.TiberiumAlliancesService;
 import org.cnc.cncbot.utils.HttpUtils;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -36,17 +35,17 @@ public class EALoginTest {
 	public void connectAuthTest() throws IOException {
 		AccountsEAService accountsEaService = ServiceGenerator.createService(AccountsEAService.class, AccountsEAService.BASE_URL, ResponseType.PLAIN_TEXT);
 		SigninEAService signinEaService = ServiceGenerator.createService(SigninEAService.class, SigninEAService.BASE_URL, ResponseType.PLAIN_TEXT);
-		TiberiumAlliancesService tiberiumAlliancesService = ServiceGenerator.createService(TiberiumAlliancesService.class, TiberiumAlliancesService.BASE_URL, ResponseType.PLAIN_TEXT);
-		GameCDNOriginService gameCDNService = ServiceGenerator.createService(GameCDNOriginService.class, GameCDNOriginService.BASE_URL, ResponseType.JSON);
-
+		EAService eaService = ServiceGenerator.createService(EAService.class, EAService.BASE_URL, ResponseType.PLAIN_TEXT);
 		
-		Call<Void> call0 = tiberiumAlliancesService.loginAuth();
+		GameCDNOriginService gameCDNService = ServiceGenerator.createService(GameCDNOriginService.class, GameCDNOriginService.BASE_URL, ResponseType.JSON);
+		
+		Call<Void> call0 = eaService.launch();
 		Response<Void> response0 = call0.execute();
 		
 		
 		log.info("Taille header " + response0.headers().values("Set-Cookie"));
-		String JessionIDTiberium = response0.headers().values("Set-Cookie").stream().filter(it -> it.contains("JSESSIONID")).collect(Collectors.toList()).get(0);
-		log.info("Cookie JSESSIONID" + JessionIDTiberium);
+		String playSessionIDCookie = response0.headers().values("Set-Cookie").stream().filter(it -> it.contains("PLAY_SESSION")).collect(Collectors.toList()).get(0);
+		log.info("Cookie PLAY_SESSION" + playSessionIDCookie);
 		log.info(response0.headers().get("Set-Cookie"));
 		log.info(response0.headers().get("Location"));
 		URL uri0 = new URL(response0.headers().get("Location"));
@@ -54,7 +53,7 @@ public class EALoginTest {
 
 		log.info("Code retour 0 {}", response0.code());
 		
-		Call<String> call1 = accountsEaService.connectAuth("ccta-web-server", "https://www.tiberiumalliances.com/login_check","fr_FR","code",state);
+		Call<String> call1 = accountsEaService.connectAuth("EADOTCOM-WEB-SERVER", "https://www.ea.com/login_check","fr_FR","code",state);
 		Response<String> response1 = call1.execute();
 		log.info(response1.headers().get("Location"));
 		log.info("Code retour 1 {}", response1.code());
@@ -81,7 +80,7 @@ public class EALoginTest {
 				response2.headers().get("Set-Cookie"),
 				HttpUtils.queryToMap(uri2.getQuery()).get("execution"),
 				URLDecoder.decode(HttpUtils.queryToMap(uri2.getQuery()).get("initref"), "UTF-8"),
-				"user","password","FR",null,null,"on","submit",null,"false",null);
+				"user","password","FR",null,null,"on","on","submit",null,"false",null);
 		Response<Void> response4 = call4.execute();
 		log.info("Code retour 4 {}", response4.code());
 		log.info(response4.headers().get("Location"));
@@ -107,7 +106,7 @@ public class EALoginTest {
 		log.info(response6.headers().get("Location"));
 	        
 		URL uri4 = new URL(response6.headers().get("Location"));
-		Call<String> call7 = accountsEaService.connectAuth("ccta-web-server", "https://www.tiberiumalliances.com/login_check","fr_FR","code",state,
+		Call<String> call7 = accountsEaService.connectAuth("EADOTCOM-WEB-SERVER", "https://www.ea.com/login_check","fr_FR","code",state,
 				HttpUtils.queryToMap(uri4.getQuery()).get("fid"));
 		Response<String> response7 = call7.execute();
 		log.info(response7.headers().get("Location"));
@@ -117,26 +116,12 @@ public class EALoginTest {
 		
 
 		URL uri5 = new URL(response7.headers().get("Location"));
-		Call<String> call8 = tiberiumAlliancesService.loginCheck(
-				JessionIDTiberium ,HttpUtils.queryToMap(uri5.getQuery()).get("code"),state);
+		Call<String> call8 = eaService.loginCheck(
+				playSessionIDCookie ,HttpUtils.queryToMap(uri5.getQuery()).get("code"),state);
 		Response<String> response8 = call8.execute();
 		log.info(response8.headers().get("Location"));
 		log.info("Code retour 8 {}", response8.code());
 
-		/*
-		Call<String> call9 = tiberiumAlliancesService.gameLaunch(
-				response8.headers().get("Set-Cookie"));
-		Response<String> response9 = call9.execute();
-		log.info(response9.headers().get("Location"));
-		log.info("Body {}", response9.body());
-		
-		Pattern pattern = Pattern.compile("name=\"sessionId\" value=\"([^\"]*)\"", Pattern.MULTILINE);
-	    Matcher matcher = pattern.matcher(response9.body());
-	    if (!matcher.find()) {
-	    	fail("sessionId non trouvée");
-	    }
-	    log.info(matcher.group(1));
-		*/
 		Call<String> call8bis = accountsEaService.connectAuthExpire(String.join("; ", response7.headers().toMultimap().get("Set-Cookie")), "ccta-web-server-game", "https://gamecdnorigin.alliances.commandandconquer.com/Farm/service.svc/ajaxEndpoint/ssoconsume","3599","code","0", "", "fr");
 		Response<String> response8bis = call8bis.execute();
 		log.info(response8bis.headers().get("Location"));
