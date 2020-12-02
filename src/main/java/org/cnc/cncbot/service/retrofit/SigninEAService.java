@@ -30,6 +30,11 @@ public interface SigninEAService {
 						@Query("execution") String execution,
 						@Query("initref") String initRef,
 						@Query("_eventId") String eventId);
+	
+	@GET("p/web2/login")
+	Call<Void> login( @Header("Cookie") String cookie,
+						@Query("execution") String execution,
+						@Query("initref") String initRef);
 	@FormUrlEncoded
 	@POST("p/web2/login")
 	Call<Void> login( @Header("Cookie") String cookie,

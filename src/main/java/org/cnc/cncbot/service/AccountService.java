@@ -173,14 +173,14 @@ public class AccountService {
 			 */
 			Call<String> firstLoginCall = this.signinEaService.login(fid);
 			Response<String> firstLoginResponse = firstLoginCall.execute();
+			String eaCookies = String.join("; ", firstLoginResponse.headers().toMultimap().get("Set-Cookie"));
 			log.info(firstLoginResponse.headers().get(HEADER_LOCATION));
-			log.info(firstLoginResponse.headers().get(HEADER_SET_COOKIE));
+			log.info(eaCookies);
 
 
 			redirectUri = new URL(SigninEAService.BASE_URL + firstLoginResponse.headers().get(HEADER_LOCATION));
 
 
-			String eaCookies = firstLoginResponse.headers().get(HEADER_SET_COOKIE);
 			if (StringUtils.isEmpty(eaCookies)) {
 				throw new AuthException("Can't retrieve Set-Cookie on auth call 3");
 			}
@@ -200,16 +200,24 @@ public class AccountService {
 			/*
 			 * Second Login Call
 			 */
+
 			Call<Void> secondLoginCall = this.signinEaService.login(
+					eaCookies,
+					execution,
+					initref);
+			Response<Void> secondLoginResponse = secondLoginCall.execute();
+			log.info(secondLoginResponse.headers().get(HEADER_LOCATION));
+			
+			Call<Void> secondLoginCallBis = this.signinEaService.login(
 					eaCookies,
 					execution,
 					initref,
 					userSession.getUser(),userSession.getPassword(),"FR",null,null,"on", "on","submit",null,"false",null);
-			Response<Void> secondLoginResponse = secondLoginCall.execute();
-			log.info(secondLoginResponse.headers().get(HEADER_LOCATION));
+			Response<Void> secondLoginBisResponse = secondLoginCallBis.execute();
+			log.info(secondLoginBisResponse.headers().get(HEADER_LOCATION));
 
 
-			redirectUri = new URL(SigninEAService.BASE_URL + secondLoginResponse.headers().get(HEADER_LOCATION));
+			redirectUri = new URL(SigninEAService.BASE_URL + secondLoginBisResponse.headers().get(HEADER_LOCATION));
 
 			execution = HttpUtils.queryToMap(redirectUri.getQuery()).get(EXECUTION_PARAM);
 			if (execution == null) {
