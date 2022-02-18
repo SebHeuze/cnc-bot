@@ -47,7 +47,7 @@ public class StatsBase implements Serializable, Persistable<Integer>  {
 	private String name;
 
 	@Column(name="score_base")
-	private Integer score;
+	private Long score;
 
 	/**
 	 * We are doing to stop hibernate from doing select to check if exist before insert

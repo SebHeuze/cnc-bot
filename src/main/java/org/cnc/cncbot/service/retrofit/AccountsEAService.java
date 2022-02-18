@@ -29,11 +29,11 @@ public interface AccountsEAService {
 	
 
 	@GET("connect/auth")
-	Call<String> connectAuth(@Query("client_id") String clientId,
+	Call<String> connectAuth(@Header("Cookie") String cookie,
+							@Query("initref_replay") String initrefReplay,
+							@Query("client_id") String clientId,
 							@Query("redirect_uri") String redirectUri,
-							@Query("locale") String locale,
 							@Query("response_type") String responseType,
-							@Query("state") String state,
 							@Query("fid") String fid);
 	
 	@FormUrlEncoded

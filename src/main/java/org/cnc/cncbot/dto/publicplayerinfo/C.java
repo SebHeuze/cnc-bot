@@ -12,7 +12,7 @@ private Integer i;
 
 private String n;
 
-private Integer p;
+private Long p;
 
 private Integer x;
 

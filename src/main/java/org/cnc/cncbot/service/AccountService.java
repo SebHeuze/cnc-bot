@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -26,10 +28,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import com.google.common.hash.Hashing;
+
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import retrofit2.Call;
 import retrofit2.Response;
+import retrofit2.http.Field;
 
 /**
  * Account service
@@ -68,14 +73,15 @@ public class AccountService {
 	/**
 	 * Header names
 	 */
-	public final static String HEADER_SET_COOKIE = "Set-Cookie";
-	public final static String HEADER_LOCATION = "Location";
+	public final static String HEADER_SET_COOKIE = "set-Cookie";
+	public final static String HEADER_LOCATION = "location";
+	public final static String HEADER_SELF_LOCATION = "selflocation";
 
 	/**
 	 * OAUTH Config
 	 */
-	public final static String OAUTH_CLIENT_ID = "EADOTCOM-WEB-SERVER";
-	public final static String OAUTH_REDIRECT_URI = "https://www.ea.com/login_check";
+	public final static String OAUTH_CLIENT_ID = "ccta-web-server-game";
+	public final static String OAUTH_REDIRECT_URI = "https://gamecdnorigin.alliances.commandandconquer.com/Farm/service.svc/ajaxEndpoint/ssoconsume";
 	public final static String OAUTH_LOCALE = "fr_FR";
 	public final static String OAUTH_RESPONSE_TYPE = "code";
 
@@ -125,26 +131,6 @@ public class AccountService {
 
 
 		try {
-			/*
-			 * Initial Call to get Tiberium Alliance Cookies and state param
-			 */
-			Call<Void> initialAuthCall = this.eaService.launch();
-			Response<Void> initialAuthResponse = initialAuthCall.execute();
-
-			log.info("Set-Cookie Header call 1/6 " + initialAuthResponse.headers().values(HEADER_SET_COOKIE));
-
-			String playSessionIDTiberium = initialAuthResponse.headers().values("Set-Cookie").stream().filter(it -> it.contains("PLAY_SESSION")).collect(Collectors.toList()).get(0);
-
-			if (StringUtils.isEmpty(playSessionIDTiberium)) {
-				throw new AuthException("Can't retrieve PLAY_SESSION on auth call 1");
-			}
-
-			URL redirectUri = new URL(initialAuthResponse.headers().get(HEADER_LOCATION));
-
-			String state = HttpUtils.queryToMap(redirectUri.getQuery()).get(STATE_PARAM);
-			if (state == null) {
-				throw new AuthException("Can't retrieve state param on auth call 1");
-			}
 
 
 
@@ -156,11 +142,11 @@ public class AccountService {
 					OAUTH_REDIRECT_URI,
 					OAUTH_LOCALE,
 					OAUTH_RESPONSE_TYPE,
-					state);
+					"417;fr_FR");
 			Response<String> firstAuthResponse = firstAuthCall.execute();
 			log.info("First auth call done, redirecting to {}",firstAuthResponse.headers().get(HEADER_LOCATION));
 
-			redirectUri = new URL(firstAuthResponse.headers().get(HEADER_LOCATION));
+			URL redirectUri = new URL(firstAuthResponse.headers().get(HEADER_LOCATION));
 
 			String fid = HttpUtils.queryToMap(redirectUri.getQuery()).get(FID_PARAM);
 			if (fid == null) {
@@ -173,7 +159,7 @@ public class AccountService {
 			 */
 			Call<String> firstLoginCall = this.signinEaService.login(fid);
 			Response<String> firstLoginResponse = firstLoginCall.execute();
-			String eaCookies = String.join("; ", firstLoginResponse.headers().toMultimap().get("Set-Cookie"));
+			String eaCookies = String.join("; ", firstLoginResponse.headers().toMultimap().get("set-cookie"));
 			log.info(firstLoginResponse.headers().get(HEADER_LOCATION));
 			log.info(eaCookies);
 
@@ -201,34 +187,51 @@ public class AccountService {
 			 * Second Login Call
 			 */
 
-			Call<Void> secondLoginCall = this.signinEaService.login(
+			Call<String> secondLoginCall = this.signinEaService.login(
 					eaCookies,
 					execution,
 					initref);
-			Response<Void> secondLoginResponse = secondLoginCall.execute();
-			log.info(secondLoginResponse.headers().get(HEADER_LOCATION));
+			Response<String> secondLoginResponse = secondLoginCall.execute();
+
+			redirectUri = new URL(secondLoginResponse.headers().get(HEADER_SELF_LOCATION));
+
+			initrefEncoded = HttpUtils.queryToMap(redirectUri.getQuery()).get(INITREF_PARAM);
+			if (initrefEncoded == null) {
+				throw new AuthException("Can't retrieve initref param on auth call 3");
+			}
+			initref = URLDecoder.decode(initrefEncoded, "UTF-8");
 			
-			Call<Void> secondLoginCallBis = this.signinEaService.login(
-					eaCookies,
+			Call<Void> secondLoginCallBis = this.signinEaService.login(eaCookies,
 					execution,
 					initref,
-					userSession.getUser(),userSession.getPassword(),"FR",null,null,"on", "on","submit",null,"false",null);
+					userSession.getUser(),
+					"FR",
+					"",
+					userSession.getPassword(),
+					"submit",
+					randomString(),
+					"true",
+					"",
+					"emailPassword",
+					"on");
 			Response<Void> secondLoginBisResponse = secondLoginCallBis.execute();
+			eaCookies = String.join("; ", secondLoginBisResponse.headers().toMultimap().get("set-cookie"));
 			log.info(secondLoginBisResponse.headers().get(HEADER_LOCATION));
+			log.info(eaCookies);
 
 
-			redirectUri = new URL(SigninEAService.BASE_URL + secondLoginBisResponse.headers().get(HEADER_LOCATION));
+			/*redirectUri = new URL(SigninEAService.BASE_URL + secondLoginBisResponse.headers().get(HEADER_LOCATION));
 
 			execution = HttpUtils.queryToMap(redirectUri.getQuery()).get(EXECUTION_PARAM);
 			if (execution == null) {
 				throw new AuthException("Can't retrieve execution param on auth call 4");
-			}
+			}*/
 
 
 			/*
 			 * Third Login Call
 			 */
-			Call<Void> thirdLoginCall = this.signinEaService.login(
+			/*Call<Void> thirdLoginCall = this.signinEaService.login(
 					eaCookies,
 					execution,
 					initref,
@@ -237,25 +240,24 @@ public class AccountService {
 			log.info(thirdLoginResponse.headers().get(HEADER_LOCATION));
 
 
-			redirectUri = new URL(thirdLoginResponse.headers().get(HEADER_LOCATION));
+			redirectUri = new URL(SigninEAService.BASE_URL + thirdLoginResponse.headers().get(HEADER_LOCATION));*/
 
 
 			/*
 			 * Second Auth Call
 			 */
-			Call<String> secondAuthCall = this.accountsEaService.connectAuth(
+			Call<String> secondAuthCall = this.accountsEaService.connectAuth(eaCookies,
+					"false",
 					OAUTH_CLIENT_ID,
 					OAUTH_REDIRECT_URI,
-					OAUTH_LOCALE,
 					OAUTH_RESPONSE_TYPE,
-					state,
 					fid);
 			Response<String> secondAuthResponse = secondAuthCall.execute();
 			log.info(secondAuthResponse.headers().get(HEADER_LOCATION));
 
 
 
-			redirectUri = new URL(secondAuthResponse.headers().get(HEADER_LOCATION));
+			redirectUri = new URL(SigninEAService.BASE_URL + secondAuthResponse.headers().get(HEADER_LOCATION));
 
 			String code = HttpUtils.queryToMap(redirectUri.getQuery()).get(CODE_PARAM);
 			if (code == null) {
@@ -266,7 +268,7 @@ public class AccountService {
 			 * Login check
 			 */
 			Call<String> loginCheckCall = this.eaService.loginCheck(
-					playSessionIDTiberium ,code,state);
+					"" ,code,"");
 			Response<String> loginCheckResponse = loginCheckCall.execute();
 
 			Call<String> connectAuthExpireCall = accountsEaService.connectAuthExpire(String.join("; ", secondAuthResponse.headers().toMultimap().get("Set-Cookie")), "ccta-web-server-game", "https://gamecdnorigin.alliances.commandandconquer.com/Farm/service.svc/ajaxEndpoint/ssoconsume","3599","code","0", "", "fr");
@@ -322,5 +324,24 @@ public class AccountService {
 		
 	}
 	
+	/**
+	 * EA Sign In Function
+	 * @return
+	 */
+	private String randomString() {
+		String p = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
+		int m = 32;
+		String n = "";
+		for (int o = 0; o < m; o++) {
+			int q = (int) Math.floor(Math.random() * p.length());
+			n += p.substring(q, q + 1);
+		}
+		return n;
+	}
+	
 
+	private String getCredentialsKey (String user, String password) {
+		return Hashing.sha512().hashString(user + password, StandardCharsets.UTF_8).toString();
+	}
+	
 }

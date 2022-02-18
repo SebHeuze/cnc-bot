@@ -57,6 +57,11 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+		  <groupId>com.google.guava</groupId>
+		  <artifactId>guava</artifactId>
+		  <version>31.0.1-jre</version>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
 			<scope>runtime</scope>
@@ -101,6 +106,7 @@
 	</dependencies>
 
 	<build>
+    	<directory>target2</directory>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
